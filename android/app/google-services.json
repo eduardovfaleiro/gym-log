@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "172615009275",
+    "project_id": "gym-log-dc65d",
+    "storage_bucket": "gym-log-dc65d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:172615009275:android:27f1b8c9b00680cba8815e",
+        "android_client_info": {
+          "package_name": "com.example.gym_log"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALcB8y-lPHh9zkR-8IlcYkS_3pnvCqj1M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
