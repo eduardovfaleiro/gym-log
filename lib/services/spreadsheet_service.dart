@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:excel/excel.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -8,7 +9,7 @@ import '../log.dart';
 import 'log_service.dart';
 
 class SpreadsheetService {
-  static Future<void> createFromLogs(String exercise) async {
+  static Future<void> export(String exercise) async {
     List<Log> logs = await LogRepository.getAll(exercise);
 
     Excel excel = Excel.createExcel();
@@ -38,5 +39,21 @@ class SpreadsheetService {
         ..createSync(recursive: true)
         ..writeAsBytesSync(fileBytes);
     }
+  }
+
+  static Future<List<Log>> import() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(allowedExtensions: ['xlsx'], type: FileType.custom);
+
+    if (result != null) {
+      File file = File(result.files.single.path!);
+
+      var bytes = await file.readAsBytes();
+      var excel = Excel.decodeBytes(bytes);
+
+      for (var row in excel.tables[excel.tables.keys.first]!.rows.skip(1)) {}
+    } else {
+      // User canceled the picker
+    }
+    return [];
   }
 }

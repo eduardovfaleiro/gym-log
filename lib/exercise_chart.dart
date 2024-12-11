@@ -172,9 +172,28 @@ class _ExerciseChartState extends State<ExerciseChart> {
                               confirm: 'Sim, exportar',
                             );
 
-                            if (isSure) await SpreadsheetService.createFromLogs(widget.title);
+                            if (isSure) await SpreadsheetService.export(widget.title);
                           },
                           child: const Text('Exportar para planilha (.xlsx)')),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                          onPressed: () async {
+                            // bool isSure = await showConfirmDialog(
+                            //   context,
+                            //   'Tem certeza que deseja exportar os registros para planilha?',
+                            //   content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
+                            //   confirm: 'Sim, exportar',
+                            // );
+
+                            // if (isSure) await SpreadsheetService.createFromLogs(widget.title);
+                            SpreadsheetService.import();
+                          },
+                          child: const Text('Importar de planilha (.xlsx)')),
                     ),
                   ],
                 ),
