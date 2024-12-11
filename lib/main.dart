@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_log/exercise_chart.dart';
@@ -9,17 +10,18 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_ui_auth/src/providers/email_auth_provider.dart' as eap;
+import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
 import 'utils/init.dart';
+import 'utils/show_confirm_dialog.dart';
 
 void main() async {
   await init();
 
-  final emailAuthProvider = eap.EmailAuthProvider();
-
-  FirebaseUIAuth.configureProviders([emailAuthProvider]);
+  FirebaseUIAuth.configureProviders([
+    EmailAuthProvider(),
+    GoogleProvider(clientId: ''),
+  ]);
 
   runApp(
     MaterialApp(
@@ -91,27 +93,11 @@ class _MainAppState extends State<MainApp> {
                 children: [
                   TextButton(
                     onPressed: () async {
-                      bool isSure = await showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              content: const Text('Tem certeza que deseja desconectar da sua conta?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, false);
-                                  },
-                                  child: const Text('Não'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, true);
-                                  },
-                                  child: const Text('Sim, desconectar'),
-                                ),
-                              ],
-                            );
-                          });
+                      bool isSure = await showConfirmDialog(
+                        context,
+                        'Tem certeza que deseja desconectar da sua conta?',
+                        confirm: 'Sim, desconectar',
+                      );
 
                       if (isSure) await FirebaseAuth.instance.signOut();
                     },

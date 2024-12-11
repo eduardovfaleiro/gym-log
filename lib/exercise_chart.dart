@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gym_log/extensions.dart';
 import 'package:gym_log/log.dart';
 import 'package:gym_log/repositories/config.dart';
+import 'package:gym_log/services/spreadsheet_service.dart';
 import 'package:gym_log/view_logs_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +14,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'exercise_chart_controller.dart';
 import 'repositories/log_repository.dart';
 import 'services/log_service.dart';
+import 'utils/show_confirm_dialog.dart';
 
 class ExerciseChart extends StatefulWidget {
   final String title;
@@ -138,21 +140,44 @@ class _ExerciseChartState extends State<ExerciseChart> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                    child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return ViewLogsPage(exercise: widget.title);
-                              },
-                            ),
-                          );
-                        },
-                        child: const Text('Visualizar logs'))),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return ViewLogsPage(exercise: widget.title);
+                                },
+                              ),
+                            );
+                          },
+                          child: const Text('Visualizar logs')),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                          onPressed: () async {
+                            bool isSure = await showConfirmDialog(
+                              context,
+                              'Tem certeza que deseja exportar os registros para planilha?',
+                              content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
+                              confirm: 'Sim, exportar',
+                            );
+
+                            if (isSure) await SpreadsheetService.createFromLogs(widget.title);
+                          },
+                          child: const Text('Exportar para planilha (.xlsx)')),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

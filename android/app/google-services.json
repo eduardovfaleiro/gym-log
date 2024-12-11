@@ -12,7 +12,12 @@
           "package_name": "com.example.gym_log"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "172615009275-augi3f364mhmu9lsintrt1k5c7elubkq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyALcB8y-lPHh9zkR-8IlcYkS_3pnvCqj1M"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "172615009275-augi3f364mhmu9lsintrt1k5c7elubkq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "172615009275-hhn7uv95809v6d1tobvnnn8g25k9hvmp.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gymLog"
+              }
+            }
+          ]
         }
       }
     }
