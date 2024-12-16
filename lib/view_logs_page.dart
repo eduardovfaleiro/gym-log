@@ -25,7 +25,7 @@ class _ViewLogsPageState extends State<ViewLogsPage> {
       body: Column(
         children: [
           Container(
-            decoration: const BoxDecoration(color: Colors.purple),
+            decoration: const BoxDecoration(color: Colors.black),
             padding: const EdgeInsets.all(8),
             alignment: Alignment.center,
             child: SizedBox(
@@ -58,11 +58,21 @@ class _ViewLogsPageState extends State<ViewLogsPage> {
             child: FutureBuilder(
               future: LogService.getSortedLogs(widget.exercise),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const SizedBox.shrink();
+                if (!snapshot.hasData) {
+                  return const SizedBox.shrink();
+                }
 
                 List<Log> logs = snapshot.data!;
 
+                if (logs.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text('Ainda não existem logs para exibir.'),
+                  );
+                }
+
                 return ListView.builder(
+                    physics: const ClampingScrollPhysics(),
                     itemCount: logs.length,
                     itemBuilder: (context, index) {
                       var log = logs[index];

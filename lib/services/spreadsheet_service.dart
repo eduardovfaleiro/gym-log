@@ -50,6 +50,7 @@ class SpreadsheetService {
       var bytes = await file.readAsBytes();
       var excel = Excel.decodeBytes(bytes);
 
+      // TODO(continuar)
       for (var row in excel.tables[excel.tables.keys.first]!.rows.skip(1)) {}
     } else {
       // User canceled the picker

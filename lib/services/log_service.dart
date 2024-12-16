@@ -30,7 +30,7 @@ class LogService {
 
   static Future<List<Log>> getRepMaxLogs(String exercise) async {
     var logs = await LogRepository.getAll(exercise);
-    int reps = Config.getInt('repMax');
+    int reps = Config.getInt('repMax', defaultValue: 1);
 
     return logs
         .map((e) => Log(date: e.date, weight: getRepMax(e.weight, currentReps: e.reps, futureReps: reps), reps: reps))

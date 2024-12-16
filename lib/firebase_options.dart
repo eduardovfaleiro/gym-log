@@ -50,19 +50,21 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyALcB8y-lPHh9zkR-8IlcYkS_3pnvCqj1M',
-    appId: '1:172615009275:android:27f1b8c9b00680cba8815e',
-    messagingSenderId: '172615009275',
-    projectId: 'gym-log-dc65d',
-    storageBucket: 'gym-log-dc65d.firebasestorage.app',
+    apiKey: 'AIzaSyBawR3yRZPpGQODbQFlRUO-IUodzuTlnao',
+    appId: '1:255044437319:android:ed34f6e31a4fa5f856f862',
+    messagingSenderId: '255044437319',
+    projectId: 'gym-log-2e57a',
+    storageBucket: 'gym-log-2e57a.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyATZpywjJbc5hbExOZcasd_honDozO-qV8',
-    appId: '1:172615009275:ios:303d1081154db58ba8815e',
-    messagingSenderId: '172615009275',
-    projectId: 'gym-log-dc65d',
-    storageBucket: 'gym-log-dc65d.firebasestorage.app',
+    apiKey: 'AIzaSyDf_IdZQtNwCOsYNJNL3DsmNSL4dJp7YHk',
+    appId: '1:255044437319:ios:6f4c46374c2b9c9256f862',
+    messagingSenderId: '255044437319',
+    projectId: 'gym-log-2e57a',
+    storageBucket: 'gym-log-2e57a.firebasestorage.app',
+    androidClientId: '255044437319-2soo1b3oh7elhvq844t05jf44cnjg5jl.apps.googleusercontent.com',
+    iosClientId: '255044437319-h135n9uj221nnfk46pk5q3eh68amspa7.apps.googleusercontent.com',
     iosBundleId: 'com.example.gymLog',
   );
 

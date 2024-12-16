@@ -3,6 +3,8 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_log/exercise_chart.dart';
 import 'package:gym_log/main_controller.dart';
 import 'package:gym_log/view_logs_page.dart';
@@ -16,11 +18,33 @@ import 'utils/init.dart';
 import 'utils/show_confirm_dialog.dart';
 
 void main() async {
-  await init();
+  WidgetsFlutterBinding.ensureInitialized();
 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  fs = FirebaseFirestore.instance;
+
+  await Hive.initFlutter();
+
+  var box = await Hive.openBox('exercises');
+
+  for (String exercise in box.values) {
+    await Hive.openBox(exercise);
+  }
+
+  await Hive.openBox('config');
   FirebaseUIAuth.configureProviders([
     EmailAuthProvider(),
-    GoogleProvider(clientId: ''),
+    GoogleProvider(
+      clientId: 'YOUR_WEBCLIENT_ID',
+    ),
+  ]);
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
   ]);
 
   runApp(
@@ -30,6 +54,13 @@ void main() async {
       theme: ThemeData(useMaterial3: true),
       routes: {
         '/': (context) => const MainApp(),
+        '/profile': (context) => ProfileScreen(
+              actions: [
+                SignedOutAction((context) {
+                  Navigator.pushReplacementNamed(context, '/');
+                }),
+              ],
+            ),
         '/verify-email': (context) {
           return EmailVerificationScreen(
             actions: [
@@ -93,15 +124,20 @@ class _MainAppState extends State<MainApp> {
                 children: [
                   TextButton(
                     onPressed: () async {
-                      bool isSure = await showConfirmDialog(
-                        context,
-                        'Tem certeza que deseja desconectar da sua conta?',
-                        confirm: 'Sim, desconectar',
-                      );
+                      Navigator.pushNamed(context, '/profile');
 
-                      if (isSure) await FirebaseAuth.instance.signOut();
+                      // bool isSure = await showConfirmDialog(
+                      //   context,
+                      //   'Tem certeza que deseja desconectar da sua conta?',
+                      //   confirm: 'Sim, desconectar',
+                      // );
+
+                      // if (isSure) {
+                      //   await GoogleSignIn().disconnect();
+                      //   await FirebaseAuth.instance.signOut();
+                      // }
                     },
-                    child: const Text('Desconectar'),
+                    child: const Text('Perfil'),
                   ),
                 ],
               ),
@@ -125,9 +161,12 @@ class _MainAppState extends State<MainApp> {
               return Visibility(
                 visible: snapshot.connectionState != ConnectionState.waiting,
                 replacement: const SizedBox.shrink(),
-                child: ListView.builder(
-                    padding: const EdgeInsets.all(8),
+                child: ListView.separated(
+                    physics: const ClampingScrollPhysics(),
                     itemCount: exercises?.length ?? 0,
+                    separatorBuilder: (context, index) {
+                      return const Divider(height: 0);
+                    },
                     itemBuilder: (context, index) {
                       return ListTile(
                         onTap: () {
@@ -142,6 +181,7 @@ class _MainAppState extends State<MainApp> {
                         title: Text(
                           exercises![index],
                         ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 12),
                       );
                     }),
               );

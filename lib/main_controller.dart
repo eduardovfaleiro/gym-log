@@ -18,7 +18,11 @@ class MainController {
       builder: (context) {
         return AlertDialog(
           title: const Text('Adicionar exercício'),
-          content: TextField(controller: exerciseController, decoration: const InputDecoration(labelText: 'Nome')),
+          content: TextField(
+            controller: exerciseController,
+            decoration: const InputDecoration(labelText: 'Nome'),
+            maxLength: 50,
+          ),
           actions: [
             ElevatedButton(
                 onPressed: () {
