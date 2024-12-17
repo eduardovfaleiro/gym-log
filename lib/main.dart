@@ -1,21 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_log/exercise_chart.dart';
+import 'package:gym_log/loading.dart';
 import 'package:gym_log/main_controller.dart';
-import 'package:gym_log/view_logs_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
 import 'utils/init.dart';
-import 'utils/show_confirm_dialog.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,8 +48,11 @@ void main() async {
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       theme: ThemeData(useMaterial3: true),
+      // builder: (context, child) => PopScope(canPop: false, onPopInvokedWithResult: (didPop, result) {}, child: child!),
       routes: {
-        '/': (context) => const MainApp(),
+        '/': (context) {
+          return const LoadingWrapper(child: MainApp());
+        },
         '/profile': (context) => ProfileScreen(
               actions: [
                 SignedOutAction((context) {

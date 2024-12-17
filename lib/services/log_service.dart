@@ -29,7 +29,7 @@ class LogService {
   }
 
   static Future<List<Log>> getRepMaxLogs(String exercise) async {
-    var logs = await LogRepository.getAll(exercise);
+    var logs = await LogRepository(exercise).getAll();
     int reps = Config.getInt('repMax', defaultValue: 1);
 
     return logs
@@ -45,7 +45,7 @@ class LogService {
   }
 
   static Future<List<Log>> getSortedLogs(String exercise) async {
-    var logs = await LogRepository.getAll(exercise);
+    var logs = await LogRepository(exercise).getAll();
     logs.sort((a, b) => a.date.compareTo(b.date));
 
     return logs;

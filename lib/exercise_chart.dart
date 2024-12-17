@@ -1,3 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:io';
+
+import 'package:excel/excel.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +18,7 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import 'exercise_chart_controller.dart';
+import 'loading.dart';
 import 'repositories/log_repository.dart';
 import 'services/log_service.dart';
 import 'utils/show_confirm_dialog.dart';
@@ -26,6 +33,15 @@ class ExerciseChart extends StatefulWidget {
 }
 
 class _ExerciseChartState extends State<ExerciseChart> {
+  late final ExerciseChartController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = ExerciseChartController(widget.title);
+  }
+
   Future<void> _showAddLog() async {
     var weightController = TextEditingController(text: '90');
     var repsController = TextEditingController(text: '10');
@@ -72,7 +88,8 @@ class _ExerciseChartState extends State<ExerciseChart> {
                 double weight = double.parse(weightController.text);
                 int reps = int.parse(repsController.text);
 
-                LogRepository.add(widget.title, Log(date: date, reps: reps, weight: weight))
+                LogRepository(widget.title)
+                    .add(Log(date: date, reps: reps, weight: weight))
                     .then((_) => setState(() {}));
 
                 Navigator.pop(context);
@@ -183,15 +200,43 @@ class _ExerciseChartState extends State<ExerciseChart> {
                     Expanded(
                       child: OutlinedButton(
                           onPressed: () async {
-                            // bool isSure = await showConfirmDialog(
-                            //   context,
-                            //   'Tem certeza que deseja exportar os registros para planilha?',
-                            //   content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
-                            //   confirm: 'Sim, exportar',
-                            // );
+                            FilePickerResult? result =
+                                await FilePicker.platform.pickFiles(allowedExtensions: ['xlsx'], type: FileType.custom);
+                            if (result != null) {
+                              bool isSure = await showConfirmDialog(context,
+                                  'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
+                                  content:
+                                      'Todos os logs deste exercício serão REMOVIDOS e substituídos pelos dados da planilha.',
+                                  confirm: 'Sim, importar e substituir dados',
+                                  cancel: 'Não, cancelar');
 
-                            // if (isSure) await SpreadsheetService.createFromLogs(widget.title);
-                            SpreadsheetService.import();
+                              if (!isSure) return;
+
+                              File file = File(result.files.single.path!);
+
+                              // showDialog(
+                              //     barrierDismissible: false,
+                              //     context: context,
+                              //     builder: (context) {
+                              //       return const Dialog(
+                              //         child: Padding(
+                              //           padding: EdgeInsets.all(20.0),
+                              //           child: Row(
+                              //             mainAxisSize: MainAxisSize.min,
+                              //             children: [
+                              //               CircularProgressIndicator(),
+                              //               SizedBox(width: 20),
+                              //               Text("Carregando..."),
+                              //             ],
+                              //           ),
+                              //         ),
+                              //       );
+                              //     });
+                              LoadingInheritedWidget.of(context).setLoading(true);
+                              await _controller.import(file);
+                              setState(() {});
+                              LoadingInheritedWidget.of(context).setLoading(false);
+                            }
                           },
                           child: const Text('Importar de planilha (.xlsx)')),
                     ),
