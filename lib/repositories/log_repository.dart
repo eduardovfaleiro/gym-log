@@ -2,7 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'package:gym_log/log.dart';
+import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/utils/init.dart';
 
 class LogRepository {

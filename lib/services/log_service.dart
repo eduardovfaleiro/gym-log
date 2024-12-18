@@ -1,9 +1,9 @@
-import 'package:gym_log/log.dart';
+import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/config.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 
 class LogService {
-  static double getRepMax(double weight, {required int currentReps, required int futureReps}) {
+  double getRepMax(double weight, {required int currentReps, required int futureReps}) {
     double oneRepMax;
 
     if (currentReps < 11) {
@@ -28,26 +28,12 @@ class LogService {
     throw UnimplementedError();
   }
 
-  static Future<List<Log>> getRepMaxLogs(String exercise) async {
+  Future<List<Log>> getRepMaxLogs(String exercise) async {
     var logs = await LogRepository(exercise).getAll();
     int reps = Config.getInt('repMax', defaultValue: 1);
 
     return logs
         .map((e) => Log(date: e.date, weight: getRepMax(e.weight, currentReps: e.reps, futureReps: reps), reps: reps))
         .toList();
-  }
-
-  static Future<List<Log>> getSortedRepMaxLogs(String exercise) async {
-    var logs = await getRepMaxLogs(exercise);
-    logs.sort((a, b) => a.date.compareTo(b.date));
-
-    return logs;
-  }
-
-  static Future<List<Log>> getSortedLogs(String exercise) async {
-    var logs = await LogRepository(exercise).getAll();
-    logs.sort((a, b) => a.date.compareTo(b.date));
-
-    return logs;
   }
 }

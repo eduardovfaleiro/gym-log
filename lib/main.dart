@@ -3,14 +3,13 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gym_log/exercise_chart.dart';
-import 'package:gym_log/loading.dart';
-import 'package:gym_log/main_controller.dart';
+import 'package:gym_log/pages/exercise_chart_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
+import 'repositories/exercise_repository.dart';
 import 'utils/init.dart';
 
 void main() async {
@@ -51,7 +50,7 @@ void main() async {
       // builder: (context, child) => PopScope(canPop: false, onPopInvokedWithResult: (didPop, result) {}, child: child!),
       routes: {
         '/': (context) {
-          return const LoadingWrapper(child: MainApp());
+          return const MainApp();
         },
         '/profile': (context) => ProfileScreen(
               actions: [
@@ -86,7 +85,31 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  static final _controller = MainController();
+  Future<void> _addExercise(BuildContext context) async {
+    var exerciseController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Adicionar exercício'),
+          content: TextField(
+            controller: exerciseController,
+            decoration: const InputDecoration(labelText: 'Nome'),
+            maxLength: 50,
+          ),
+          actions: [
+            ElevatedButton(
+                onPressed: () {
+                  ExerciseRepository.add(exerciseController.text);
+                  Navigator.pop(context);
+                },
+                child: const Text('Ok')),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,44 +139,37 @@ class _MainAppState extends State<MainApp> {
         }
 
         return Scaffold(
-          drawer: Drawer(
-            child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextButton(
+          appBar: AppBar(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Gym Log'),
+                Container(
+                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .5),
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.account_circle_outlined),
                     onPressed: () async {
                       Navigator.pushNamed(context, '/profile');
-
-                      // bool isSure = await showConfirmDialog(
-                      //   context,
-                      //   'Tem certeza que deseja desconectar da sua conta?',
-                      //   confirm: 'Sim, desconectar',
-                      // );
-
-                      // if (isSure) {
-                      //   await GoogleSignIn().disconnect();
-                      //   await FirebaseAuth.instance.signOut();
-                      // }
                     },
-                    child: const Text('Perfil'),
+                    label: Text(
+                      FirebaseAuth.instance.currentUser?.email.toString() ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-          appBar: AppBar(
-            title: const Text('Gym Log'),
           ),
           floatingActionButton: FloatingActionButton(
             child: const Icon(Icons.add),
             onPressed: () async {
-              await _controller.addExercise(context);
+              await _addExercise(context);
               setState(() {});
             },
           ),
           body: FutureBuilder(
-            future: _controller.getExercises(),
+            future: ExerciseRepository.getAll(),
             builder: (context, snapshot) {
               var exercises = snapshot.data;
 

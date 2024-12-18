@@ -5,11 +5,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../log.dart';
+import '../entities/log.dart';
 import 'log_service.dart';
 
-class SpreadsheetService {
-  static Future<void> export(String exercise) async {
+class ExcelService {
+  Future<List<int>?> convertLogsToExcel(String exercise) async {
     List<Log> logs = await LogRepository(exercise).getAll();
 
     var excel = Excel.createExcel();
@@ -33,33 +33,10 @@ class SpreadsheetService {
       ]);
     }
 
-    List<int>? fileBytes = excel.save();
-    String outputPath = '/storage/emulated/0/Download/$exercise.xlsx';
-
-    if (fileBytes != null) {
-      File(outputPath)
-        ..createSync(recursive: true)
-        ..writeAsBytesSync(fileBytes);
-    }
+    return excel.save();
   }
 
-  // static Future<({logs = List, otherInfo = String})> import(File file) async {
-  //   FilePickerResult? result = await FilePicker.platform.pickFiles(allowedExtensions: ['xlsx'], type: FileType.custom);
-
-  //   if (result != null) {
-  //     File file = File(result.files.single.path!);
-
-  //     var bytes = await file.readAsBytes();
-  //     var excel = Excel.decodeBytes(bytes);
-
-  //     var logs = _convertExcelToLogs(excel);
-  //     return logs;
-  //   }
-
-  //   return [];
-  // }
-
-  static List<Log> convertExcelToLogs(Excel excel) {
+  List<Log> convertExcelToLogs(Excel excel) {
     List<Log> logs = [];
 
     Log log;

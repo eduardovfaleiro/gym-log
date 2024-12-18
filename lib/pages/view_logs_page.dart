@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:gym_log/log.dart';
+import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 import 'package:intl/intl.dart';
 
-import 'services/log_service.dart';
+import '../services/log_service.dart';
+import 'view_logs_controller.dart';
 
 class ViewLogsPage extends StatefulWidget {
   final String exercise;
@@ -56,7 +57,7 @@ class _ViewLogsPageState extends State<ViewLogsPage> {
           ),
           Expanded(
             child: FutureBuilder(
-              future: LogService.getSortedLogs(widget.exercise),
+              future: ViewLogsController().getSortedLogs(widget.exercise),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const SizedBox.shrink();
