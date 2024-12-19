@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/services/log_service.dart';
-import 'package:gym_log/services/spreadsheet_service.dart';
+import 'package:gym_log/services/excel_service.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 
@@ -26,23 +26,8 @@ class ExerciseChartController {
   }
 
   Future<void> importCsv(String path) async {
-    File file = File(path);
-    String csvData = await file.readAsString();
-
-    List<List> logs = const CsvToListConverter().convert(csvData);
-    List<Log> logsObj = [];
-
-    for (var logList in logs.skip(1)) {
-      var log = Log(
-        weight: logList[0],
-        reps: logList[1],
-        date: DateFormat('dd-MM-yyyy').parse(logList[2]),
-      );
-
-      logsObj.add(log);
-    }
-
-    await LogRepository(exercise).replaceAll(logsObj);
+    List<Log> logs = CsvService().convertCsvToLogs(path);
+    await LogRepository(exercise).replaceAll(logs);
   }
 
   Future<void> exportAndOpenAsCsv() async {
@@ -58,15 +43,10 @@ class ExerciseChartController {
     await OpenFile.open(outputPath);
   }
 
-  Future<void> importExcel(String path) async {
-    File file = File(path);
-
-    var bytes = await file.readAsBytes();
-    var excel = Excel.decodeBytes(bytes);
-
-    List<Log> logs = ExcelService().convertExcelToLogs(excel);
-    await LogRepository(exercise).replaceAll(logs);
-  }
+  // Future<void> importExcel(String path) async {
+  //   List<Log> logs = ExcelService().convertExcelToLogs(path);
+  //   await LogRepository(exercise).replaceAll(logs);
+  // }
 
   Future<void> exportAndOpenAsExcel() async {
     List<int> excelFile = (await ExcelService().convertLogsToExcel(exercise))!;

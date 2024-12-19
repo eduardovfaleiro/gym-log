@@ -9,6 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
+import 'pages/exercises_page.dart';
 import 'repositories/exercise_repository.dart';
 import 'utils/init.dart';
 
@@ -85,31 +86,7 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  Future<void> _addExercise(BuildContext context) async {
-    var exerciseController = TextEditingController();
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Adicionar exercício'),
-          content: TextField(
-            controller: exerciseController,
-            decoration: const InputDecoration(labelText: 'Nome'),
-            maxLength: 50,
-          ),
-          actions: [
-            ElevatedButton(
-                onPressed: () {
-                  ExerciseRepository.add(exerciseController.text);
-                  Navigator.pop(context);
-                },
-                child: const Text('Ok')),
-          ],
-        );
-      },
-    );
-  }
+  final List<String> _sections = ['Pernas', 'Peito', 'Costas', 'Ombro', 'Bíceps', 'Tríceps', 'Antebraço', 'Abdômen'];
 
   @override
   Widget build(BuildContext context) {
@@ -161,44 +138,25 @@ class _MainAppState extends State<MainApp> {
               ],
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            child: const Icon(Icons.add),
-            onPressed: () async {
-              await _addExercise(context);
-              setState(() {});
+          body: ListView.separated(
+            physics: const ClampingScrollPhysics(),
+            itemCount: _sections.length,
+            separatorBuilder: (context, index) {
+              return const Divider(height: 0);
             },
-          ),
-          body: FutureBuilder(
-            future: ExerciseRepository.getAll(),
-            builder: (context, snapshot) {
-              var exercises = snapshot.data;
-
-              return Visibility(
-                visible: snapshot.connectionState != ConnectionState.waiting,
-                replacement: const SizedBox.shrink(),
-                child: ListView.separated(
-                    physics: const ClampingScrollPhysics(),
-                    itemCount: exercises?.length ?? 0,
-                    separatorBuilder: (context, index) {
-                      return const Divider(height: 0);
-                    },
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ExerciseChart(title: exercises[index]),
-                            ),
-                          );
-                        },
-                        visualDensity: VisualDensity.comfortable,
-                        title: Text(
-                          exercises![index],
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 12),
-                      );
-                    }),
+            itemBuilder: (context, index) {
+              return ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ExercisesPage(section: _sections[index]),
+                    ),
+                  );
+                },
+                visualDensity: VisualDensity.comfortable,
+                title: Text(_sections[index]),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 12),
               );
             },
           ),

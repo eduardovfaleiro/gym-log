@@ -5,12 +5,16 @@ import 'package:gym_log/repositories/log_repository.dart';
 import 'package:intl/intl.dart';
 
 import '../services/log_service.dart';
+import '../widgets/logs_list_view.dart';
 import 'view_logs_controller.dart';
 
 class ViewLogsPage extends StatefulWidget {
   final String exercise;
 
-  const ViewLogsPage({super.key, required this.exercise});
+  const ViewLogsPage({
+    super.key,
+    required this.exercise,
+  });
 
   @override
   State<ViewLogsPage> createState() => _ViewLogsPageState();
@@ -72,28 +76,7 @@ class _ViewLogsPageState extends State<ViewLogsPage> {
                   );
                 }
 
-                return ListView.builder(
-                    physics: const ClampingScrollPhysics(),
-                    itemCount: logs.length,
-                    itemBuilder: (context, index) {
-                      var log = logs[index];
-
-                      return Container(
-                        decoration: BoxDecoration(color: index % 2 == 0 ? Colors.transparent : Colors.grey[300]),
-                        padding: const EdgeInsets.all(4),
-                        alignment: Alignment.center,
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * .7,
-                          child: Row(
-                            children: [
-                              Expanded(child: Text('${log.weight} kg')),
-                              Expanded(child: Text(log.reps.toString())),
-                              Expanded(child: Text(DateFormat('dd/MM/yyyy').format(log.date))),
-                            ],
-                          ),
-                        ),
-                      );
-                    });
+                return LogsListView(logs: logs);
               },
             ),
           ),

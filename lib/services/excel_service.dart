@@ -36,7 +36,12 @@ class ExcelService {
     return excel.save();
   }
 
-  List<Log> convertExcelToLogs(Excel excel) {
+  List<Log> convertExcelToLogs(String path) {
+    File file = File(path);
+
+    var bytes = file.readAsBytesSync();
+    var excel = Excel.decodeBytes(bytes);
+
     List<Log> logs = [];
 
     Log log;

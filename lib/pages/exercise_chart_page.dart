@@ -10,11 +10,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gym_log/utils/extensions.dart';
+import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/config.dart';
 import 'package:gym_log/services/csv_service.dart';
-import 'package:gym_log/services/spreadsheet_service.dart';
+import 'package:gym_log/services/excel_service.dart';
 import 'package:gym_log/pages/view_logs_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
@@ -25,6 +26,7 @@ import 'exercise_chart_controller.dart';
 import '../repositories/log_repository.dart';
 import '../services/log_service.dart';
 import '../utils/show_confirm_dialog.dart';
+import 'view_imported_logs_page.dart';
 
 class ExerciseChart extends StatefulWidget {
   final String title;
@@ -232,20 +234,48 @@ class _ExerciseChartState extends State<ExerciseChart> {
                               );
 
                               if (result != null) {
-                                bool isSure =
-                                    await showConfirmDialog(context,
-                                        'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                        content:
-                                            'Todos os logs deste exercício serão REMOVIDOS e substituídos pelos dados da planilha.',
-                                        confirm: 'Sim, importar e substituir dados',
-                                        cancel: 'Não, cancelar');
+                                String excelPath = result.files.single.path!;
+                                List<Log> logs = [];
 
-                                if (!isSure) return;
+                                try {
+                                  logs = ExcelService().convertExcelToLogs(excelPath);
+                                } catch (error) {
+                                  showError(
+                                    context,
+                                    content: 'Não foi possível importar o arquivo .xlsx. Por favor, tente novamente.',
+                                  );
+                                  return;
+                                }
 
-                                LoadingManager.run(() async {
-                                  await _controller.importExcel(result.files.single.path!);
-                                  setState(() {});
-                                });
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return ViewImportedLogsPage(
+                                        title: result.files.single.name,
+                                        logs: logs,
+                                        onConfirm: () async {
+                                          bool isSure = await showConfirmDialog(
+                                            context,
+                                            'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
+                                            content:
+                                                'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
+                                            confirm: 'Sim, importar e substituir dados',
+                                            cancel: 'Não, cancelar',
+                                          );
+
+                                          if (!isSure) return;
+
+                                          LoadingManager.run(() async {
+                                            await LogRepository(widget.title).replaceAll(logs);
+                                            setState(() {});
+                                            Navigator.pop(context);
+                                          });
+                                        },
+                                      );
+                                    },
+                                  ),
+                                );
                               }
                             },
                             style: OutlinedButton.styleFrom(
@@ -268,20 +298,38 @@ class _ExerciseChartState extends State<ExerciseChart> {
                               );
 
                               if (result != null) {
-                                bool isSure =
-                                    await showConfirmDialog(context,
-                                        'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                        content:
-                                            'Todos os logs deste exercício serão REMOVIDOS e substituídos pelos dados da planilha.',
-                                        confirm: 'Sim, importar e substituir dados',
-                                        cancel: 'Não, cancelar');
+                                String csvPath = result.files.single.path!;
+                                List<Log> logs = CsvService().convertCsvToLogs(csvPath);
 
-                                if (!isSure) return;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return ViewImportedLogsPage(
+                                        title: result.files.single.name,
+                                        logs: logs,
+                                        onConfirm: () async {
+                                          bool isSure = await showConfirmDialog(
+                                            context,
+                                            'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
+                                            content:
+                                                'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
+                                            confirm: 'Sim, importar e substituir dados',
+                                            cancel: 'Não, cancelar',
+                                          );
 
-                                LoadingManager.run(() async {
-                                  await _controller.importCsv(result.files.single.path!);
-                                  setState(() {});
-                                });
+                                          if (!isSure) return;
+
+                                          LoadingManager.run(() async {
+                                            await _controller.importCsv(result.files.single.path!);
+                                            setState(() {});
+                                            Navigator.pop(context);
+                                          });
+                                        },
+                                      );
+                                    },
+                                  ),
+                                );
                               }
                             },
                             style: OutlinedButton.styleFrom(
