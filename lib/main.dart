@@ -4,6 +4,7 @@ import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gym_log/pages/exercise_chart_page.dart';
+import 'package:gym_log/utils/init_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -16,21 +17,12 @@ import 'utils/init.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   fs = FirebaseFirestore.instance;
 
   await Hive.initFlutter();
-
-  var box = await Hive.openBox('exercises');
-
-  for (String exercise in box.values) {
-    await Hive.openBox(exercise);
-  }
-
   await Hive.openBox('config');
+
   FirebaseUIAuth.configureProviders([
     EmailAuthProvider(),
     GoogleProvider(
@@ -114,6 +106,8 @@ class _MainAppState extends State<MainApp> {
             ],
           );
         }
+
+        initFireStore();
 
         return Scaffold(
           appBar: AppBar(

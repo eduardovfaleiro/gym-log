@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gym_log/pages/add_exercise_page.dart';
 
 import '../repositories/exercise_repository.dart';
 import 'exercise_chart_page.dart';
@@ -13,42 +14,21 @@ class ExercisesPage extends StatefulWidget {
 }
 
 class _ExercisesPageState extends State<ExercisesPage> {
-  Future<void> _addExercise(BuildContext context) async {
-    var exerciseController = TextEditingController();
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Adicionar exercício'),
-          content: TextField(
-            controller: exerciseController,
-            decoration: const InputDecoration(labelText: 'Nome'),
-            maxLength: 50,
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                ExerciseRepository.add(exerciseController.text, section: widget.section);
-                setState(() {});
-
-                Navigator.pop(context);
-              },
-              child: const Text('Ok'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
-          await _addExercise(context);
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return AddExercisePage(section: widget.section);
+              },
+            ),
+          );
+          setState(() {});
         },
       ),
       appBar: AppBar(
@@ -61,7 +41,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
 
           return Visibility(
             visible: snapshot.connectionState != ConnectionState.waiting,
-            replacement: const SizedBox.shrink(),
+            replacement: const Center(child: Text('Você ainda não selecionou nenhum exercício. Selecione em ( + )')),
             child: ListView.separated(
               physics: const ClampingScrollPhysics(),
               itemCount: exercises?.length ?? 0,

@@ -43,11 +43,6 @@ class ExerciseChartController {
     await OpenFile.open(outputPath);
   }
 
-  // Future<void> importExcel(String path) async {
-  //   List<Log> logs = ExcelService().convertExcelToLogs(path);
-  //   await LogRepository(exercise).replaceAll(logs);
-  // }
-
   Future<void> exportAndOpenAsExcel() async {
     List<int> excelFile = (await ExcelService().convertLogsToExcel(exercise))!;
     String outputPath = '/storage/emulated/0/Download/$exercise.xlsx';

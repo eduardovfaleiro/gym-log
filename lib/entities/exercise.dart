@@ -7,4 +7,8 @@ class Exercise {
   factory Exercise.fromFireStoreMap(Map<String, dynamic> map) {
     return Exercise(name: map[''], section: map['section']);
   }
+
+  Map<String, dynamic> toMap() {
+    return {'name': name, 'section': section};
+  }
 }
