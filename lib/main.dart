@@ -3,7 +3,6 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gym_log/pages/exercise_chart_page.dart';
 import 'package:gym_log/utils/init_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,7 +10,6 @@ import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
 import 'pages/exercises_page.dart';
-import 'repositories/exercise_repository.dart';
 import 'utils/init.dart';
 
 void main() async {

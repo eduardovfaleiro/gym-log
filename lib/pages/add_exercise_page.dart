@@ -32,11 +32,11 @@ class _AddExercisePageState extends State<AddExercisePage> {
           ),
           actions: [
             ElevatedButton(
-              onPressed: () {
-                setState(() async {
-                  await ExerciseSelectionRepository()
-                      .add(Exercise(name: exerciseController.text, section: widget.section));
-                });
+              onPressed: () async {
+                await ExerciseSelectionRepository().add(
+                  Exercise(name: exerciseController.text, section: widget.section),
+                );
+                setState(() {});
 
                 Navigator.pop(context);
               },
@@ -114,7 +114,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
                 child: ElevatedButton(
                   onPressed: () {
                     LoadingManager.run(() async {
-                      await ExerciseRepository.add(_selectedExerciseName, section: widget.section);
+                      await ExerciseRepository.add(Exercise(name: _selectedExerciseName, section: widget.section));
                       Navigator.pop(context);
                     });
                   },

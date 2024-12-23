@@ -1,21 +1,19 @@
 import 'dart:io';
 
 import 'package:excel/excel.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:gym_log/repositories/log_repository.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../entities/exercise.dart';
 import '../entities/log.dart';
-import 'log_service.dart';
 
 class ExcelService {
-  Future<List<int>?> convertLogsToExcel(String exercise) async {
+  Future<List<int>?> convertLogsToExcel(Exercise exercise) async {
     List<Log> logs = await LogRepository(exercise).getAll();
 
     var excel = Excel.createExcel();
-    excel.rename(excel.getDefaultSheet()!, exercise);
+    excel.rename(excel.getDefaultSheet()!, exercise.name);
 
-    Sheet sheet = excel.sheets[exercise]!;
+    Sheet sheet = excel.sheets[exercise.name]!;
 
     sheet.appendRow([
       TextCellValue('Peso (kg)'),

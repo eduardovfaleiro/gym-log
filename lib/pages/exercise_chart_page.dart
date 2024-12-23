@@ -1,11 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
-
-import 'package:csv/csv.dart';
-import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,21 +12,18 @@ import 'package:gym_log/repositories/config.dart';
 import 'package:gym_log/services/csv_service.dart';
 import 'package:gym_log/services/excel_service.dart';
 import 'package:gym_log/pages/view_logs_page.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:intl/intl.dart';
-import 'package:open_file/open_file.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+import '../entities/exercise.dart';
 import 'exercise_chart_controller.dart';
 import '../repositories/log_repository.dart';
-import '../services/log_service.dart';
 import '../utils/show_confirm_dialog.dart';
 import 'view_imported_logs_page.dart';
 
 class ExerciseChart extends StatefulWidget {
-  final String title;
+  final Exercise exercise;
 
-  const ExerciseChart({super.key, required this.title});
+  const ExerciseChart({super.key, required this.exercise});
 
   @override
   State<ExerciseChart> createState() => _ExerciseChartState();
@@ -44,7 +36,7 @@ class _ExerciseChartState extends State<ExerciseChart> {
   void initState() {
     super.initState();
 
-    _controller = ExerciseChartController(widget.title);
+    _controller = ExerciseChartController(widget.exercise);
   }
 
   Future<void> _showAddLog() async {
@@ -93,7 +85,7 @@ class _ExerciseChartState extends State<ExerciseChart> {
                 double weight = double.parse(weightController.text);
                 int reps = int.parse(repsController.text);
 
-                LogRepository(widget.title)
+                LogRepository(widget.exercise)
                     .add(Log(date: date, reps: reps, weight: weight))
                     .then((_) => setState(() {}));
 
@@ -111,7 +103,7 @@ class _ExerciseChartState extends State<ExerciseChart> {
   Widget build(BuildContext context) {
     return LoadingManager(
       child: Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
+        appBar: AppBar(title: Text(widget.exercise.name)),
         body: Column(
           children: [
             Padding(
@@ -153,7 +145,7 @@ class _ExerciseChartState extends State<ExerciseChart> {
                   series: <CartesianSeries<Log, String>>[
                     LineSeries<Log, String>(
                         dataSource: logs,
-                        xValueMapper: (Log sales, _) => sales.date.formatReadable(),
+                        xValueMapper: (Log sales, _) => sales.date.formatReadableShort(),
                         yValueMapper: (Log sales, _) => double.parse(sales.weight.toStringAsFixed(1)),
                         name: 'Sales',
                         dataLabelSettings: const DataLabelSettings(isVisible: true))
@@ -166,181 +158,195 @@ class _ExerciseChartState extends State<ExerciseChart> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Exportar para'),
-                      Row(
-                        children: [
-                          OutlinedButton(
-                            onPressed: () async {
-                              bool isSure = await showConfirmDialog(
-                                context,
-                                'Tem certeza que deseja exportar os registros para planilha?',
-                                content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
-                                confirm: 'Sim, exportar',
-                              );
-
-                              if (isSure) {
-                                _controller.exportAndOpenAsExcel();
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                              minimumSize: const Size(0, 0),
-                            ),
-                            child: const Text(
-                              'xlsx',
-                              style: TextStyle(
-                                color: Color(0xff217346),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          OutlinedButton(
-                            onPressed: () async {
-                              bool isSure = await showConfirmDialog(
-                                context,
-                                'Tem certeza que deseja exportar os registros para planilha?',
-                                content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
-                                confirm: 'Sim, exportar',
-                              );
-
-                              if (isSure) {
-                                _controller.exportAndOpenAsCsv();
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                              minimumSize: const Size(0, 0),
-                            ),
-                            child: const Text('csv'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Importar de'),
-                      Row(
-                        children: [
-                          OutlinedButton(
-                            onPressed: () async {
-                              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                allowedExtensions: ['xlsx'],
-                                type: FileType.custom,
-                              );
-
-                              if (result != null) {
-                                String excelPath = result.files.single.path!;
-                                List<Log> logs = [];
-
-                                try {
-                                  logs = ExcelService().convertExcelToLogs(excelPath);
-                                } catch (error) {
-                                  showError(
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Exportar para'),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  bool isSure = await showConfirmDialog(
                                     context,
-                                    content: 'Não foi possível importar o arquivo .xlsx. Por favor, tente novamente.',
+                                    'Tem certeza que deseja exportar os registros para planilha?',
+                                    content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
+                                    confirm: 'Sim, exportar',
                                   );
-                                  return;
-                                }
 
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return ViewImportedLogsPage(
-                                        title: result.files.single.name,
-                                        logs: logs,
-                                        onConfirm: () async {
-                                          bool isSure = await showConfirmDialog(
-                                            context,
-                                            'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                            content:
-                                                'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
-                                            confirm: 'Sim, importar e substituir dados',
-                                            cancel: 'Não, cancelar',
-                                          );
-
-                                          if (!isSure) return;
-
-                                          LoadingManager.run(() async {
-                                            await LogRepository(widget.title).replaceAll(logs);
-                                            setState(() {});
-                                            Navigator.pop(context);
-                                          });
-                                        },
-                                      );
-                                    },
+                                  if (isSure) {
+                                    _controller.exportAndOpenAsExcel();
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+                                  minimumSize: const Size(0, 0),
+                                ),
+                                child: const Text(
+                                  'xlsx',
+                                  style: TextStyle(
+                                    color: Color(0xff217346),
                                   ),
-                                );
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                              minimumSize: const Size(0, 0),
-                            ),
-                            child: const Text(
-                              'xlsx',
-                              style: TextStyle(
-                                color: Color(0xff217346),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          OutlinedButton(
-                            onPressed: () async {
-                              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                allowedExtensions: ['csv'],
-                                type: FileType.custom,
-                              );
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  bool isSure = await showConfirmDialog(
+                                    context,
+                                    'Tem certeza que deseja exportar os registros para planilha?',
+                                    content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
+                                    confirm: 'Sim, exportar',
+                                  );
 
-                              if (result != null) {
-                                String csvPath = result.files.single.path!;
-                                List<Log> logs = CsvService().convertCsvToLogs(csvPath);
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return ViewImportedLogsPage(
-                                        title: result.files.single.name,
-                                        logs: logs,
-                                        onConfirm: () async {
-                                          bool isSure = await showConfirmDialog(
-                                            context,
-                                            'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                            content:
-                                                'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
-                                            confirm: 'Sim, importar e substituir dados',
-                                            cancel: 'Não, cancelar',
-                                          );
-
-                                          if (!isSure) return;
-
-                                          LoadingManager.run(() async {
-                                            await _controller.importCsv(result.files.single.path!);
-                                            setState(() {});
-                                            Navigator.pop(context);
-                                          });
-                                        },
-                                      );
-                                    },
-                                  ),
-                                );
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                              minimumSize: const Size(0, 0),
+                                  if (isSure) {
+                                    _controller.exportAndOpenAsCsv();
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+                                  minimumSize: const Size(0, 0),
+                                ),
+                                child: const Text('csv'),
+                              ),
                             ),
-                            child: const Text('csv'),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Importar de'),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                    allowedExtensions: ['xlsx'],
+                                    type: FileType.custom,
+                                  );
+
+                                  if (result != null) {
+                                    String excelPath = result.files.single.path!;
+                                    List<Log> logs = [];
+
+                                    try {
+                                      logs = ExcelService().convertExcelToLogs(excelPath);
+                                    } catch (error) {
+                                      showError(
+                                        context,
+                                        content:
+                                            'Não foi possível importar o arquivo .xlsx. Por favor, tente novamente.',
+                                      );
+                                      return;
+                                    }
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return ViewImportedLogsPage(
+                                            title: result.files.single.name,
+                                            logs: logs,
+                                            onConfirm: () async {
+                                              bool isSure = await showConfirmDialog(
+                                                context,
+                                                'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
+                                                content:
+                                                    'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
+                                                confirm: 'Sim, importar e substituir dados',
+                                                cancel: 'Não, cancelar',
+                                              );
+
+                                              if (!isSure) return;
+
+                                              LoadingManager.run(() async {
+                                                await LogRepository(widget.exercise).replaceAll(logs);
+                                                setState(() {});
+                                                Navigator.pop(context);
+                                              });
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+                                  minimumSize: const Size(0, 0),
+                                ),
+                                child: const Text(
+                                  'xlsx',
+                                  style: TextStyle(
+                                    color: Color(0xff217346),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                    allowedExtensions: ['csv'],
+                                    type: FileType.custom,
+                                  );
+
+                                  if (result != null) {
+                                    String csvPath = result.files.single.path!;
+                                    List<Log> logs = CsvService().convertCsvToLogs(csvPath);
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return ViewImportedLogsPage(
+                                            title: result.files.single.name,
+                                            logs: logs,
+                                            onConfirm: () async {
+                                              bool isSure = await showConfirmDialog(
+                                                context,
+                                                'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
+                                                content:
+                                                    'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
+                                                confirm: 'Sim, importar e substituir dados',
+                                                cancel: 'Não, cancelar',
+                                              );
+
+                                              if (!isSure) return;
+
+                                              LoadingManager.run(() async {
+                                                await _controller.importCsv(result.files.single.path!);
+                                                setState(() {});
+                                                Navigator.pop(context);
+                                              });
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+                                  minimumSize: const Size(0, 0),
+                                ),
+                                child: const Text('csv'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -358,7 +364,7 @@ class _ExerciseChartState extends State<ExerciseChart> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) {
-                                    return ViewLogsPage(exercise: widget.title);
+                                    return ViewLogsPage(exercise: widget.exercise);
                                   },
                                 ),
                               );

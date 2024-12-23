@@ -1,20 +1,16 @@
 import 'dart:io';
 
-import 'package:csv/csv.dart';
-import 'package:excel/excel.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/services/log_service.dart';
 import 'package:gym_log/services/excel_service.dart';
-import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 
+import '../entities/exercise.dart';
 import '../services/csv_service.dart';
 
 class ExerciseChartController {
-  final String exercise;
+  final Exercise exercise;
 
   ExerciseChartController(this.exercise);
 
@@ -32,7 +28,7 @@ class ExerciseChartController {
 
   Future<void> exportAndOpenAsCsv() async {
     String csvData = await CsvService().convertLogsToCsv(
-      exercise,
+      exercise.name,
       await LogRepository(exercise).getAll(),
     );
 

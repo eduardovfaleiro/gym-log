@@ -16,13 +16,34 @@ final translator = {
 };
 
 class ExerciseRepository {
-  static Future<void> add(String name, {required String section}) async {
+  static Future<void> add(Exercise exercise) async {
     fs
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('exercises')
-        .doc(name)
-        .set({'section': translator[section]!.toLowerCase()});
+        .doc()
+        .set({'name': exercise.name, 'section': translator[exercise.section]!.toLowerCase()});
+  }
+
+  Future<void> delete(Exercise exercise) async {
+    var exerciseQuery = await fs
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('exercises')
+        .where('name', isEqualTo: exercise.name)
+        .where('section', isEqualTo: translator[exercise.section])
+        .get();
+
+    if (exerciseQuery.docs.length > 1) throw Exception();
+
+    var docRef = exerciseQuery.docs.first.reference;
+    var logs = await docRef.collection('logs').get();
+
+    for (var log in logs.docs) {
+      await log.reference.delete();
+    }
+
+    await docRef.delete();
   }
 
   static Future<List<String>> getAll() async {
@@ -43,7 +64,7 @@ class ExerciseRepository {
     return exercises.docs
         .map(
           (exercise) => Exercise(
-            name: exercise.id,
+            name: exercise.data()['name'],
             section: exercise.data()['section'],
           ),
         )

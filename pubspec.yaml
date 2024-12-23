@@ -23,6 +23,7 @@ dependencies:
   intl: ^0.19.0
   open_file: ^3.5.10
   path_provider: ^2.1.5
+  popover: ^0.3.1
   syncfusion_flutter_charts: ^21.2.4
 
 dev_dependencies:

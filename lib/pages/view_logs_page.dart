@@ -1,15 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_log/entities/log.dart';
-import 'package:gym_log/repositories/log_repository.dart';
-import 'package:intl/intl.dart';
 
-import '../services/log_service.dart';
+import '../entities/exercise.dart';
 import '../widgets/logs_list_view.dart';
 import 'view_logs_controller.dart';
 
 class ViewLogsPage extends StatefulWidget {
-  final String exercise;
+  final Exercise exercise;
 
   const ViewLogsPage({
     super.key,

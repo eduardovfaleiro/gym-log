@@ -2,6 +2,8 @@ import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/config.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 
+import '../entities/exercise.dart';
+
 class LogService {
   double getRepMax(double weight, {required int currentReps, required int futureReps}) {
     double oneRepMax;
@@ -28,7 +30,7 @@ class LogService {
     throw UnimplementedError();
   }
 
-  Future<List<Log>> getRepMaxLogs(String exercise) async {
+  Future<List<Log>> getRepMaxLogs(Exercise exercise) async {
     var logs = await LogRepository(exercise).getAll();
     int reps = Config.getInt('repMax', defaultValue: 1);
 

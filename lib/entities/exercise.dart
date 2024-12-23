@@ -1,3 +1,5 @@
+import '../repositories/exercise_repository.dart';
+
 class Exercise {
   final String name;
   final String section;
@@ -5,10 +7,10 @@ class Exercise {
   Exercise({required this.name, required this.section});
 
   factory Exercise.fromFireStoreMap(Map<String, dynamic> map) {
-    return Exercise(name: map[''], section: map['section']);
+    return Exercise(name: map['name'], section: map['section']);
   }
 
   Map<String, dynamic> toMap() {
-    return {'name': name, 'section': section};
+    return {'name': name, 'section': translator[section]};
   }
 }
