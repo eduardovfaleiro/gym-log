@@ -20,26 +20,19 @@ import '../repositories/log_repository.dart';
 import '../utils/show_confirm_dialog.dart';
 import 'view_imported_logs_page.dart';
 
-class ExerciseChart extends StatefulWidget {
+class ExerciseChartPage extends StatefulWidget {
   final Exercise exercise;
 
-  const ExerciseChart({super.key, required this.exercise});
+  const ExerciseChartPage({super.key, required this.exercise});
 
   @override
-  State<ExerciseChart> createState() => _ExerciseChartState();
-}
+  State<ExerciseChartPage> createState() => _ExerciseChartPageState();
 
-class _ExerciseChartState extends State<ExerciseChart> {
-  late final ExerciseChartController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = ExerciseChartController(widget.exercise);
-  }
-
-  Future<void> _showAddLog() async {
+  static Future<void> showAddLog(
+    BuildContext context, {
+    required void Function(double weight, int reps, DateTime date, String notes) onConfirm,
+  }) async {
+    var notesController = TextEditingController();
     var weightController = TextEditingController(text: '90');
     var repsController = TextEditingController(text: '10');
     var date = DateTime.now();
@@ -77,6 +70,12 @@ class _ExerciseChartState extends State<ExerciseChart> {
                 keyboardType: const TextInputType.numberWithOptions(),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
+              TextField(
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
+                controller: notesController,
+                decoration: const InputDecoration(labelText: 'Notas'),
+              ),
             ],
           ),
           actions: [
@@ -85,9 +84,11 @@ class _ExerciseChartState extends State<ExerciseChart> {
                 double weight = double.parse(weightController.text);
                 int reps = int.parse(repsController.text);
 
-                LogRepository(widget.exercise)
-                    .add(Log(date: date, reps: reps, weight: weight))
-                    .then((_) => setState(() {}));
+                onConfirm(weight, reps, date, notesController.text);
+
+                // LogRepository(widget.exercise)
+                //     .add(Log(date: date, reps: reps, weight: weight))
+                //     .then((_) => setState(() {}));
 
                 Navigator.pop(context);
               },
@@ -97,6 +98,17 @@ class _ExerciseChartState extends State<ExerciseChart> {
         );
       },
     );
+  }
+}
+
+class _ExerciseChartPageState extends State<ExerciseChartPage> {
+  late final ExerciseChartController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = ExerciseChartController(widget.exercise);
   }
 
   @override
@@ -380,7 +392,11 @@ class _ExerciseChartState extends State<ExerciseChart> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            _showAddLog();
+            ExerciseChartPage.showAddLog(context, onConfirm: (weight, reps, date, notes) {
+              LogRepository(widget.exercise)
+                  .add(Log(date: date, reps: reps, weight: weight, notes: notes))
+                  .then((_) => setState(() {}));
+            });
           },
           child: const Icon(Icons.add),
         ),

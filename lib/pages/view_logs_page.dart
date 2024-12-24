@@ -30,30 +30,33 @@ class _ViewLogsPageState extends State<ViewLogsPage> {
             decoration: const BoxDecoration(color: Colors.black),
             padding: const EdgeInsets.all(8),
             alignment: Alignment.center,
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * .7,
-              child: const Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Peso',
-                      style: TextStyle(color: Colors.white),
-                    ),
+            child: const Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Peso',
+                    style: TextStyle(color: Colors.white),
                   ),
-                  Expanded(
-                    child: Text(
-                      'Repetições',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Reps',
+                    style: TextStyle(color: Colors.white),
                   ),
-                  Expanded(
-                    child: Text(
-                      'Data',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Data',
+                    style: TextStyle(color: Colors.white),
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Notas',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(

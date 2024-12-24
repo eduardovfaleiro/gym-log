@@ -1,14 +1,19 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gym_log/utils/init_firestore.dart';
+import 'package:gym_log/widgets/exercise_card.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 
+import 'package:gym_log/repositories/exercise_repository.dart';
+import 'package:gym_log/utils/init_firestore.dart';
+
+import 'entities/exercise.dart';
+import 'firebase_options.dart';
 import 'pages/exercises_page.dart';
 import 'utils/init.dart';
 
@@ -76,7 +81,31 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  final List<String> _sections = ['Pernas', 'Peito', 'Costas', 'Ombro', 'Bíceps', 'Tríceps', 'Antebraço', 'Abdômen'];
+  final List<String> _categories = ['Pernas', 'Peito', 'Costas', 'Ombro', 'Bíceps', 'Tríceps', 'Antebraço', 'Abdômen'];
+  final _searchController = TextEditingController();
+  List<Exercise> _exercisesSearched = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _searchController.addListener(() async {
+      if (_searchController.text.isEmpty) {
+        _exercisesSearched = [];
+        setState(() {});
+        return;
+      }
+
+      _exercisesSearched = await ExerciseRepository().getAllWithArgs(name: _searchController.text);
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +136,7 @@ class _MainAppState extends State<MainApp> {
 
         initFireStore();
 
+        // TODO(botar em um Widget separado talvez)
         return Scaffold(
           appBar: AppBar(
             title: Row(
@@ -130,27 +160,68 @@ class _MainAppState extends State<MainApp> {
               ],
             ),
           ),
-          body: ListView.separated(
-            physics: const ClampingScrollPhysics(),
-            itemCount: _sections.length,
-            separatorBuilder: (context, index) {
-              return const Divider(height: 0);
-            },
-            itemBuilder: (context, index) {
-              return ListTile(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ExercisesPage(section: _sections[index]),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  autofocus: false,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _searchController.clear();
+                      },
+                      icon: const Icon(Icons.clear),
                     ),
-                  );
-                },
-                visualDensity: VisualDensity.comfortable,
-                title: Text(_sections[index]),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 12),
-              );
-            },
+                    hintText: 'Pesquisar exercício...',
+                  ),
+                  controller: _searchController,
+                ),
+              ),
+              Expanded(
+                child: Visibility(
+                  visible: _searchController.text.isEmpty,
+                  replacement: ListView.separated(
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: _exercisesSearched.length,
+                    itemBuilder: (context, index) {
+                      return ExerciseCard(
+                        exercise: _exercisesSearched[index],
+                        onDelete: () {
+                          setState(() {});
+                        },
+                      );
+                    },
+                    separatorBuilder: (context, index) {
+                      return const Divider(height: 0);
+                    },
+                  ),
+                  child: ListView.separated(
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: _categories.length,
+                    separatorBuilder: (context, index) {
+                      return const Divider(height: 0);
+                    },
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ExercisesPage(category: _categories[index]),
+                            ),
+                          );
+                        },
+                        visualDensity: VisualDensity.comfortable,
+                        title: Text(_categories[index]),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 12),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },

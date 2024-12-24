@@ -114,12 +114,12 @@ Future<void> initFireStore() async {
 
   WriteBatch batch = fs.batch();
 
-  for (String section in exercises.keys) {
-    for (String exercise in exercises[section]!) {
+  for (String category in exercises.keys) {
+    for (String exercise in exercises[category]!) {
       var doc =
           fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('exercisesSelection').doc();
 
-      batch.set(doc, {'name': exercise, 'section': section});
+      batch.set(doc, {'name': exercise, 'category': category});
     }
   }
 

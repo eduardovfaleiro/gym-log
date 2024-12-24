@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:gym_log/pages/add_exercise_controller.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 
 import '../entities/exercise.dart';
@@ -8,9 +9,9 @@ import '../repositories/exercise_repository.dart';
 import '../repositories/exercise_selection_repository.dart';
 
 class AddExercisePage extends StatefulWidget {
-  final String section;
+  final String category;
 
-  const AddExercisePage({super.key, required this.section});
+  const AddExercisePage({super.key, required this.category});
 
   @override
   State<AddExercisePage> createState() => _AddExercisePageState();
@@ -34,7 +35,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
             ElevatedButton(
               onPressed: () async {
                 await ExerciseSelectionRepository().add(
-                  Exercise(name: exerciseController.text, section: widget.section),
+                  Exercise(name: exerciseController.text, category: widget.category),
                 );
                 setState(() {});
 
@@ -57,7 +58,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
   void initState() {
     super.initState();
 
-    ExerciseSelectionRepository().getFromSection(widget.section).then((exercises) {
+    AddExerciseController(category: widget.category).getAllNotSelected().then((exercises) {
       setState(() {
         _exercises = exercises;
       });
@@ -114,7 +115,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
                 child: ElevatedButton(
                   onPressed: () {
                     LoadingManager.run(() async {
-                      await ExerciseRepository.add(Exercise(name: _selectedExerciseName, section: widget.section));
+                      await ExerciseRepository().add(Exercise(name: _selectedExerciseName, category: widget.category));
                       Navigator.pop(context);
                     });
                   },

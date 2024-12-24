@@ -17,6 +17,7 @@ class CsvService {
         weight: logList[0],
         reps: logList[1],
         date: DateFormat('dd-MM-yyyy').parse(logList[2]),
+        notes: logList[3],
       );
 
       logsObj.add(log);
@@ -26,13 +27,14 @@ class CsvService {
   }
 
   Future<String> convertLogsToCsv(String exercise, List<Log> logs) async {
-    List<String> headers = ['Peso', 'Repetições', 'Data'];
+    List<String> headers = ['Peso', 'Repetições', 'Data', 'Notas'];
     List<List<dynamic>> rows = [headers];
     rows.addAll(logs.map((log) {
       return [
         log.weight.toString(),
         log.reps.toString(),
         DateFormat('dd-MM-yyyy').format(log.date),
+        log.notes,
       ];
     }));
 

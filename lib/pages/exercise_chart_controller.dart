@@ -32,7 +32,7 @@ class ExerciseChartController {
       await LogRepository(exercise).getAll(),
     );
 
-    String outputPath = '/storage/emulated/0/Download/$exercise.csv';
+    String outputPath = '/storage/emulated/0/Download/${exercise.name}.csv';
     File file = File(outputPath);
     await file.writeAsString(csvData);
 
@@ -41,7 +41,7 @@ class ExerciseChartController {
 
   Future<void> exportAndOpenAsExcel() async {
     List<int> excelFile = (await ExcelService().convertLogsToExcel(exercise))!;
-    String outputPath = '/storage/emulated/0/Download/$exercise.xlsx';
+    String outputPath = '/storage/emulated/0/Download/${exercise.name}.xlsx';
 
     // if (excelFile != null) {
     File(outputPath)

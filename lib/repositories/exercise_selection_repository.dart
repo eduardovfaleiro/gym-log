@@ -12,11 +12,9 @@ class ExerciseSelectionRepository {
     await _collection.add(exercise.toMap());
   }
 
-  Future<List<String>> getFromSection(String section) async {
-    var snapshot = await _collection.where('section', isEqualTo: translator[section]).get();
+  Future<List<String>> getAllFromCategory(String category) async {
+    var snapshot = await _collection.where('category', isEqualTo: translator[category]).get();
     var docs = snapshot.docs;
-
-    print('');
 
     return docs.map((doc) => doc.data()['name'] as String).toList();
   }

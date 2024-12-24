@@ -19,7 +19,7 @@ class ExcelService {
       TextCellValue('Peso (kg)'),
       TextCellValue('Repetições'),
       TextCellValue('Data'),
-      TextCellValue('Observações'),
+      TextCellValue('Notas'),
     ]);
 
     for (Log log in logs) {
@@ -27,7 +27,7 @@ class ExcelService {
         DoubleCellValue(log.weight),
         IntCellValue(log.reps),
         DateCellValue.fromDateTime(log.date),
-        TextCellValue(''),
+        TextCellValue(log.notes),
       ]);
     }
 
@@ -54,7 +54,7 @@ class ExcelService {
       date = (row[2]!.value as DateCellValue).asDateTimeLocal();
       notes = (row[3]!.value as TextCellValue).value.text!;
 
-      log = Log(date: date, weight: weight, reps: reps);
+      log = Log(date: date, weight: weight, reps: reps, notes: notes);
       logs.add(log);
     }
 

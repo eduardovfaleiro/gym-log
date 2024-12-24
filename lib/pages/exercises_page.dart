@@ -5,13 +5,15 @@ import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:popover/popover.dart';
 
 import '../entities/exercise.dart';
+import '../entities/log.dart';
 import '../repositories/exercise_repository.dart';
+import '../repositories/log_repository.dart';
 import 'exercise_chart_page.dart';
 
 class ExercisesPage extends StatefulWidget {
-  final String section;
+  final String category;
 
-  const ExercisesPage({super.key, required this.section});
+  const ExercisesPage({super.key, required this.category});
 
   @override
   State<ExercisesPage> createState() => _ExercisesPageState();
@@ -29,7 +31,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
               context,
               MaterialPageRoute(
                 builder: (context) {
-                  return AddExercisePage(section: widget.section);
+                  return AddExercisePage(category: widget.category);
                 },
               ),
             );
@@ -37,10 +39,10 @@ class _ExercisesPageState extends State<ExercisesPage> {
           },
         ),
         appBar: AppBar(
-          title: Text(widget.section),
+          title: Text(widget.category),
         ),
         body: FutureBuilder(
-          future: ExerciseRepository().getAllFromSection(widget.section),
+          future: ExerciseRepository().getAllFromCategory(widget.category),
           builder: (context, snapshot) {
             var exercises = snapshot.data;
 
@@ -61,7 +63,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
                   return const Divider(height: 0);
                 },
                 itemBuilder: (context, index) {
-                  Exercise exercise = exercises![index];
+                  var exercise = Exercise(name: exercises![index], category: widget.category);
 
                   return Builder(
                     builder: (context) {
@@ -70,7 +72,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ExerciseChart(exercise: exercise),
+                              builder: (context) => ExerciseChartPage(exercise: exercise),
                             ),
                           );
                         },
@@ -79,6 +81,23 @@ class _ExercisesPageState extends State<ExercisesPage> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              Row(
+                                children: [
+                                  IconButton(
+                                      onPressed: () {
+                                        ExerciseChartPage.showAddLog(context, onConfirm: (weight, reps, date, notes) {
+                                          LogRepository(exercise).add(Log(
+                                            date: date,
+                                            reps: reps,
+                                            weight: weight,
+                                            notes: notes,
+                                          ));
+                                        });
+                                      },
+                                      icon: const Icon(Icons.post_add_rounded)),
+                                  Text(exercise.name, style: const TextStyle(fontSize: 16)),
+                                ],
+                              ),
                               Row(
                                 children: [
                                   IconButton(
@@ -122,10 +141,9 @@ class _ExercisesPageState extends State<ExercisesPage> {
                                     visualDensity: const VisualDensity(),
                                     padding: EdgeInsets.zero,
                                   ),
-                                  Text(exercise.name, style: const TextStyle(fontSize: 16)),
+                                  const Icon(Icons.arrow_forward_ios, size: 14),
                                 ],
                               ),
-                              const Icon(Icons.arrow_forward_ios, size: 14),
                             ],
                           ),
                         ),

@@ -18,7 +18,7 @@ class LogRepository {
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('exercises')
-        .where('section', isEqualTo: translator[exercise.section])
+        .where('category', isEqualTo: translator[exercise.category])
         .where('name', isEqualTo: exercise.name)
         .get();
 

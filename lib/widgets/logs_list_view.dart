@@ -19,13 +19,14 @@ class LogsListView extends StatelessWidget {
           decoration: BoxDecoration(color: index % 2 == 0 ? Colors.transparent : Colors.grey[300]),
           padding: const EdgeInsets.all(4),
           alignment: Alignment.center,
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * .7,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
               children: [
                 Expanded(child: Text('${log.weight} kg')),
                 Expanded(child: Text(log.reps.toString())),
-                Expanded(child: Text(log.date.formatReadable())),
+                Expanded(child: Text(log.date.formatReadableShort())),
+                Expanded(child: Text(log.notes)),
               ],
             ),
           ),
