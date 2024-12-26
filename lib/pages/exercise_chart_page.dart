@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gym_log/utils/extensions.dart';
+import 'package:gym_log/utils/horizontal_router.dart';
 import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/entities/log.dart';
@@ -31,11 +32,15 @@ class ExerciseChartPage extends StatefulWidget {
   static Future<void> showAddLog(
     BuildContext context, {
     required void Function(double weight, int reps, DateTime date, String notes) onConfirm,
+    required Exercise exercise,
   }) async {
     var notesController = TextEditingController();
-    var weightController = TextEditingController(text: '90');
-    var repsController = TextEditingController(text: '10');
     var date = DateTime.now();
+
+    Log? lastLogFromExercise = await LogRepository(exercise).getLast();
+
+    var weightController = TextEditingController(text: lastLogFromExercise?.weight.toString());
+    var repsController = TextEditingController(text: lastLogFromExercise?.reps.toString());
 
     await showDialog(
       context: context,
@@ -81,14 +86,15 @@ class ExerciseChartPage extends StatefulWidget {
           actions: [
             ElevatedButton(
               onPressed: () async {
+                if (weightController.text.isEmpty || repsController.text.isEmpty) {
+                  showError(context, content: 'Os campos "Peso (kg)" e "Repetições" devem estar preenchidos.');
+                  return;
+                }
+
                 double weight = double.parse(weightController.text);
                 int reps = int.parse(repsController.text);
 
                 onConfirm(weight, reps, date, notesController.text);
-
-                // LogRepository(widget.exercise)
-                //     .add(Log(date: date, reps: reps, weight: weight))
-                //     .then((_) => setState(() {}));
 
                 Navigator.pop(context);
               },
@@ -263,31 +269,29 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> {
 
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return ViewImportedLogsPage(
-                                            title: result.files.single.name,
-                                            logs: logs,
-                                            onConfirm: () async {
-                                              bool isSure = await showConfirmDialog(
-                                                context,
-                                                'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                                content:
-                                                    'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
-                                                confirm: 'Sim, importar e substituir dados',
-                                                cancel: 'Não, cancelar',
-                                              );
+                                      HorizontalRouter(
+                                        child: ViewImportedLogsPage(
+                                          title: result.files.single.name,
+                                          logs: logs,
+                                          onConfirm: () async {
+                                            bool isSure = await showConfirmDialog(
+                                              context,
+                                              'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
+                                              content:
+                                                  'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
+                                              confirm: 'Sim, importar e substituir dados',
+                                              cancel: 'Não, cancelar',
+                                            );
 
-                                              if (!isSure) return;
+                                            if (!isSure) return;
 
-                                              LoadingManager.run(() async {
-                                                await LogRepository(widget.exercise).replaceAll(logs);
-                                                setState(() {});
-                                                Navigator.pop(context);
-                                              });
-                                            },
-                                          );
-                                        },
+                                            LoadingManager.run(() async {
+                                              await LogRepository(widget.exercise).replaceAll(logs);
+                                              setState(() {});
+                                              Navigator.pop(context);
+                                            });
+                                          },
+                                        ),
                                       ),
                                     );
                                   }
@@ -319,31 +323,29 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> {
 
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return ViewImportedLogsPage(
-                                            title: result.files.single.name,
-                                            logs: logs,
-                                            onConfirm: () async {
-                                              bool isSure = await showConfirmDialog(
-                                                context,
-                                                'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                                content:
-                                                    'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
-                                                confirm: 'Sim, importar e substituir dados',
-                                                cancel: 'Não, cancelar',
-                                              );
+                                      HorizontalRouter(
+                                        child: ViewImportedLogsPage(
+                                          title: result.files.single.name,
+                                          logs: logs,
+                                          onConfirm: () async {
+                                            bool isSure = await showConfirmDialog(
+                                              context,
+                                              'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
+                                              content:
+                                                  'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
+                                              confirm: 'Sim, importar e substituir dados',
+                                              cancel: 'Não, cancelar',
+                                            );
 
-                                              if (!isSure) return;
+                                            if (!isSure) return;
 
-                                              LoadingManager.run(() async {
-                                                await _controller.importCsv(result.files.single.path!);
-                                                setState(() {});
-                                                Navigator.pop(context);
-                                              });
-                                            },
-                                          );
-                                        },
+                                            LoadingManager.run(() async {
+                                              await _controller.importCsv(result.files.single.path!);
+                                              setState(() {});
+                                              Navigator.pop(context);
+                                            });
+                                          },
+                                        ),
                                       ),
                                     );
                                   }
@@ -374,10 +376,8 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> {
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return ViewLogsPage(exercise: widget.exercise);
-                                  },
+                                HorizontalRouter(
+                                  child: ViewLogsPage(exercise: widget.exercise),
                                 ),
                               );
                             },
@@ -392,7 +392,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            ExerciseChartPage.showAddLog(context, onConfirm: (weight, reps, date, notes) {
+            ExerciseChartPage.showAddLog(context, exercise: widget.exercise, onConfirm: (weight, reps, date, notes) {
               LogRepository(widget.exercise)
                   .add(Log(date: date, reps: reps, weight: weight, notes: notes))
                   .then((_) => setState(() {}));

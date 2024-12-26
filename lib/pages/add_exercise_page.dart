@@ -2,7 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:gym_log/pages/add_exercise_controller.dart';
+import 'package:gym_log/utils/show_confirm_dialog.dart';
+import 'package:gym_log/utils/show_error.dart';
+import 'package:gym_log/utils/show_popup.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
+import 'package:gym_log/widgets/popup_buton.dart';
 
 import '../entities/exercise.dart';
 import '../repositories/exercise_repository.dart';
@@ -34,9 +38,24 @@ class _AddExercisePageState extends State<AddExercisePage> {
           actions: [
             ElevatedButton(
               onPressed: () async {
-                await ExerciseSelectionRepository().add(
-                  Exercise(name: exerciseController.text, category: widget.category),
-                );
+                if (exerciseController.text.isEmpty) {
+                  Navigator.pop(context);
+                  return;
+                }
+
+                final exerciseSelectionRepository = ExerciseSelectionRepository();
+
+                Exercise? exercise = await exerciseSelectionRepository
+                    .get(Exercise(name: exerciseController.text, category: widget.category));
+
+                if (exercise != null) {
+                  showError(context, content: 'Já existe um exercício com este nome.');
+                  return;
+                }
+
+                await exerciseSelectionRepository
+                    .add(Exercise(name: exerciseController.text, category: widget.category));
+
                 setState(() {});
 
                 Navigator.pop(context);
@@ -52,17 +71,14 @@ class _AddExercisePageState extends State<AddExercisePage> {
   String _selectedExercise = '';
   String _selectedExerciseName = '';
 
-  List<String> _exercises = [];
+  // final List<String> _exercises = [];
+  late AddExerciseController _controller;
 
   @override
   void initState() {
     super.initState();
 
-    AddExerciseController(category: widget.category).getAllNotSelected().then((exercises) {
-      setState(() {
-        _exercises = exercises;
-      });
-    });
+    _controller = AddExerciseController(category: widget.category);
   }
 
   @override
@@ -78,22 +94,78 @@ class _AddExercisePageState extends State<AddExercisePage> {
             await _addExercise(context);
           },
         ),
-        body: ListView.separated(
-          physics: const ClampingScrollPhysics(),
-          itemCount: _exercises.length,
-          separatorBuilder: (context, index) => const Divider(height: 0),
-          itemBuilder: (context, index) {
-            String exercise = _exercises[index];
+        body: FutureBuilder(
+          future: _controller.getAllNotSelected(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
+              return const SizedBox.shrink();
+            }
 
-            return RadioListTile(
-              title: Text(exercise),
-              value: exercise.toLowerCase(),
-              groupValue: _selectedExercise,
-              onChanged: (value) {
-                setState(() {
-                  _selectedExercise = value!;
-                  _selectedExerciseName = exercise;
-                });
+            if (snapshot.data!.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Não existem exercícios para serem selecionados.\nCrie um em ( + )',
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
+
+            List<String> exercises = snapshot.data!;
+
+            return StatefulBuilder(
+              builder: (context, setStateListView) {
+                return Scrollbar(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.only(bottom: 70),
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: exercises.length,
+                    separatorBuilder: (context, index) => const Divider(height: 0),
+                    itemBuilder: (context, index) {
+                      String exercise = exercises[index];
+
+                      return Stack(
+                        children: [
+                          RadioListTile(
+                            title: Text(exercise),
+                            value: exercise.toLowerCase(),
+                            groupValue: _selectedExercise,
+                            onChanged: (value) {
+                              setStateListView(() {
+                                _selectedExercise = value!;
+                                _selectedExerciseName = exercise;
+                              });
+                            },
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Builder(builder: (context) {
+                              return IconButton(
+                                onPressed: () {
+                                  showPopup(context, builder: (context) {
+                                    return PopupButton(
+                                        label: 'Excluir',
+                                        onTap: () async {
+                                          LoadingManager.run(() async {
+                                            Navigator.pop(context);
+                                            await ExerciseSelectionRepository().delete(
+                                              Exercise(name: exercise, category: widget.category),
+                                            );
+                                            setState(() {});
+                                          });
+                                        });
+                                  });
+                                },
+                                icon: const Icon(Icons.more_vert),
+                              );
+                            }),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                );
               },
             );
           },
@@ -114,6 +186,8 @@ class _AddExercisePageState extends State<AddExercisePage> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
+                    if (_selectedExercise.isEmpty) return;
+
                     LoadingManager.run(() async {
                       await ExerciseRepository().add(Exercise(name: _selectedExerciseName, category: widget.category));
                       Navigator.pop(context);

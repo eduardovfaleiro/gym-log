@@ -119,7 +119,7 @@ Future<void> initFireStore() async {
       var doc =
           fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('exercisesSelection').doc();
 
-      batch.set(doc, {'name': exercise, 'category': category});
+      batch.set(doc, {'name': exercise, 'category': category, 'dateTime': DateTime.now()});
     }
   }
 

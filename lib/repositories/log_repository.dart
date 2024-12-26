@@ -20,6 +20,7 @@ class LogRepository {
         .collection('exercises')
         .where('category', isEqualTo: translator[exercise.category])
         .where('name', isEqualTo: exercise.name)
+        .limit(1)
         .get();
 
     var exerciseDoc = exerciseQuery.docs.first;
@@ -79,5 +80,16 @@ class LogRepository {
       batch.set(logsCollection.doc(), log.toMap());
     }
     await batch.commit();
+  }
+
+  Future<Log?> getLast() async {
+    var logsCollection = await _logsCollection();
+    var logs = await logsCollection.orderBy('date').limit(1).get();
+
+    if (logs.docs.isEmpty) return null;
+
+    var logData = logs.docs.first;
+    Log log = Log.fromFireStoreMap(logData.data());
+    return log;
   }
 }
