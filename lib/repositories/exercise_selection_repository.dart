@@ -14,7 +14,8 @@ class ExerciseSelectionRepository {
 
   Future<Exercise?> get(Exercise exercise) async {
     var exercises = await _collection
-        .where('category', isEqualTo: translator[exercise.category])
+        // .where('category', isEqualTo: translator[exercise.category])
+        .where('category', isEqualTo: exercise.category)
         .where('name', isEqualTo: exercise.name)
         .limit(1)
         .get();
@@ -26,7 +27,8 @@ class ExerciseSelectionRepository {
   }
 
   Future<List<String>> getAllFromCategory(String category) async {
-    var snapshot = await _collection.where('category', isEqualTo: translator[category]).orderBy('dateTime').get();
+    // var snapshot = await _collection.where('category', isEqualTo: translator[category]).orderBy('dateTime').get();
+    var snapshot = await _collection.where('category', isEqualTo: category).orderBy('dateTime').get();
     var docs = snapshot.docs;
 
     return docs.map((doc) => doc.data()['name'] as String).toList();
@@ -34,7 +36,8 @@ class ExerciseSelectionRepository {
 
   Future<void> delete(Exercise exercise) async {
     var exercises = await _collection
-        .where('category', isEqualTo: translator[exercise.category])
+        // .where('category', isEqualTo: translator[exercise.category])
+        .where('category', isEqualTo: exercise.category)
         .where('name', isEqualTo: exercise.name)
         .limit(1)
         .get();

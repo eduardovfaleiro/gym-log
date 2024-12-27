@@ -35,9 +35,12 @@ class ExerciseChartPage extends StatefulWidget {
     required Exercise exercise,
   }) async {
     var notesController = TextEditingController();
-    var date = DateTime.now();
 
     Log? lastLogFromExercise = await LogRepository(exercise).getLast();
+
+    var date = DateTime.now();
+    var dateController = TextEditingController(text: date.formatReadable());
+    DateTime selectedDate = date;
 
     var weightController = TextEditingController(text: lastLogFromExercise?.weight.toString());
     var repsController = TextEditingController(text: lastLogFromExercise?.reps.toString());
@@ -47,31 +50,101 @@ class ExerciseChartPage extends StatefulWidget {
       builder: (context) {
         return AlertDialog(
           title: const Text('Adicionar log'),
-          insetPadding: EdgeInsets.zero,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                height: 100,
-                width: 300,
-                child: CupertinoDatePicker(
-                  onDateTimeChanged: (time) {
-                    date = time;
-                  },
-                  mode: CupertinoDatePickerMode.date,
-                  minimumDate: DateTime(2000, 1, 1),
-                  maximumDate: DateTime(date.year, date.month, date.day + 1),
-                  itemExtent: 30,
+              TextField(
+                controller: dateController,
+                decoration: const InputDecoration(labelText: 'Data'),
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    initialDate: selectedDate,
+                    context: context,
+                    firstDate: DateTime(2000),
+                    lastDate: date,
+                  );
+
+                  if (pickedDate == null) return;
+                  selectedDate = pickedDate;
+                  dateController.text = selectedDate.formatReadable();
+                },
+                readOnly: true,
+                inputFormatters: const [],
+              ),
+
+              // SizedBox(
+              //   height: 100,
+              //   width: 300,
+              //   child: CupertinoDatePicker(
+              //     onDateTimeChanged: (time) {
+              //       date = time;
+              //     },
+              //     mode: CupertinoDatePickerMode.date,
+              //     minimumDate: DateTime(2000, 1, 1),
+              //     maximumDate: DateTime(date.year, date.month, date.day + 1),
+              //     itemExtent: 30,
+              //   ),
+              // ),
+              TextField(
+                controller: weightController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
+                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[0-9]+.?[0-9]*'))],
+                decoration: InputDecoration(
+                  labelText: 'Peso (kg)',
+                  suffix: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          double weight = double.parse(weightController.text);
+                          weight++;
+                          weightController.text = weight.toString();
+                        },
+                        icon: const Icon(Icons.add),
+                        padding: EdgeInsets.zero,
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          double weight = double.parse(weightController.text);
+                          weight--;
+                          weightController.text = weight.toString();
+                        },
+                        icon: const Icon(Icons.remove),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               TextField(
-                  controller: weightController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[0-9]+.?[0-9]*'))],
-                  decoration: const InputDecoration(labelText: 'Peso (kg)')),
-              TextField(
                 controller: repsController,
-                decoration: const InputDecoration(labelText: 'Repetições'),
+                decoration: InputDecoration(
+                  labelText: 'Repetições',
+                  suffix: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          int reps = int.parse(repsController.text);
+                          reps++;
+                          repsController.text = reps.toString();
+                        },
+                        icon: const Icon(Icons.add),
+                        padding: EdgeInsets.zero,
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          int reps = int.parse(repsController.text);
+                          reps--;
+                          repsController.text = reps.toString();
+                        },
+                        icon: const Icon(Icons.remove),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
+                ),
                 keyboardType: const TextInputType.numberWithOptions(),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
@@ -94,7 +167,7 @@ class ExerciseChartPage extends StatefulWidget {
                 double weight = double.parse(weightController.text);
                 int reps = int.parse(repsController.text);
 
-                onConfirm(weight, reps, date, notesController.text);
+                onConfirm(weight, reps, selectedDate, notesController.text);
 
                 Navigator.pop(context);
               },

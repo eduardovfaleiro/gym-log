@@ -139,6 +139,7 @@ class _HomePageState extends State<HomePage> {
                     onDelete: () {
                       setState(() {});
                     },
+                    showCategory: true,
                   );
                 },
                 separatorBuilder: (context, index) {

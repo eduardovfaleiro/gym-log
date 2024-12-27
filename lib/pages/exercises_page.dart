@@ -22,9 +22,12 @@ class ExercisesPage extends StatefulWidget {
 }
 
 class _ExercisesPageState extends State<ExercisesPage> {
+  List<String>? _exercises;
+
   @override
   Widget build(BuildContext context) {
     return LoadingManager(
+      showLoadingAnimation: false,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
@@ -44,60 +47,78 @@ class _ExercisesPageState extends State<ExercisesPage> {
         body: FutureBuilder(
           future: ExerciseRepository().getAllFromCategory(widget.category),
           builder: (context, snapshot) {
-            var exercises = snapshot.data;
+            _exercises = snapshot.data;
 
-            return Visibility(
-                visible: exercises?.isNotEmpty ?? true,
-                replacement: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'Você ainda não selecionou nenhum exercício. Selecione em ( + )',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                child: ReorderableListView(
-                  children: List.generate(exercises?.length ?? 0, (index) {
-                    var exercise = Exercise(name: exercises![index], category: widget.category);
+            return StatefulBuilder(
+              builder: (context, setStateList) {
+                return Visibility(
+                    visible: _exercises?.isNotEmpty ?? true,
+                    replacement: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Você ainda não selecionou nenhum exercício. Selecione em ( + )',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    child: ReorderableListView(
+                      children: List.generate(_exercises?.length ?? 0, (index) {
+                        var exercise = Exercise(name: _exercises![index], category: widget.category);
 
-                    return Column(
-                      key: ValueKey(exercise.hashCode),
-                      children: [
-                        ExerciseCard(
-                            exercise: exercise,
-                            onDelete: () {
-                              setState(() {});
-                            }),
-                        const Divider(height: 0),
-                      ],
+                        return Column(
+                          key: ValueKey(exercise.hashCode),
+                          children: [
+                            ExerciseCard(
+                                exercise: exercise,
+                                onDelete: () {
+                                  setState(() {});
+                                }),
+                            const Divider(height: 0),
+                          ],
+                        );
+                      }),
+                      onReorder: (oldIndex, newIndex) async {
+                        if (oldIndex < newIndex) {
+                          newIndex -= 1;
+                        }
+                        final String exercise = _exercises!.removeAt(oldIndex);
+                        _exercises!.insert(newIndex, exercise);
+
+                        List<OrderedExercise> orderedExercises = [];
+
+                        for (int i = 0; i < _exercises!.length; i++) {
+                          orderedExercises.add(OrderedExercise(name: _exercises![i], order: i));
+                        }
+
+                        LoadingManager.run(() async {
+                          setStateList(() {});
+
+                          ExerciseRepository().updateOrder(
+                            category: widget.category,
+                            orderedExercises: orderedExercises,
+                          );
+                        });
+                      },
+                    )
+                    // child: ListView.separated(
+                    //   physics: const ClampingScrollPhysics(),
+                    //   itemCount: exercises?.length ?? 0,
+                    //   separatorBuilder: (context, index) {
+                    //     return const Divider(height: 0);
+                    //   },
+                    //   itemBuilder: (context, index) {
+                    //     var exercise = Exercise(name: exercises![index], category: widget.category);
+
+                    //     return ExerciseCard(
+                    //         exercise: exercise,
+                    //         onDelete: () {
+                    //           setState(() {});
+                    //         });
+                    //   },
+                    // ),
                     );
-                  }),
-                  onReorder: (oldIndex, newIndex) {
-                    ExerciseRepository().updateOrder(
-                      exercise1: exercise1,
-                      newOrderExercise1: newOrderExercise1,
-                      exercise2: exercise2,
-                      newOrderExercise2: newOrderExercise2,
-                    );
-                  },
-                )
-                // child: ListView.separated(
-                //   physics: const ClampingScrollPhysics(),
-                //   itemCount: exercises?.length ?? 0,
-                //   separatorBuilder: (context, index) {
-                //     return const Divider(height: 0);
-                //   },
-                //   itemBuilder: (context, index) {
-                //     var exercise = Exercise(name: exercises![index], category: widget.category);
-
-                //     return ExerciseCard(
-                //         exercise: exercise,
-                //         onDelete: () {
-                //           setState(() {});
-                //         });
-                //   },
-                // ),
-                );
+              },
+            );
           },
         ),
       ),

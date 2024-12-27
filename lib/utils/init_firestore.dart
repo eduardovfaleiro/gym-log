@@ -13,7 +13,7 @@ Future<void> initFireStore() async {
   if (snapshot.docs.isNotEmpty) return;
 
   final Map<String, List<String>> exercises = {
-    'abs': [
+    'Abdômen': [
       'Abdominal',
       'Abdominal com peso',
       'Prancha',
@@ -23,7 +23,7 @@ Future<void> initFireStore() async {
       'Russian twist',
       'Ab wheel rollout',
     ],
-    'chest': [
+    'Peito': [
       'Supino reto com barra',
       'Supino inclinado com barra',
       'Supino declinado com barra',
@@ -37,7 +37,7 @@ Future<void> initFireStore() async {
       'Paralelas',
       'Pullover com halter',
     ],
-    'back': [
+    'Costas': [
       'Levantamento terra',
       'Barra fixa pronada / Pull up',
       'Barra fixa supinada / Chin up',
@@ -52,7 +52,7 @@ Future<void> initFireStore() async {
       'Face pull',
       'Encolhimento',
     ],
-    'legs': [
+    'Pernas': [
       'Agachamento livre',
       'Agachamento no smith',
       'Agachamento búlgaro',
@@ -73,7 +73,7 @@ Future<void> initFireStore() async {
       'Panturrilha sentado',
       'Panturrilha em pé',
     ],
-    'shoulders': [
+    'Ombro': [
       'Desenvolvimento',
       'Desenvolvimento no smith',
       'Elevação lateral com halteres',
@@ -83,7 +83,7 @@ Future<void> initFireStore() async {
       'Face pull',
       'Crucifixo invertido',
     ],
-    'triceps': [
+    'Tríceps': [
       'Tríceps testa com halter',
       'Tríceps testa com barra',
       'Tríceps pulley',
@@ -92,7 +92,7 @@ Future<void> initFireStore() async {
       'Supino fechado',
       'Extensão de tríceps acima da cabeça',
     ],
-    'biceps': [
+    'Bíceps': [
       'Rosca direta com barra',
       'Rosca direta com halteres',
       'Rosca alternada',
@@ -101,7 +101,7 @@ Future<void> initFireStore() async {
       'Rosca scott',
       'Rosca inclinada com halteres',
     ],
-    'forearms': [
+    'Antebraço': [
       'Rosca inversa com barra',
       'Rosca inversa na polia',
       'Rosca de punho com barra',

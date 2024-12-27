@@ -11,6 +11,14 @@ class Exercise {
   }
 
   Map<String, dynamic> toMap() {
-    return {'name': name, 'category': translator[category]};
+    // return {'name': name, 'category': translator[category]};
+    return {'name': name, 'category': category};
   }
+}
+
+class OrderedExercise {
+  final String name;
+  final int order;
+
+  OrderedExercise({required this.name, required this.order});
 }

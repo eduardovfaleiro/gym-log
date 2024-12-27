@@ -5,16 +5,16 @@ import 'package:gym_log/utils/init.dart';
 import '../entities/exercise.dart';
 
 // TODO(temporário)
-final translator = {
-  'Pernas': 'legs',
-  'Costas': 'back',
-  'Peito': 'chest',
-  'Ombro': 'shoulders',
-  'Abdômen': 'abs',
-  'Antebraço': 'forearm',
-  'Bíceps': 'biceps',
-  'Tríceps': 'triceps',
-};
+// final translator = {
+//   'Pernas': 'legs',
+//   'Costas': 'back',
+//   'Peito': 'chest',
+//   'Ombro': 'shoulders',
+//   'Abdômen': 'abs',
+//   'Antebraço': 'forearm',
+//   'Bíceps': 'biceps',
+//   'Tríceps': 'triceps',
+// };
 
 class ExerciseRepository {
   static CollectionReference<Map<String, dynamic>> get _exercisesCollection {
@@ -22,53 +22,60 @@ class ExerciseRepository {
   }
 
   Future<void> add(Exercise exercise) async {
-    var query = await _exercisesCollection.where('category', isEqualTo: translator[exercise.category]).count().get();
+    // var query = await _exercisesCollection.where('category', isEqualTo: translator[exercise.category]).count().get();
+    var query = await _exercisesCollection.where('category', isEqualTo: exercise.category).count().get();
     int count = query.count ?? 0;
 
     await _exercisesCollection.doc().set({
       'name': exercise.name,
-      'category': translator[exercise.category]!.toLowerCase(),
+      // 'category': translator[exercise.category]!.toLowerCase(),
+      'category': exercise.category,
       'dateTime': DateTime.now(),
-      'order': count + 1,
+      'order': count,
     });
   }
 
-  Future<void> updateOrder({
-    required Exercise exercise1,
-    required int newOrderExercise1,
-    required Exercise exercise2,
-    required int newOrderExercise2,
-  }) async {
-    var exercises = await _exercisesCollection
-        .where('category', isEqualTo: translator[exercise1.category])
-        .where('name', whereIn: [exercise1.name, exercise2.name])
-        .limit(2)
-        .get();
+  Future<void> updateOrder({required String category, required List<OrderedExercise> orderedExercises}) async {
+    if (orderedExercises.length > 500) throw Exception();
 
-    int index = exercises.docs.indexWhere((exercise) => exercise.data()['name'] == exercise1.name);
-    DocumentReference<Map<String, dynamic>> exercise1Ref;
-    DocumentReference<Map<String, dynamic>> exercise2Ref;
+    List<List<String>> batches = [];
+    int endIndex;
 
-    if (index == 0) {
-      exercise1Ref = exercises.docs[0].reference;
-      exercise2Ref = exercises.docs[1].reference;
-    } else if (index == 1) {
-      exercise1Ref = exercises.docs[1].reference;
-      exercise2Ref = exercises.docs[0].reference;
-    } else {
-      throw Exception();
+    Map<String, int> orderedExercisesMap = {for (var exercise in orderedExercises) exercise.name: exercise.order};
+
+    for (int i = 0; i < orderedExercisesMap.length; i += 10) {
+      endIndex = i + 10 > orderedExercisesMap.length ? orderedExercisesMap.length : i + 10;
+
+      batches.add(orderedExercisesMap.keys.toList().sublist(i, endIndex));
     }
 
-    WriteBatch batch = fs.batch();
-    batch.update(exercise1Ref, {'order': newOrderExercise1});
-    batch.update(exercise2Ref, {'order': newOrderExercise2});
-    await batch.commit();
+    List<QuerySnapshot> exercisesSnapshot = await Future.wait(
+      batches.map((exercisesNames) {
+        return _exercisesCollection
+            // .where('category', isEqualTo: translator[category])
+            .where('category', isEqualTo: category)
+            .where('name', whereIn: exercisesNames)
+            .get();
+      }),
+    );
+
+    WriteBatch writeBatch = fs.batch();
+
+    for (var exerciseSnapshot in exercisesSnapshot) {
+      for (var exerciseDoc in exerciseSnapshot.docs) {
+        String exerciseName = (exerciseDoc.data() as Map<String, dynamic>)['name'];
+        writeBatch.update(exerciseDoc.reference, {'order': orderedExercisesMap[exerciseName]});
+      }
+    }
+
+    await writeBatch.commit();
   }
 
   Future<void> delete(Exercise exercise) async {
     var exerciseQuery = await _exercisesCollection
         .where('name', isEqualTo: exercise.name)
-        .where('category', isEqualTo: translator[exercise.category])
+        // .where('category', isEqualTo: translator[exercise.category])
+        .where('category', isEqualTo: exercise.category)
         .get();
 
     if (exerciseQuery.docs.length > 1) throw Exception();
@@ -91,11 +98,13 @@ class ExerciseRepository {
 
   Future<List<String>> getAllFromCategory(String category) async {
     var exercises =
-        await _exercisesCollection.where('category', isEqualTo: translator[category]).orderBy('order').get();
+        // await _exercisesCollection.where('category', isEqualTo: translator[category]).orderBy('order').get();
+        await _exercisesCollection.where('category', isEqualTo: category).orderBy('order').get();
 
     return exercises.docs.map((exercise) => exercise.data()['name'] as String).toList();
   }
 
+  // TODO(testar bem)
   Future<List<Exercise>> getAllWithArgs({required String name}) async {
     var exercisesSnapshot = await _exercisesCollection.get(const GetOptions(source: Source.cache));
 

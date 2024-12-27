@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class LoadingManager extends StatefulWidget {
   final Widget child;
+  final bool showLoadingAnimation;
 
   static final ValueNotifier<bool> isLoading = ValueNotifier(false);
 
@@ -15,7 +16,7 @@ class LoadingManager extends StatefulWidget {
     isLoading.value = false;
   }
 
-  const LoadingManager({super.key, required this.child});
+  const LoadingManager({super.key, required this.child, this.showLoadingAnimation = false});
 
   @override
   State<LoadingManager> createState() => _LoadingManagerState();
@@ -24,6 +25,18 @@ class LoadingManager extends StatefulWidget {
 class _LoadingManagerState extends State<LoadingManager> {
   @override
   Widget build(BuildContext context) {
+    if (!widget.showLoadingAnimation) {
+      return ValueListenableBuilder(
+        valueListenable: LoadingManager.isLoading,
+        builder: (context, isLoading, _) {
+          return PopScope(
+            canPop: !isLoading,
+            child: IgnorePointer(ignoring: isLoading, child: widget.child),
+          );
+        },
+      );
+    }
+
     return ValueListenableBuilder(
       valueListenable: LoadingManager.isLoading,
       builder: (context, isLoading, _) {
