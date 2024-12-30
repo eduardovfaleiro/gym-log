@@ -6,120 +6,157 @@ import '../entities/exercise.dart';
 import 'init.dart';
 
 Future<void> initFireStore() async {
-  var exercisesSelectionCollection =
-      fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('exercisesSelection');
+  var userCollection = fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid);
 
-  var snapshot = await exercisesSelectionCollection.get();
-  if (snapshot.docs.isNotEmpty) return;
+  var exercisesSelectionCollection = userCollection.collection('exercisesSelection');
 
-  final Map<String, List<String>> exercises = {
-    'Abdômen': [
-      'Abdominal',
-      'Abdominal com peso',
-      'Prancha',
-      'Elevação de pernas',
-      'Prancha lateral',
-      'Abdominal bicicleta',
-      'Russian twist',
-      'Ab wheel rollout',
-    ],
-    'Peito': [
-      'Supino reto com barra',
-      'Supino inclinado com barra',
-      'Supino declinado com barra',
-      'Supino reto com halteres',
-      'Supino inclinado com halteres',
-      'Crossover na polia',
-      'Crucifixo reto com halteres',
-      'Crucifixo inclinado com halteres',
-      'Chest press na máquina',
-      'Flexão',
-      'Paralelas',
-      'Pullover com halter',
-    ],
-    'Costas': [
-      'Levantamento terra',
-      'Barra fixa pronada / Pull up',
-      'Barra fixa supinada / Chin up',
-      'Pulldown',
-      'Remada curvada com barra',
-      'Remada curvada com halteres',
-      'Remada unilateral com halter',
-      'Remada baixa',
-      'Remada cavalinho',
-      'Pullover na polia',
-      'Pullover com halter',
-      'Face pull',
-      'Encolhimento',
-    ],
-    'Pernas': [
-      'Agachamento livre',
-      'Agachamento no smith',
-      'Agachamento búlgaro',
-      'Hack squat',
-      // 'Agachamento frontal',
-      // 'Agachamento sumô',
-      'Passada com barra',
-      'Passada com halteres',
-      'Leg press',
-      'Cadeira extensora',
-      'Cadeira flexora',
-      'Mesa flexora',
-      'Levantamento romeno',
-      'Stiff',
-      // 'Cadeira adutora',
-      // 'Cadeira abdutora',
-      // 'Elevação pélvica',
-      'Panturrilha sentado',
-      'Panturrilha em pé',
-    ],
-    'Ombro': [
-      'Desenvolvimento',
-      'Desenvolvimento no smith',
-      'Elevação lateral com halteres',
-      'Elevação lateral na polia',
-      'Elevação frontal',
-      'Remada alta',
-      'Face pull',
-      'Crucifixo invertido',
-    ],
-    'Tríceps': [
-      'Tríceps testa com halter',
-      'Tríceps testa com barra',
-      'Tríceps pulley',
-      'Tríceps coice',
-      'Paralelas',
-      'Supino fechado',
-      'Extensão de tríceps acima da cabeça',
-    ],
-    'Bíceps': [
-      'Rosca direta com barra',
-      'Rosca direta com halteres',
-      'Rosca alternada',
-      'Rosca martelo',
-      'Rosca concentrada',
-      'Rosca scott',
-      'Rosca inclinada com halteres',
-    ],
-    'Antebraço': [
-      'Rosca inversa com barra',
-      'Rosca inversa na polia',
-      'Rosca de punho com barra',
-      'Rosca de punho com halter',
-      "Farmer's walk",
-      'Rolamento de corda',
-      'Hand grip',
-    ],
-  };
+  var categoriesCollection = userCollection.collection('categories');
+
+  var exerciseSelectionSnapshot = await exercisesSelectionCollection.get();
+  var categoriesSnapshot = await categoriesCollection.get();
+
+  if (exerciseSelectionSnapshot.docs.isNotEmpty || categoriesSnapshot.docs.isNotEmpty) return;
+
+  final categoryAndExercises = [
+    {
+      'category': 'Peito',
+      'exercises': [
+        'Supino reto com barra',
+        'Supino inclinado com barra',
+        'Supino declinado com barra',
+        'Supino reto com halteres',
+        'Supino inclinado com halteres',
+        'Crossover na polia',
+        'Crucifixo reto com halteres',
+        'Crucifixo inclinado com halteres',
+        'Chest press na máquina',
+        'Flexão',
+        'Paralelas',
+        'Pullover com halter',
+      ],
+    },
+    {
+      'category': 'Costas',
+      'exercises': [
+        'Levantamento terra',
+        'Barra fixa pronada / Pull up',
+        'Barra fixa supinada / Chin up',
+        'Pulldown',
+        'Remada curvada com barra',
+        'Remada curvada com halteres',
+        'Remada unilateral com halter',
+        'Remada baixa',
+        'Remada cavalinho',
+        'Pullover na polia',
+        'Pullover com halter',
+        'Face pull',
+        'Encolhimento',
+      ],
+    },
+    {
+      'category': 'Pernas',
+      'exercises': [
+        'Agachamento livre',
+        'Agachamento no smith',
+        'Agachamento búlgaro',
+        'Hack squat',
+        // 'Agachamento frontal',
+        // 'Agachamento sumô',
+        'Passada com barra',
+        'Passada com halteres',
+        'Leg press',
+        'Cadeira extensora',
+        'Cadeira flexora',
+        'Mesa flexora',
+        'Levantamento romeno',
+        'Stiff',
+        // 'Cadeira adutora',
+        // 'Cadeira abdutora',
+        // 'Elevação pélvica',
+        'Panturrilha sentado',
+        'Panturrilha em pé',
+      ],
+    },
+    {
+      'category': 'Ombro',
+      'exercises': [
+        'Desenvolvimento',
+        'Desenvolvimento no smith',
+        'Elevação lateral com halteres',
+        'Elevação lateral na polia',
+        'Elevação frontal',
+        'Remada alta',
+        'Face pull',
+        'Crucifixo invertido',
+      ],
+    },
+    {
+      'category': 'Tríceps',
+      'exercises': [
+        'Tríceps testa com halter',
+        'Tríceps testa com barra',
+        'Tríceps pulley',
+        'Tríceps coice',
+        'Paralelas',
+        'Supino fechado',
+        'Extensão de tríceps acima da cabeça',
+      ],
+    },
+    {
+      'category': 'Bíceps',
+      'exercises': [
+        'Rosca direta com barra',
+        'Rosca direta com halteres',
+        'Rosca alternada',
+        'Rosca martelo',
+        'Rosca concentrada',
+        'Rosca scott',
+        'Rosca inclinada com halteres',
+      ],
+    },
+    {
+      'category': 'Antebraço',
+      'exercises': [
+        'Rosca inversa com barra',
+        'Rosca inversa na polia',
+        'Rosca de punho com barra',
+        'Rosca de punho com halter',
+        "Farmer's walk",
+        'Rolamento de corda',
+        'Hand grip',
+      ],
+    },
+    {
+      'category': 'Abdômen',
+      'exercises': [
+        'Abdominal',
+        'Abdominal com peso',
+        'Prancha',
+        'Elevação de pernas',
+        'Prancha lateral',
+        'Abdominal bicicleta',
+        'Russian twist',
+        'Ab wheel rollout',
+      ],
+    },
+  ];
 
   WriteBatch batch = fs.batch();
 
-  for (String category in exercises.keys) {
-    for (String exercise in exercises[category]!) {
-      var doc =
+  for (int order = 0; order < categoryAndExercises.length; order++) {
+    var map = categoryAndExercises[order];
+
+    String category = map['category'] as String;
+    var exercises = map['exercises'] as List<String>;
+
+    var categoryRef = categoriesCollection.doc();
+    batch.set(categoryRef, {'name': category, 'order': order});
+
+    for (String exercise in exercises) {
+      var exerciseDoc =
           fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('exercisesSelection').doc();
 
-      batch.set(doc, {'name': exercise, 'category': category, 'dateTime': DateTime.now()});
+      batch.set(exerciseDoc, {'name': exercise, 'category': category, 'dateTime': DateTime.now()});
     }
   }
 

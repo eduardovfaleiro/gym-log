@@ -22,7 +22,7 @@ class AddExercisePage extends StatefulWidget {
 }
 
 class _AddExercisePageState extends State<AddExercisePage> {
-  Future<void> _addExercise(BuildContext context) async {
+  Future<void> _addExercise() async {
     var exerciseController = TextEditingController();
 
     await showDialog(
@@ -91,7 +91,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
           onPressed: () async {
-            await _addExercise(context);
+            await _addExercise();
           },
         ),
         body: FutureBuilder(

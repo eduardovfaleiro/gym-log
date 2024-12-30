@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_log/utils/init.dart';
@@ -51,11 +53,7 @@ class ExerciseRepository {
 
     List<QuerySnapshot> exercisesSnapshot = await Future.wait(
       batches.map((exercisesNames) {
-        return _exercisesCollection
-            // .where('category', isEqualTo: translator[category])
-            .where('category', isEqualTo: category)
-            .where('name', whereIn: exercisesNames)
-            .get();
+        return _exercisesCollection.where('category', isEqualTo: category).where('name', whereIn: exercisesNames).get();
       }),
     );
 
@@ -101,6 +99,8 @@ class ExerciseRepository {
         // await _exercisesCollection.where('category', isEqualTo: translator[category]).orderBy('order').get();
         await _exercisesCollection.where('category', isEqualTo: category).orderBy('order').get();
 
+    log('ExerciseRepository.getAllFromCategory($category)');
+
     return exercises.docs.map((exercise) => exercise.data()['name'] as String).toList();
   }
 
@@ -116,6 +116,8 @@ class ExerciseRepository {
           ),
         )
         .toList();
+
+    log('ExerciseRepository.getAllWithArgs($name)');
 
     return exercises.where((exercise) => exercise.name.toLowerCase().contains(name.toLowerCase())).toList();
   }

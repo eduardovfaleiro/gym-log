@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import '../repositories/exercise_repository.dart';
 
 class Exercise {
@@ -14,6 +15,9 @@ class Exercise {
     // return {'name': name, 'category': translator[category]};
     return {'name': name, 'category': category};
   }
+
+  @override
+  String toString() => 'Exercise(name: $name, category: $category)';
 }
 
 class OrderedExercise {

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../entities/exercise.dart';
@@ -23,6 +25,9 @@ class ExerciseSelectionRepository {
     if (exercises.docs.isEmpty) return null;
 
     var exerciseObj = Exercise.fromFireStoreMap(exercises.docs.first.data());
+
+    log('ExerciseSelectionRepository.get($exercise)');
+
     return exerciseObj;
   }
 
@@ -30,6 +35,8 @@ class ExerciseSelectionRepository {
     // var snapshot = await _collection.where('category', isEqualTo: translator[category]).orderBy('dateTime').get();
     var snapshot = await _collection.where('category', isEqualTo: category).orderBy('dateTime').get();
     var docs = snapshot.docs;
+
+    log('ExerciseSelectionRepository.getAllFromCategory($category)');
 
     return docs.map((doc) => doc.data()['name'] as String).toList();
   }

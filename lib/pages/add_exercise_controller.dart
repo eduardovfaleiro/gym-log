@@ -9,8 +9,13 @@ class AddExerciseController {
   AddExerciseController({required this.category});
 
   Future<List<String>> getAllNotSelected() async {
-    List<String> exercises = await ExerciseSelectionRepository().getAllFromCategory(category);
-    List<String> selectedExercises = await ExerciseRepository().getAllFromCategory(category);
+    var futures = await Future.wait([
+      ExerciseSelectionRepository().getAllFromCategory(category),
+      ExerciseRepository().getAllFromCategory(category)
+    ]);
+
+    List<String> exercises = futures[0];
+    List<String> selectedExercises = futures[1];
 
     List<String> exercisesNotSelected = [];
 

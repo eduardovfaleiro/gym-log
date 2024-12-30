@@ -22,6 +22,7 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   fs = FirebaseFirestore.instance;
+  fs.settings = const Settings(persistenceEnabled: true);
 
   await Hive.initFlutter();
   await Hive.openBox('config');
@@ -118,9 +119,16 @@ class _MainAppState extends State<MainApp> {
           );
         }
 
-        initFireStore();
+        return FutureBuilder(
+          future: initFireStore(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        return const HomePage();
+            return const HomePage();
+          },
+        );
       },
     );
   }

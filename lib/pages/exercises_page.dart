@@ -66,7 +66,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
                         var exercise = Exercise(name: _exercises![index], category: widget.category);
 
                         return Column(
-                          key: ValueKey(exercise.hashCode),
+                          key: UniqueKey(),
                           children: [
                             ExerciseCard(
                                 exercise: exercise,
