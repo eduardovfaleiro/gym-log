@@ -10,6 +10,7 @@ import '../entities/exercise.dart';
 import '../entities/log.dart';
 import '../repositories/exercise_repository.dart';
 import '../repositories/log_repository.dart';
+import '../widgets/empty_message.dart';
 import 'exercise_chart_page.dart';
 
 class ExercisesPage extends StatefulWidget {
@@ -21,24 +22,26 @@ class ExercisesPage extends StatefulWidget {
   State<ExercisesPage> createState() => _ExercisesPageState();
 }
 
-class _ExercisesPageState extends State<ExercisesPage> {
+class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
   List<String>? _exercises;
 
   @override
   Widget build(BuildContext context) {
-    return LoadingManager(
+    return LoadingPresenter(
+      isLoadingNotifier: isLoadingNotifier,
       showLoadingAnimation: false,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
-          onPressed: () async {
-            await Navigator.push(
+          onPressed: () {
+            Navigator.push(
               context,
               HorizontalRouter(
                 child: AddExercisePage(category: widget.category),
               ),
-            );
-            setState(() {});
+            ).then((added) {
+              if (added == true) setState(() {});
+            });
           },
         ),
         appBar: AppBar(
@@ -53,14 +56,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
               builder: (context, setStateList) {
                 return Visibility(
                     visible: _exercises?.isNotEmpty ?? true,
-                    replacement: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'Você ainda não selecionou nenhum exercício. Selecione em ( + )',
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                    replacement: const EmptyMessage('Você ainda não selecionou nenhum exercício. Selecione em ( + )'),
                     child: ReorderableListView(
                       children: List.generate(_exercises?.length ?? 0, (index) {
                         var exercise = Exercise(name: _exercises![index], category: widget.category);
@@ -69,10 +65,11 @@ class _ExercisesPageState extends State<ExercisesPage> {
                           key: UniqueKey(),
                           children: [
                             ExerciseCard(
-                                exercise: exercise,
-                                onDelete: () {
-                                  setState(() {});
-                                }),
+                              exercise: exercise,
+                              onDelete: () {
+                                setState(() {});
+                              },
+                            ),
                             const Divider(height: 0),
                           ],
                         );
@@ -90,7 +87,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
                           orderedExercises.add(OrderedExercise(name: _exercises![i], order: i));
                         }
 
-                        LoadingManager.run(() async {
+                        runLoading(() async {
                           setStateList(() {});
 
                           ExerciseRepository().updateOrder(

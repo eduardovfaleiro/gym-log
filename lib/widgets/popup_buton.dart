@@ -22,3 +22,21 @@ class PopupButton extends StatelessWidget {
     );
   }
 }
+
+class PopupCustomButton extends StatelessWidget {
+  final Widget child;
+  final void Function() onTap;
+
+  const PopupCustomButton({super.key, required this.onTap, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Ink(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        child: child,
+      ),
+    );
+  }
+}

@@ -1,51 +1,55 @@
 import 'package:flutter/material.dart';
 
-class LoadingManager extends StatefulWidget {
-  final Widget child;
-  final bool showLoadingAnimation;
+mixin LoadingManager {
+  final ValueNotifier<bool> isLoadingNotifier = ValueNotifier(false);
+  bool get isLoading => isLoadingNotifier.value;
 
-  static final ValueNotifier<bool> isLoading = ValueNotifier(false);
-
-  static void set(bool enabled) {
-    isLoading.value = enabled;
+  void setLoading(bool enabled) {
+    isLoadingNotifier.value = enabled;
   }
 
-  static void run(Function() callback) async {
-    isLoading.value = true;
+  void runLoading(Function() callback) async {
+    isLoadingNotifier.value = true;
     await callback();
-    isLoading.value = false;
+    isLoadingNotifier.value = false;
   }
-
-  const LoadingManager({super.key, required this.child, this.showLoadingAnimation = false});
-
-  @override
-  State<LoadingManager> createState() => _LoadingManagerState();
 }
 
-class _LoadingManagerState extends State<LoadingManager> {
+class LoadingPresenter extends StatelessWidget {
+  final Widget child;
+  final bool showLoadingAnimation;
+  final ValueNotifier<bool> isLoadingNotifier;
+
+  const LoadingPresenter({
+    super.key,
+    required this.child,
+    required this.isLoadingNotifier,
+    this.showLoadingAnimation = true,
+  });
+
   @override
   Widget build(BuildContext context) {
-    if (!widget.showLoadingAnimation) {
+    if (!showLoadingAnimation) {
       return ValueListenableBuilder(
-        valueListenable: LoadingManager.isLoading,
+        valueListenable: isLoadingNotifier,
         builder: (context, isLoading, _) {
           return PopScope(
             canPop: !isLoading,
-            child: IgnorePointer(ignoring: isLoading, child: widget.child),
+            child: IgnorePointer(ignoring: isLoading, child: child),
           );
         },
       );
     }
 
     return ValueListenableBuilder(
-      valueListenable: LoadingManager.isLoading,
+      valueListenable: isLoadingNotifier,
       builder: (context, isLoading, _) {
         return PopScope(
           canPop: !isLoading,
           child: isLoading
               ? Stack(
                   children: [
-                    widget.child,
+                    child,
                     Container(
                       color: const Color.fromARGB(118, 0, 0, 0),
                       height: double.infinity,
@@ -55,7 +59,7 @@ class _LoadingManagerState extends State<LoadingManager> {
                     ),
                   ],
                 )
-              : widget.child,
+              : child,
         );
       },
     );

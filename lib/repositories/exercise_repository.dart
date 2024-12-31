@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_log/utils/init.dart';
+import 'package:gym_log/utils/run_fs.dart';
 
 import '../entities/exercise.dart';
 
@@ -24,16 +25,21 @@ class ExerciseRepository {
   }
 
   Future<void> add(Exercise exercise) async {
-    // var query = await _exercisesCollection.where('category', isEqualTo: translator[exercise.category]).count().get();
-    var query = await _exercisesCollection.where('category', isEqualTo: exercise.category).count().get();
-    int count = query.count ?? 0;
+    var exercisesQuery = await _exercisesCollection
+        .where('category', isEqualTo: exercise.category)
+        .orderBy('order', descending: true)
+        .limit(1)
+        .get();
 
-    await _exercisesCollection.doc().set({
-      'name': exercise.name,
-      // 'category': translator[exercise.category]!.toLowerCase(),
-      'category': exercise.category,
-      'dateTime': DateTime.now(),
-      'order': count,
+    int currentMaxOrder = exercisesQuery.docs.firstOrNull?.data()['order'] ?? 0;
+
+    await runFs(() {
+      _exercisesCollection.doc().set({
+        'name': exercise.name,
+        'category': exercise.category,
+        'dateTime': DateTime.now(),
+        'order': currentMaxOrder + 1,
+      });
     });
   }
 
@@ -66,13 +72,12 @@ class ExerciseRepository {
       }
     }
 
-    await writeBatch.commit();
+    await runFs(() => writeBatch.commit());
   }
 
   Future<void> delete(Exercise exercise) async {
     var exerciseQuery = await _exercisesCollection
         .where('name', isEqualTo: exercise.name)
-        // .where('category', isEqualTo: translator[exercise.category])
         .where('category', isEqualTo: exercise.category)
         .get();
 
@@ -85,20 +90,11 @@ class ExerciseRepository {
       await log.reference.delete();
     }
 
-    await docRef.delete();
+    await runFs(() => docRef.delete());
   }
 
-  //  Future<List<String>> getAll() async {
-  //   var exercises = await _exercisesCollection.get();
-
-  //   return exercises.docs.map((exercise) => exercise.id).toList();
-  // }
-
   Future<List<String>> getAllFromCategory(String category) async {
-    var exercises =
-        // await _exercisesCollection.where('category', isEqualTo: translator[category]).orderBy('order').get();
-        await _exercisesCollection.where('category', isEqualTo: category).orderBy('order').get();
-
+    var exercises = await _exercisesCollection.where('category', isEqualTo: category).orderBy('order').get();
     log('ExerciseRepository.getAllFromCategory($category)');
 
     return exercises.docs.map((exercise) => exercise.data()['name'] as String).toList();

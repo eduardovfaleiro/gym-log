@@ -180,7 +180,7 @@ class ExerciseChartPage extends StatefulWidget {
   }
 }
 
-class _ExerciseChartPageState extends State<ExerciseChartPage> {
+class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManager {
   late final ExerciseChartController _controller;
 
   @override
@@ -192,7 +192,8 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> {
 
   @override
   Widget build(BuildContext context) {
-    return LoadingManager(
+    return LoadingPresenter(
+      isLoadingNotifier: isLoadingNotifier,
       child: Scaffold(
         appBar: AppBar(title: Text(widget.exercise.name)),
         body: Column(
@@ -358,7 +359,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> {
 
                                             if (!isSure) return;
 
-                                            LoadingManager.run(() async {
+                                            runLoading(() async {
                                               await LogRepository(widget.exercise).replaceAll(logs);
                                               setState(() {});
                                               Navigator.pop(context);
@@ -412,7 +413,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> {
 
                                             if (!isSure) return;
 
-                                            LoadingManager.run(() async {
+                                            runLoading(() async {
                                               await _controller.importCsv(result.files.single.path!);
                                               setState(() {});
                                               Navigator.pop(context);

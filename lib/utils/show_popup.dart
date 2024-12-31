@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:popover/popover.dart';
 
-Future<void> showPopup(BuildContext context, {required WidgetBuilder builder}) async {
+Future<void> showPopup(
+  BuildContext context, {
+  required WidgetBuilder builder,
+  double height = 40,
+  double width = 150,
+}) async {
   await showPopover(
     barrierColor: Colors.transparent,
     context: context,
@@ -10,8 +15,8 @@ Future<void> showPopup(BuildContext context, {required WidgetBuilder builder}) a
     shadow: [],
     bodyBuilder: builder,
     backgroundColor: Colors.transparent,
-    width: 150,
-    height: 40,
+    width: width,
+    height: height,
     direction: PopoverDirection.bottom,
   );
 }

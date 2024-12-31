@@ -4,15 +4,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_log/utils/init.dart';
 
+import '../utils/run_fs.dart';
+
 class CategoryRepository {
   final _categoryCollection =
       fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('categories');
 
   Future<void> add(String name) async {
-    var countQuery = await _categoryCollection.count().get();
-    int count = countQuery.count ?? -1;
+    var countQuery = await _categoryCollection.orderBy('order', descending: true).limit(1).get();
 
-    await _categoryCollection.add({'name': name, 'order': count + 1});
+    int currentMaxOrder = countQuery.docs.firstOrNull?.data()['order'] ?? 0;
+    await runFs(() => _categoryCollection.add({'name': name, 'order': currentMaxOrder + 1}));
   }
 
   Future<void> delete(String name) async {
@@ -37,7 +39,7 @@ class CategoryRepository {
 
     batch.delete(categoryRef);
 
-    await batch.commit();
+    await runFs(() => batch.commit());
   }
 
   Future<List<String>> getAll() async {

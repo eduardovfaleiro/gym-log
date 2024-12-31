@@ -39,12 +39,12 @@ class ActionCard extends StatelessWidget {
   }
 }
 
-class ExerciseCard extends StatelessWidget {
+class ExerciseCard extends StatelessWidget with LoadingManager {
   final Exercise exercise;
   final void Function() onDelete;
   final bool showCategory;
 
-  const ExerciseCard({
+  ExerciseCard({
     super.key,
     required this.exercise,
     required this.onDelete,
@@ -114,7 +114,7 @@ class ExerciseCard extends StatelessWidget {
                           );
 
                           if (isSure) {
-                            LoadingManager.run(() async {
+                            runLoading(() async {
                               await ExerciseRepository().delete(exercise);
                               onDelete();
                             });

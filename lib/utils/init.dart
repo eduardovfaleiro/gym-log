@@ -6,6 +6,7 @@ import 'package:gym_log/firebase_options.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 late FirebaseFirestore fs;
+bool networkDisabled = false;
 
 Future<void> init() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -7,6 +7,7 @@ import 'package:gym_log/entities/exercise.dart';
 
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/utils/init.dart';
+import 'package:gym_log/utils/run_fs.dart';
 
 import 'exercise_repository.dart';
 
@@ -47,8 +48,7 @@ class LogRepository {
 
   Future<void> add(Log log) async {
     var logsCollection = await _logsCollection();
-
-    await logsCollection.add(log.toMap());
+    await runFs(() => logsCollection.add(log.toMap()));
   }
 
   Future<void> replaceAll(List<Log> logs) async {
@@ -84,7 +84,7 @@ class LogRepository {
     for (var log in logs) {
       batch.set(logsCollection.doc(), log.toMap());
     }
-    await batch.commit();
+    await runFs(() => batch.commit());
   }
 
   Future<Log?> getLast() async {

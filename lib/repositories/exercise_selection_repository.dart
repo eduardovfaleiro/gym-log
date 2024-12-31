@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gym_log/utils/run_fs.dart';
 
 import '../entities/exercise.dart';
 import '../utils/init.dart';
@@ -11,7 +12,7 @@ class ExerciseSelectionRepository {
       fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('exercisesSelection');
 
   Future<void> add(Exercise exercise) async {
-    await _collection.add({...exercise.toMap(), 'dateTime': DateTime.now()});
+    await runFs(() => _collection.add({...exercise.toMap(), 'dateTime': DateTime.now()}));
   }
 
   Future<Exercise?> get(Exercise exercise) async {
@@ -50,6 +51,6 @@ class ExerciseSelectionRepository {
         .get();
 
     var exerciseRef = exercises.docs.first.reference;
-    await exerciseRef.delete();
+    await runFs(() => exerciseRef.delete());
   }
 }

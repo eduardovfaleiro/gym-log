@@ -2,15 +2,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:gym_log/pages/add_exercise_controller.dart';
+import 'package:gym_log/utils/horizontal_router.dart';
 import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/utils/show_popup.dart';
+import 'package:gym_log/widgets/empty_message.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/popup_buton.dart';
 
 import '../entities/exercise.dart';
 import '../repositories/exercise_repository.dart';
 import '../repositories/exercise_selection_repository.dart';
+import 'select_category_page.dart';
 
 class AddExercisePage extends StatefulWidget {
   final String category;
@@ -21,7 +24,7 @@ class AddExercisePage extends StatefulWidget {
   State<AddExercisePage> createState() => _AddExercisePageState();
 }
 
-class _AddExercisePageState extends State<AddExercisePage> {
+class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
   Future<void> _addExercise() async {
     var exerciseController = TextEditingController();
 
@@ -83,10 +86,62 @@ class _AddExercisePageState extends State<AddExercisePage> {
 
   @override
   Widget build(BuildContext context) {
-    return LoadingManager(
+    return LoadingPresenter(
+      isLoadingNotifier: isLoadingNotifier,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Adicionar exercício'),
+          actions: [
+            Builder(builder: (context) {
+              return IconButton(
+                onPressed: () {
+                  showPopup(
+                    context,
+                    height: 200,
+                    width: 200,
+                    builder: (context) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          PopupCustomButton(
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_upward),
+                                  SizedBox(width: 8),
+                                  Text('Exportar lista para...'),
+                                ],
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.push(context, HorizontalRouter(child: const SelectCategoryPage()));
+                            },
+                          ),
+                          PopupCustomButton(
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_downward),
+                                  SizedBox(width: 8),
+                                  Text('Importar lista de...'),
+                                ],
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.push(context, HorizontalRouter(child: const SelectCategoryPage()));
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                icon: const Icon(Icons.import_export),
+              );
+            }),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
@@ -102,14 +157,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
             }
 
             if (snapshot.data!.isEmpty) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Não existem exercícios para serem selecionados.\nCrie um em ( + )',
-                  textAlign: TextAlign.center,
-                ),
-              );
+              return const EmptyMessage('Não existem exercícios para serem selecionados.\nCrie um em ( + )');
             }
 
             List<String> exercises = snapshot.data!;
@@ -147,7 +195,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
                                     return PopupButton(
                                         label: 'Excluir',
                                         onTap: () async {
-                                          LoadingManager.run(() async {
+                                          runLoading(() async {
                                             Navigator.pop(context);
                                             await ExerciseSelectionRepository().delete(
                                               Exercise(name: exercise, category: widget.category),
@@ -188,9 +236,9 @@ class _AddExercisePageState extends State<AddExercisePage> {
                   onPressed: () {
                     if (_selectedExercise.isEmpty) return;
 
-                    LoadingManager.run(() async {
+                    runLoading(() async {
                       await ExerciseRepository().add(Exercise(name: _selectedExerciseName, category: widget.category));
-                      Navigator.pop(context);
+                      Navigator.pop(context, true);
                     });
                   },
                   child: const Text('Adicionar'),

@@ -3,6 +3,7 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/show_confirm_dialog.dart';
+import 'package:gym_log/widgets/empty_message.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/popup_buton.dart';
 
@@ -22,14 +23,50 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  // final List<String> _categories = ['Pernas', 'Peito', 'Costas', 'Ombro', 'Bíceps', 'Tríceps', 'Antebraço', 'Abdômen'];
+class _HomePageState extends State<HomePage> with LoadingManager {
   List<Exercise> _exercisesSearched = [];
+  List<String> _categories = [];
 
   // TODO(talvez criar meu próprio controller)
-  final String _oldValueSearchController = '';
+  String _oldValueSearchController = '';
   final _searchController = TextEditingController();
   late FocusNode _focusNode;
+
+  Future<void> _addCategory(BuildContext context) async {
+    var categoryController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Adicionar categoria'),
+          content: TextField(
+            controller: categoryController,
+            decoration: const InputDecoration(labelText: 'Nome'),
+            maxLength: 50,
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                runLoading(() async {
+                  await CategoryRepository().add(categoryController.text);
+                  await _updateCategories();
+                  setState(() {});
+                });
+
+                Navigator.pop(context);
+              },
+              child: const Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _updateCategories() async {
+    _categories = await CategoryRepository().getAll();
+  }
 
   @override
   void initState() {
@@ -37,9 +74,14 @@ class _HomePageState extends State<HomePage> {
 
     _focusNode = FocusNode();
 
+    runLoading(() async {
+      await _updateCategories();
+      setState(() {});
+    });
+
     _searchController.addListener(() async {
-      // if (_oldValueSearchController == _searchController.text) return;
-      // _oldValueSearchController = _searchController.text;
+      if (_oldValueSearchController == _searchController.text) return;
+      _oldValueSearchController = _searchController.text;
 
       if (_searchController.text.isBlank) {
         _exercisesSearched = [];
@@ -60,44 +102,13 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<void> _addCategory(BuildContext context) async {
-    var categoryController = TextEditingController();
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Adicionar categoria'),
-          content: TextField(
-            controller: categoryController,
-            decoration: const InputDecoration(labelText: 'Nome'),
-            maxLength: 50,
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () async {
-                LoadingManager.run(() async {
-                  await CategoryRepository().add(categoryController.text);
-                  setState(() {});
-                });
-
-                Navigator.pop(context);
-              },
-              child: const Text('Ok'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  List<String> _categories = [];
-
   @override
   Widget build(BuildContext context) {
     final brightnessManager = BrightnessManager.of(context);
 
-    return LoadingManager(
+    return LoadingPresenter(
+      isLoadingNotifier: isLoadingNotifier,
+      showLoadingAnimation: true,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -193,101 +204,97 @@ class _HomePageState extends State<HomePage> {
                     return const Divider(height: 0);
                   },
                 ),
-                child: FutureBuilder(
-                  future: CategoryRepository().getAll(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
-                      return const SizedBox.shrink();
-                    }
+                child: Builder(builder: (context) {
+                  if (isLoading) {
+                    return const SizedBox.shrink();
+                  }
 
-                    _categories = snapshot.data!;
+                  if (_categories.isEmpty) {
+                    return const EmptyMessage('Você não possui categorias para selecionar.\nCrie uma em ( + )');
+                  }
 
-                    return StatefulBuilder(
-                      builder: (context, setStateList) {
-                        return ReorderableListView(
-                          physics: const ClampingScrollPhysics(),
-                          onReorder: (oldIndex, newIndex) {
-                            if (oldIndex < newIndex) {
-                              newIndex -= 1;
-                            }
-                            final String category = _categories.removeAt(oldIndex);
-                            _categories.insert(newIndex, category);
+                  return ReorderableListView(
+                    physics: const ClampingScrollPhysics(),
+                    onReorder: (oldIndex, newIndex) {
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
+                      final String category = _categories.removeAt(oldIndex);
+                      _categories.insert(newIndex, category);
 
-                            Map<String, int> orderedCategories = {};
+                      Map<String, int> orderedCategories = {};
 
-                            for (int i = 0; i < _categories.length; i++) {
-                              orderedCategories[_categories[i]] = i;
-                            }
+                      for (int i = 0; i < _categories.length; i++) {
+                        orderedCategories[_categories[i]] = i;
+                      }
 
-                            LoadingManager.run(() async {
-                              setStateList(() {});
+                      runLoading(() async {
+                        setState(() {});
 
-                              CategoryRepository().updateOrder(orderedCategories: orderedCategories);
-                            });
-                          },
-                          children: List.generate(_categories.length, (index) {
-                            String category = _categories[index];
+                        CategoryRepository().updateOrder(orderedCategories: orderedCategories);
+                      });
+                    },
+                    children: List.generate(_categories.length, (index) {
+                      String category = _categories[index];
 
-                            return Column(
-                              key: UniqueKey(),
+                      return Column(
+                        key: UniqueKey(),
+                        children: [
+                          ActionCard(
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                HorizontalRouter(child: ExercisesPage(category: _categories[index])),
+                              );
+                              _focusNode = FocusNode();
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                ActionCard(
-                                  onTap: () async {
-                                    await Navigator.push(
-                                      context,
-                                      HorizontalRouter(child: ExercisesPage(category: _categories[index])),
+                                Text(_categories[index]),
+                                Builder(
+                                  builder: (context) {
+                                    return IconButton(
+                                      onPressed: () {
+                                        showPopup(
+                                          context,
+                                          builder: (context) {
+                                            return PopupButton(
+                                              label: 'Excluir',
+                                              onTap: () async {
+                                                Navigator.pop(context);
+                                                bool isSure = await showConfirmDialog(
+                                                  context,
+                                                  'Tem certeza que deseja excluir a categoria "$category"?',
+                                                  content:
+                                                      'Os logs dos exercícios desta categoria NÃO poderão ser recuperados.',
+                                                  confirm: 'Sim, excluir',
+                                                );
+                                                if (isSure) {
+                                                  runLoading(() async {
+                                                    await CategoryRepository().delete(category);
+                                                    await _updateCategories();
+                                                    setState(() {});
+                                                  });
+                                                }
+                                              },
+                                            );
+                                          },
+                                        );
+                                      },
+                                      icon: const Icon(Icons.more_vert, size: 24),
                                     );
-                                    _focusNode = FocusNode();
                                   },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(_categories[index]),
-                                      Builder(
-                                        builder: (context) {
-                                          return IconButton(
-                                            onPressed: () {
-                                              showPopup(
-                                                context,
-                                                builder: (context) {
-                                                  return PopupButton(
-                                                    label: 'Excluir',
-                                                    onTap: () async {
-                                                      Navigator.pop(context);
-                                                      bool isSure = await showConfirmDialog(
-                                                        context,
-                                                        'Tem certeza que deseja excluir a categoria "$category"?',
-                                                        content:
-                                                            'Os logs dos exercícios desta categoria NÃO poderão ser recuperados.',
-                                                        confirm: 'Sim, excluir',
-                                                      );
-                                                      if (isSure) {
-                                                        LoadingManager.run(() async {
-                                                          await CategoryRepository().delete(category);
-                                                          setState(() {});
-                                                        });
-                                                      }
-                                                    },
-                                                  );
-                                                },
-                                              );
-                                            },
-                                            icon: const Icon(Icons.more_vert, size: 24),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
                                 ),
-                                const Divider(height: 0),
                               ],
-                            );
-                          }),
-                        );
-                      },
-                    );
-                  },
-                ),
+                            ),
+                          ),
+                          const Divider(height: 0),
+                        ],
+                      );
+                    }),
+                  );
+                }),
               ),
             ),
           ],

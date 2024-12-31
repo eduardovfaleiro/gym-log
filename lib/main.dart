@@ -55,13 +55,6 @@ void main() async {
             '/': (context) {
               return const MainApp();
             },
-            '/profile': (context) => ProfileScreen(
-                  actions: [
-                    SignedOutAction((context) {
-                      Navigator.pushReplacementNamed(context, '/');
-                    }),
-                  ],
-                ),
             '/verify-email': (context) {
               return EmailVerificationScreen(
                 actions: [
