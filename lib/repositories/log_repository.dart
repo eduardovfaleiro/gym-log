@@ -16,12 +16,15 @@ class LogRepository {
 
   LogRepository(this.exercise);
 
+  CollectionReference<Map<String, dynamic>>? _logsCollectionObj;
+
   Future<CollectionReference<Map<String, dynamic>>> _logsCollection() async {
+    if (_logsCollectionObj != null) return _logsCollectionObj!;
+
     var exerciseQuery = await fs
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('exercises')
-        // .where('category', isEqualTo: translator[exercise.category])
         .where('category', isEqualTo: exercise.category)
         .where('name', isEqualTo: exercise.name)
         .limit(1)
@@ -29,12 +32,14 @@ class LogRepository {
 
     var exerciseDoc = exerciseQuery.docs.first;
 
-    return fs
+    _logsCollectionObj = fs
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('exercises')
         .doc(exerciseDoc.id)
         .collection('logs');
+
+    return _logsCollectionObj!;
   }
 
   Future<List<Log>> getAll() async {
@@ -99,5 +104,19 @@ class LogRepository {
     log('LogRepository.getLast()');
 
     return logObj;
+  }
+
+  Future<void> delete(Log log) async {
+    var logsCollection = await _logsCollection();
+    // TODO(otimizar usando um índice talvez)
+    var logsQuery = await logsCollection
+        .where('weight', isEqualTo: log.weight)
+        .where('reps', isEqualTo: log.reps)
+        .where('date', isEqualTo: log.date)
+        // .limit(1)
+        .get();
+
+    print('');
+    // await logsQuery.docs.first.reference.delete();
   }
 }

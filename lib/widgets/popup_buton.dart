@@ -23,6 +23,31 @@ class PopupButton extends StatelessWidget {
   }
 }
 
+class PopupIconButton extends StatelessWidget {
+  final Widget icon;
+  final Widget child;
+  final void Function() onTap;
+
+  const PopupIconButton({super.key, required this.child, required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupCustomButton(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            icon,
+            const SizedBox(width: 8),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class PopupCustomButton extends StatelessWidget {
   final Widget child;
   final void Function() onTap;

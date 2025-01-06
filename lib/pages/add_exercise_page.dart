@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:gym_log/pages/add_exercise_controller.dart';
+import 'package:gym_log/pages/export_category_page.dart';
 import 'package:gym_log/utils/horizontal_router.dart';
 import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/utils/show_error.dart';
@@ -13,7 +14,7 @@ import 'package:gym_log/widgets/popup_buton.dart';
 import '../entities/exercise.dart';
 import '../repositories/exercise_repository.dart';
 import '../repositories/exercise_selection_repository.dart';
-import 'select_category_page.dart';
+import 'import_category_page.dart';
 
 class AddExercisePage extends StatefulWidget {
   final String category;
@@ -103,35 +104,31 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                       return Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          PopupCustomButton(
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.arrow_upward),
-                                  SizedBox(width: 8),
-                                  Text('Exportar lista para...'),
-                                ],
-                              ),
-                            ),
+                          PopupIconButton(
+                            icon: const Icon(Icons.arrow_upward),
                             onTap: () {
-                              Navigator.push(context, HorizontalRouter(child: const SelectCategoryPage()));
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                HorizontalRouter(
+                                  child: ExportCategoryPage(category: widget.category),
+                                ),
+                              );
                             },
+                            child: const Text('Exportar lista para...'),
                           ),
-                          PopupCustomButton(
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.arrow_downward),
-                                  SizedBox(width: 8),
-                                  Text('Importar lista de...'),
-                                ],
-                              ),
-                            ),
+                          PopupIconButton(
+                            icon: const Icon(Icons.arrow_downward),
                             onTap: () {
-                              Navigator.push(context, HorizontalRouter(child: const SelectCategoryPage()));
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                HorizontalRouter(child: ImportCategoryPage(category: widget.category)),
+                              ).then((_) {
+                                setState(() {});
+                              });
                             },
+                            child: const Text('Importar lista de...'),
                           ),
                         ],
                       );

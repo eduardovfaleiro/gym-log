@@ -72,20 +72,6 @@ class ExerciseChartPage extends StatefulWidget {
                 readOnly: true,
                 inputFormatters: const [],
               ),
-
-              // SizedBox(
-              //   height: 100,
-              //   width: 300,
-              //   child: CupertinoDatePicker(
-              //     onDateTimeChanged: (time) {
-              //       date = time;
-              //     },
-              //     mode: CupertinoDatePickerMode.date,
-              //     minimumDate: DateTime(2000, 1, 1),
-              //     maximumDate: DateTime(date.year, date.month, date.day + 1),
-              //     itemExtent: 30,
-              //   ),
-              // ),
               TextField(
                 controller: weightController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
@@ -97,7 +83,7 @@ class ExerciseChartPage extends StatefulWidget {
                     children: [
                       IconButton(
                         onPressed: () {
-                          double weight = double.parse(weightController.text);
+                          double weight = double.tryParse(weightController.text) ?? 0;
                           weight++;
                           weightController.text = weight.toString();
                         },
@@ -106,7 +92,9 @@ class ExerciseChartPage extends StatefulWidget {
                       ),
                       IconButton(
                         onPressed: () {
-                          double weight = double.parse(weightController.text);
+                          double weight = double.tryParse(weightController.text) ?? 0;
+                          if (weight < 1) return;
+
                           weight--;
                           weightController.text = weight.toString();
                         },
@@ -126,7 +114,7 @@ class ExerciseChartPage extends StatefulWidget {
                     children: [
                       IconButton(
                         onPressed: () {
-                          int reps = int.parse(repsController.text);
+                          int reps = int.tryParse(repsController.text) ?? 0;
                           reps++;
                           repsController.text = reps.toString();
                         },
@@ -135,8 +123,10 @@ class ExerciseChartPage extends StatefulWidget {
                       ),
                       IconButton(
                         onPressed: () {
-                          int reps = int.parse(repsController.text);
+                          int reps = int.tryParse(repsController.text) ?? 0;
+                          if (reps < 1) return;
                           reps--;
+
                           repsController.text = reps.toString();
                         },
                         icon: const Icon(Icons.remove),

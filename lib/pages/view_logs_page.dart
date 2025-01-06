@@ -56,6 +56,7 @@ class _ViewLogsPageState extends State<ViewLogsPage> {
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
+                Expanded(child: SizedBox.shrink()),
               ],
             ),
           ),
@@ -76,7 +77,13 @@ class _ViewLogsPageState extends State<ViewLogsPage> {
                   );
                 }
 
-                return LogsListView(logs: logs);
+                return LogsListView(
+                  logs: logs,
+                  exercise: widget.exercise,
+                  onDelete: () {
+                    setState(() {});
+                  },
+                );
               },
             ),
           ),

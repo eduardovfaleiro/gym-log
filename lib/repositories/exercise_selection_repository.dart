@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
@@ -13,6 +14,16 @@ class ExerciseSelectionRepository {
 
   Future<void> add(Exercise exercise) async {
     await runFs(() => _collection.add({...exercise.toMap(), 'dateTime': DateTime.now()}));
+  }
+
+  Future<void> addAll(List<Exercise> exercises) async {
+    WriteBatch batch = fs.batch();
+
+    for (var exercise in exercises) {
+      batch.set(_collection.doc(), {...exercise.toMap(), 'dateTime': DateTime.now()});
+    }
+
+    await runFs(() => batch.commit());
   }
 
   Future<Exercise?> get(Exercise exercise) async {
