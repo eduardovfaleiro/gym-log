@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:intl/intl.dart';
 
 class Log {
@@ -10,18 +11,33 @@ class Log {
 
   factory Log.fromFireStoreMap(Map<String, dynamic> map) {
     return Log(
-        date: DateFormat('dd-MM-yyyy').parse(map['date']),
-        weight: map['weight'],
-        reps: map['reps'],
-        notes: map['notes']);
+      date: map['date'].toDate(),
+      weight: map['weight'],
+      reps: map['reps'],
+      notes: map['notes'],
+    );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'date': DateFormat('dd-MM-yyyy').format(date),
+      'date': date,
       'weight': weight,
       'reps': reps,
       'notes': notes,
     };
+  }
+
+  Log copyWith({
+    DateTime? date,
+    double? weight,
+    int? reps,
+    String? notes,
+  }) {
+    return Log(
+      date: date ?? this.date,
+      weight: weight ?? this.weight,
+      reps: reps ?? this.reps,
+      notes: notes ?? this.notes,
+    );
   }
 }

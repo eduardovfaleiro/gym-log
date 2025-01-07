@@ -9,6 +9,7 @@ import 'package:popover/popover.dart';
 import '../entities/log.dart';
 import '../pages/exercise_chart_page.dart';
 import '../repositories/exercise_repository.dart';
+import '../utils/log_dialogs.dart';
 import '../utils/show_confirm_dialog.dart';
 import 'loading_manager.dart';
 
@@ -67,7 +68,7 @@ class ExerciseCard extends StatelessWidget with LoadingManager {
             children: [
               IconButton(
                 onPressed: () {
-                  ExerciseChartPage.showAddLog(context, exercise: exercise, onConfirm: (weight, reps, date, notes) {
+                  showAddLog(context, exercise: exercise, onConfirm: (weight, reps, date, notes) {
                     LogRepository(exercise).add(
                       Log(
                         date: date,

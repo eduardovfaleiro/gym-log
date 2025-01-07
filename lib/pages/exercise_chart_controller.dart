@@ -14,6 +14,7 @@ class ExerciseChartController {
 
   ExerciseChartController(this.exercise);
 
+  // TODO(estava trocando isso aqui)
   Future<List<Log>> getSortedRepMaxLogs() async {
     var logs = await LogService().getRepMaxLogs(exercise);
     logs.sort((a, b) => a.date.compareTo(b.date));

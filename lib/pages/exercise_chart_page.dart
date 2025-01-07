@@ -1,11 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/horizontal_router.dart';
+import 'package:gym_log/utils/log_dialogs.dart';
 import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/entities/log.dart';
@@ -28,146 +25,6 @@ class ExerciseChartPage extends StatefulWidget {
 
   @override
   State<ExerciseChartPage> createState() => _ExerciseChartPageState();
-
-  static Future<void> showAddLog(
-    BuildContext context, {
-    required void Function(double weight, int reps, DateTime date, String notes) onConfirm,
-    required Exercise exercise,
-  }) async {
-    var notesController = TextEditingController();
-
-    Log? lastLogFromExercise = await LogRepository(exercise).getLast();
-
-    var date = DateTime.now();
-    var dateController = TextEditingController(text: date.formatReadable());
-    DateTime selectedDate = date;
-
-    var weightController = TextEditingController(text: lastLogFromExercise?.weight.toString());
-    var repsController = TextEditingController(text: lastLogFromExercise?.reps.toString());
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Adicionar log'),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: dateController,
-                decoration: const InputDecoration(labelText: 'Data'),
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    initialDate: selectedDate,
-                    context: context,
-                    firstDate: DateTime(2000),
-                    lastDate: date,
-                  );
-
-                  if (pickedDate == null) return;
-                  selectedDate = pickedDate;
-                  dateController.text = selectedDate.formatReadable();
-                },
-                readOnly: true,
-                inputFormatters: const [],
-              ),
-              TextField(
-                controller: weightController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
-                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[0-9]+.?[0-9]*'))],
-                decoration: InputDecoration(
-                  labelText: 'Peso (kg)',
-                  suffix: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          double weight = double.tryParse(weightController.text) ?? 0;
-                          weight++;
-                          weightController.text = weight.toString();
-                        },
-                        icon: const Icon(Icons.add),
-                        padding: EdgeInsets.zero,
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          double weight = double.tryParse(weightController.text) ?? 0;
-                          if (weight < 1) return;
-
-                          weight--;
-                          weightController.text = weight.toString();
-                        },
-                        icon: const Icon(Icons.remove),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              TextField(
-                controller: repsController,
-                decoration: InputDecoration(
-                  labelText: 'Repetições',
-                  suffix: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          int reps = int.tryParse(repsController.text) ?? 0;
-                          reps++;
-                          repsController.text = reps.toString();
-                        },
-                        icon: const Icon(Icons.add),
-                        padding: EdgeInsets.zero,
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          int reps = int.tryParse(repsController.text) ?? 0;
-                          if (reps < 1) return;
-                          reps--;
-
-                          repsController.text = reps.toString();
-                        },
-                        icon: const Icon(Icons.remove),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ],
-                  ),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              TextField(
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                controller: notesController,
-                decoration: const InputDecoration(labelText: 'Notas'),
-              ),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () async {
-                if (weightController.text.isEmpty || repsController.text.isEmpty) {
-                  showError(context, content: 'Os campos "Peso (kg)" e "Repetições" devem estar preenchidos.');
-                  return;
-                }
-
-                double weight = double.parse(weightController.text);
-                int reps = int.parse(repsController.text);
-
-                onConfirm(weight, reps, selectedDate, notesController.text);
-
-                Navigator.pop(context);
-              },
-              child: const Text('Ok'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 
 class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManager {
@@ -441,7 +298,12 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                               Navigator.push(
                                 context,
                                 HorizontalRouter(
-                                  child: ViewLogsPage(exercise: widget.exercise),
+                                  child: ViewLogsPage(
+                                    exercise: widget.exercise,
+                                    onUpdate: () {
+                                      setState(() {});
+                                    },
+                                  ),
                                 ),
                               );
                             },
@@ -456,7 +318,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            ExerciseChartPage.showAddLog(context, exercise: widget.exercise, onConfirm: (weight, reps, date, notes) {
+            showAddLog(context, exercise: widget.exercise, onConfirm: (weight, reps, date, notes) {
               LogRepository(widget.exercise)
                   .add(Log(date: date, reps: reps, weight: weight, notes: notes))
                   .then((_) => setState(() {}));

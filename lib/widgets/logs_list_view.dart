@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/utils/extensions.dart';
+import 'package:gym_log/utils/log_dialogs.dart';
 import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/utils/show_popup.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
@@ -16,12 +17,14 @@ class LogsListView extends StatelessWidget {
   final Exercise? exercise;
   final List<Log> logs;
   final void Function()? onDelete;
+  final void Function()? onEdit;
 
   const LogsListView({
     super.key,
     this.exercise,
     required this.logs,
     this.onDelete,
+    this.onEdit,
   });
 
   @override
@@ -36,55 +39,113 @@ class LogsListView extends StatelessWidget {
           decoration: BoxDecoration(color: index % 2 == 0 ? Colors.transparent : Colors.grey[300]),
           padding: const EdgeInsets.all(4),
           alignment: Alignment.center,
-          child: Container(
+          child: Padding(
             padding: const EdgeInsets.only(left: 8),
             child: Row(
               children: [
-                Expanded(child: Text('${log.weight} kg')),
-                Expanded(child: Text(log.reps.toString())),
-                Expanded(child: Text(log.date.formatReadableShort())),
-                Expanded(child: Text(log.notes)),
+                Expanded(flex: 3, child: Text('${log.weight} kg')),
+                Expanded(flex: 3, child: Text(log.reps.toString())),
+                Expanded(flex: 3, child: Text(log.date.formatReadableShort())),
+                const SizedBox(width: 12),
+                Expanded(flex: 6, child: Text(log.notes, maxLines: 3)),
                 Expanded(
+                  flex: 2,
                   child: Builder(
                     builder: (context) {
                       return IconButton(
-                          onPressed: () {
-                            showPopup(context, height: 200, builder: (context) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  PopupIconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      bool isSure = await showConfirmDialog(
-                                        context,
-                                        'Tem certeza que deseja excluir log?',
-                                        content: 'O seguinte log será excluído e NÃO poderá ser recuperado:'
-                                            '\n- Peso: ${log.weight} kg'
-                                            '\n- Repetições: ${log.reps}'
-                                            '\n- Data: ${log.date.formatReadable()}',
-                                        confirm: 'Sim, excluir',
-                                        cancel: 'Não, cancelar',
-                                      );
+                        onPressed: () {
+                          showPopup(context, width: 200, height: 200, builder: (context) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                PopupIconButton(
+                                  icon: const Icon(Icons.unfold_more),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                          title: const Text('Visualização completa'),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text('Peso: ${log.weight}'),
+                                              Text('Repetições: ${log.reps}'),
+                                              Text('Data: ${log.date.formatReadable()}'),
+                                              const SizedBox(height: 12),
+                                              const Text('Notas:'),
+                                              Flexible(
+                                                child: SingleChildScrollView(
+                                                  child:
+                                                      Text(log.notes.isEmpty ? '[Vazio]' : log.notes, maxLines: null),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          actions: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Ok'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: const Text('Visualizar completo'),
+                                ),
+                                PopupIconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    await showLogDialog(
+                                      context,
+                                      title: 'Editar log',
+                                      log: log,
+                                      onConfirm: (weight, reps, date, notes) async {
+                                        await LogRepository(exercise!).update(
+                                          oldLog: log,
+                                          newLog: Log(weight: weight, reps: reps, date: date, notes: notes),
+                                        );
+                                        onEdit!();
+                                      },
+                                    );
+                                  },
+                                  child: const Text('Editar'),
+                                ),
+                                PopupIconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    bool isSure = await showConfirmDialog(
+                                      context,
+                                      'Tem certeza que deseja excluir log?',
+                                      content: 'O seguinte log será excluído e NÃO poderá ser recuperado:'
+                                          '\n- Peso: ${log.weight} kg'
+                                          '\n- Repetições: ${log.reps}'
+                                          '\n- Data: ${log.date.formatReadable()}',
+                                      confirm: 'Sim, excluir',
+                                      cancel: 'Não, cancelar',
+                                    );
 
-                                      if (isSure) {
-                                        await LogRepository(exercise!).delete(log);
-                                        onDelete!();
-                                      }
-                                    },
-                                    child: const Text('Excluir'),
-                                  ),
-                                  PopupIconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onTap: () {},
-                                    child: const Text('Editar'),
-                                  ),
-                                ],
-                              );
-                            });
-                          },
-                          icon: const Icon(Icons.more_vert));
+                                    if (isSure) {
+                                      await LogRepository(exercise!).delete(log);
+                                      onDelete!();
+                                    }
+                                  },
+                                  child: const Text('Excluir'),
+                                ),
+                              ],
+                            );
+                          });
+                        },
+                        icon: const Icon(Icons.more_vert),
+                      );
                     },
                   ),
                 ),

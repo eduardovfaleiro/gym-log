@@ -113,10 +113,23 @@ class LogRepository {
         .where('weight', isEqualTo: log.weight)
         .where('reps', isEqualTo: log.reps)
         .where('date', isEqualTo: log.date)
-        // .limit(1)
+        .limit(1)
         .get();
 
-    print('');
-    // await logsQuery.docs.first.reference.delete();
+    await runFs(() => logsQuery.docs.first.reference.delete());
+  }
+
+  Future<void> update({required Log oldLog, required Log newLog}) async {
+    var logsCollection = await _logsCollection();
+
+    // TODO(vai dar problema no futuro. corrigir quando der)
+    var logsQuery = await logsCollection
+        .where('weight', isEqualTo: oldLog.weight)
+        .where('reps', isEqualTo: oldLog.reps)
+        .where('date', isEqualTo: oldLog.date)
+        .limit(1)
+        .get();
+
+    await runFs(() => logsQuery.docs.first.reference.update(newLog.toMap()));
   }
 }
