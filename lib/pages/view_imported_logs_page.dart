@@ -52,27 +52,37 @@ class _ViewImportedLogsPageState extends State<ViewImportedLogsPage> {
         children: [
           Container(
             decoration: const BoxDecoration(color: Colors.black),
-            padding: const EdgeInsets.all(8),
-            alignment: Alignment.center,
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * .7,
-              child: const Row(
+            padding: const EdgeInsets.all(4),
+            child: const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Row(
                 children: [
                   Expanded(
+                    flex: 3,
                     child: Text(
                       'Peso',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
                   Expanded(
+                    flex: 3,
                     child: Text(
-                      'Repetições',
+                      'Reps',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
                   Expanded(
+                    flex: 3,
                     child: Text(
                       'Data',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    flex: 6,
+                    child: Text(
+                      'Notas',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

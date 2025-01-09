@@ -104,33 +104,37 @@ class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingMan
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text('Para', style: Theme.of(context).textTheme.titleLarge),
                 ),
-                StatefulBuilder(
-                  builder: (contex, setStateList) {
-                    return Column(
-                      children: List.generate(
-                        categories.length,
-                        (index) {
-                          String category = categories[index];
+                Flexible(
+                  child: StatefulBuilder(
+                    builder: (contex, setStateList) {
+                      return SingleChildScrollView(
+                        child: Column(
+                          children: List.generate(
+                            categories.length,
+                            (index) {
+                              String category = categories[index];
 
-                          return Column(
-                            children: [
-                              RadioListTile(
-                                title: Text(category),
-                                value: category,
-                                groupValue: _selectedCategory,
-                                onChanged: (value) {
-                                  setStateList(() {
-                                    _selectedCategory = value!;
-                                  });
-                                },
-                              ),
-                              const Divider(height: 0),
-                            ],
-                          );
-                        },
-                      ),
-                    );
-                  },
+                              return Column(
+                                children: [
+                                  RadioListTile(
+                                    title: Text(category),
+                                    value: category,
+                                    groupValue: _selectedCategory,
+                                    onChanged: (value) {
+                                      setStateList(() {
+                                        _selectedCategory = value!;
+                                      });
+                                    },
+                                  ),
+                                  const Divider(height: 0),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
             );

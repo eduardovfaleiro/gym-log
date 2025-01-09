@@ -30,8 +30,7 @@ class LogService {
     throw UnimplementedError();
   }
 
-  Future<List<Log>> getRepMaxLogs(Exercise exercise) async {
-    var logs = await LogRepository(exercise).getAll();
+  List<Log> convertLogsToRepMax(List<Log> logs) {
     int reps = Config.getInt('repMax', defaultValue: 1);
 
     return logs
@@ -45,4 +44,20 @@ class LogService {
         )
         .toList();
   }
+
+  // Future<List<Log>> getRepMaxLogs(Exercise exercise) async {
+  //   var logs = await LogRepository(exercise).getAll();
+  //   int reps = Config.getInt('repMax', defaultValue: 1);
+
+  //   return logs
+  //       .map(
+  //         (e) => Log(
+  //           date: e.date,
+  //           weight: getRepMax(e.weight, currentReps: e.reps, targetReps: reps),
+  //           reps: reps,
+  //           notes: e.notes,
+  //         ),
+  //       )
+  //       .toList();
+  // }
 }

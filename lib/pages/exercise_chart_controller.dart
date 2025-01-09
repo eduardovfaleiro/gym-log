@@ -15,11 +15,11 @@ class ExerciseChartController {
   ExerciseChartController(this.exercise);
 
   // TODO(estava trocando isso aqui)
-  Future<List<Log>> getSortedRepMaxLogs() async {
-    var logs = await LogService().getRepMaxLogs(exercise);
-    logs.sort((a, b) => a.date.compareTo(b.date));
+  List<Log> getSortedLogsByDate(List<Log> logs) {
+    var logsRepMax = LogService().convertLogsToRepMax(logs);
+    logsRepMax.sort((a, b) => a.date.compareTo(b.date));
 
-    return logs;
+    return logsRepMax;
   }
 
   Future<void> importCsv(String path) async {

@@ -29,6 +29,7 @@ class ExerciseChartPage extends StatefulWidget {
 
 class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManager {
   late final ExerciseChartController _controller;
+  List<Log> _logs = [];
 
   @override
   void initState() {
@@ -70,9 +71,9 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
               ),
             ),
             FutureBuilder(
-              future: _controller.getSortedRepMaxLogs(),
+              future: LogRepository(widget.exercise).getAll(),
               builder: (context, snapshot) {
-                List<Log> logs = snapshot.data ?? [];
+                _logs = snapshot.data ?? [];
 
                 return SfCartesianChart(
                   zoomPanBehavior: ZoomPanBehavior(
@@ -83,7 +84,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                   ),
                   series: <CartesianSeries<Log, String>>[
                     LineSeries<Log, String>(
-                        dataSource: logs,
+                        dataSource: _controller.getSortedLogsByDate(_logs),
                         xValueMapper: (Log sales, _) => sales.date.formatReadableShort(),
                         yValueMapper: (Log sales, _) => double.parse(sales.weight.toStringAsFixed(1)),
                         name: 'Sales',
@@ -190,29 +191,31 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
 
                                     Navigator.push(
                                       context,
-                                      HorizontalRouter(
-                                        child: ViewImportedLogsPage(
-                                          title: result.files.single.name,
-                                          logs: logs,
-                                          onConfirm: () async {
-                                            bool isSure = await showConfirmDialog(
-                                              context,
-                                              'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                              content:
-                                                  'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
-                                              confirm: 'Sim, importar e substituir dados',
-                                              cancel: 'Não, cancelar',
-                                            );
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return ViewImportedLogsPage(
+                                            title: result.files.single.name,
+                                            logs: logs,
+                                            onConfirm: () async {
+                                              bool isSure = await showConfirmDialog(
+                                                context,
+                                                'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
+                                                content:
+                                                    'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
+                                                confirm: 'Sim, importar e substituir dados',
+                                                cancel: 'Não, cancelar',
+                                              );
 
-                                            if (!isSure) return;
+                                              if (!isSure) return;
 
-                                            runLoading(() async {
-                                              await LogRepository(widget.exercise).replaceAll(logs);
-                                              setState(() {});
-                                              Navigator.pop(context);
-                                            });
-                                          },
-                                        ),
+                                              runLoading(() async {
+                                                await LogRepository(widget.exercise).replaceAll(logs);
+                                                setState(() {});
+                                                Navigator.pop(context);
+                                              });
+                                            },
+                                          );
+                                        },
                                       ),
                                     );
                                   }
@@ -244,29 +247,31 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
 
                                     Navigator.push(
                                       context,
-                                      HorizontalRouter(
-                                        child: ViewImportedLogsPage(
-                                          title: result.files.single.name,
-                                          logs: logs,
-                                          onConfirm: () async {
-                                            bool isSure = await showConfirmDialog(
-                                              context,
-                                              'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                              content:
-                                                  'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
-                                              confirm: 'Sim, importar e substituir dados',
-                                              cancel: 'Não, cancelar',
-                                            );
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return ViewImportedLogsPage(
+                                            title: result.files.single.name,
+                                            logs: logs,
+                                            onConfirm: () async {
+                                              bool isSure = await showConfirmDialog(
+                                                context,
+                                                'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
+                                                content:
+                                                    'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
+                                                confirm: 'Sim, importar e substituir dados',
+                                                cancel: 'Não, cancelar',
+                                              );
 
-                                            if (!isSure) return;
+                                              if (!isSure) return;
 
-                                            runLoading(() async {
-                                              await _controller.importCsv(result.files.single.path!);
-                                              setState(() {});
-                                              Navigator.pop(context);
-                                            });
-                                          },
-                                        ),
+                                              runLoading(() async {
+                                                await _controller.importCsv(result.files.single.path!);
+                                                setState(() {});
+                                                Navigator.pop(context);
+                                              });
+                                            },
+                                          );
+                                        },
                                       ),
                                     );
                                   }
@@ -300,6 +305,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                 HorizontalRouter(
                                   child: ViewLogsPage(
                                     exercise: widget.exercise,
+                                    logs: _logs,
                                     onUpdate: () {
                                       setState(() {});
                                     },

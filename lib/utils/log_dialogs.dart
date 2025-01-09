@@ -8,6 +8,63 @@ import 'package:flutter/cupertino.dart';
 import '../entities/exercise.dart';
 import '../repositories/log_repository.dart';
 
+class IntInputFormatter extends TextInputFormatter {
+  final int maxLength;
+  late final RegExp _regex;
+  late final int _maxValue;
+
+  IntInputFormatter({required this.maxLength}) {
+    _regex = RegExp(r'[0-9]{1,' + maxLength.toString() + r'}');
+    _maxValue = int.parse('9' * maxLength);
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    if (_regex.hasMatch(newValue.text)) {
+      final int? value = int.tryParse(newValue.text);
+      if (value != null && value <= _maxValue) {
+        return newValue;
+      }
+    }
+
+    return oldValue; // Reject the change if it doesn't match the pattern or exceeds the range.
+  }
+}
+
+class DoubleInputFormatter extends TextInputFormatter {
+  late final RegExp _regex;
+  final int maxLength;
+  late final double _maxValue;
+
+  DoubleInputFormatter({required this.maxLength}) {
+    _regex = RegExp(r'^(?:[0-9]{1,' + maxLength.toString().length.toString() + r'}|0)(?:\.[0-9]{0,2})?$');
+    _maxValue = int.parse('9' * maxLength) + .99;
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    if (_regex.hasMatch(newValue.text)) {
+      final double? value = double.tryParse(newValue.text);
+      if (value != null && value <= _maxValue) {
+        return newValue;
+      }
+    }
+
+    return oldValue; // Reject the change if it doesn't match the pattern or exceeds the range.
+  }
+}
+
 Future<void> showAddLog(
   BuildContext context, {
   required void Function(double weight, int reps, DateTime date, String notes) onConfirm,
@@ -69,7 +126,7 @@ Future<void> showLogDialog(
             TextField(
               controller: weightController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[0-9]+.?[0-9]*'))],
+              inputFormatters: [DoubleInputFormatter(maxLength: 4)],
               decoration: InputDecoration(
                 labelText: 'Peso (kg)',
                 suffix: Row(
@@ -129,8 +186,9 @@ Future<void> showLogDialog(
                   ],
                 ),
               ),
+              maxLength: 4,
               keyboardType: const TextInputType.numberWithOptions(),
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [IntInputFormatter(maxLength: 4)],
             ),
             TextField(
               keyboardType: TextInputType.multiline,

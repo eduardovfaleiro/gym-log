@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:gym_log/entities/log.dart';
+import 'package:gym_log/repositories/log_repository.dart';
+import 'package:gym_log/widgets/loading_manager.dart';
 
 import '../entities/exercise.dart';
 import '../widgets/logs_list_view.dart';
 import 'view_logs_controller.dart';
 
 class ViewLogsPage extends StatefulWidget {
+  final List<Log> logs;
   final Exercise exercise;
   final void Function() onUpdate;
 
   const ViewLogsPage({
     super.key,
     required this.exercise,
+    required this.logs,
     required this.onUpdate,
   });
 
@@ -19,95 +23,98 @@ class ViewLogsPage extends StatefulWidget {
   State<ViewLogsPage> createState() => _ViewLogsPageState();
 }
 
-class _ViewLogsPageState extends State<ViewLogsPage> {
+class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
   bool _updated = false;
+  List<Log> _logs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _logs = widget.logs;
+  }
+
+  Future<void> _updateLogs() async {
+    setLoading(true);
+
+    _logs = await ViewLogsController().getSortedLogsByDate(widget.exercise);
+    setState(() {});
+    _updated = true;
+
+    setLoading(false);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop && _updated) {
-          widget.onUpdate();
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Visualizar logs'),
-        ),
-        body: Column(
-          children: [
-            Container(
-              decoration: const BoxDecoration(color: Colors.black),
-              padding: const EdgeInsets.all(8),
-              alignment: Alignment.center,
-              child: const Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'Peso',
-                      style: TextStyle(color: Colors.white),
+    return LoadingPresenter(
+      isLoadingNotifier: isLoadingNotifier,
+      child: PopScope(
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop && _updated) {
+            widget.onUpdate();
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Visualizar logs'),
+          ),
+          body: Column(
+            children: [
+              Container(
+                decoration: const BoxDecoration(color: Colors.black),
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+                child: const Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Peso',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'Reps',
-                      style: TextStyle(color: Colors.white),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Reps',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'Data',
-                      style: TextStyle(color: Colors.white),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Data',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    flex: 6,
-                    child: Text(
-                      'Notas',
-                      style: TextStyle(color: Colors.white),
+                    SizedBox(width: 12),
+                    Expanded(
+                      flex: 6,
+                      child: Text(
+                        'Notas',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ),
-                  Expanded(flex: 2, child: SizedBox.shrink()),
-                ],
+                    Expanded(flex: 2, child: SizedBox.shrink()),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: FutureBuilder(
-                future: ViewLogsController().getSortedLogs(widget.exercise),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const SizedBox.shrink();
-                  }
-
-                  List<Log> logs = snapshot.data!;
-
-                  if (logs.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Ainda não existem logs para exibir.'),
-                    );
-                  }
-
-                  return LogsListView(
-                    logs: logs,
+              Expanded(
+                child: Visibility(
+                  visible: _logs.isNotEmpty,
+                  replacement: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text('Ainda não existem logs para exibir.'),
+                  ),
+                  child: LogsListView(
+                    logs: _logs,
                     exercise: widget.exercise,
-                    onDelete: () {
-                      setState(() {});
-                      _updated = true;
-                    },
-                    onEdit: () {
-                      setState(() {});
-                      _updated = true;
-                    },
-                  );
-                },
+                    onDelete: _updateLogs,
+                    onEdit: _updateLogs,
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
