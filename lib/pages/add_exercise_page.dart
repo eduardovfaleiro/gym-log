@@ -85,6 +85,8 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
     _controller = AddExerciseController(category: widget.category);
   }
 
+  List<String> _exercises = [];
+
   @override
   Widget build(BuildContext context) {
     return LoadingPresenter(
@@ -111,7 +113,7 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                               Navigator.push(
                                 context,
                                 HorizontalRouter(
-                                  child: ExportCategoryPage(category: widget.category),
+                                  child: ExportCategoryPage(category: widget.category, exercises: _exercises),
                                 ),
                               );
                             },
@@ -123,7 +125,8 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                               Navigator.pop(context);
                               Navigator.push(
                                 context,
-                                HorizontalRouter(child: ImportCategoryPage(category: widget.category)),
+                                HorizontalRouter(
+                                    child: ImportCategoryPage(category: widget.category, exercises: _exercises)),
                               ).then((_) {
                                 setState(() {});
                               });
@@ -157,7 +160,7 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
               return const EmptyMessage('Não existem exercícios para serem selecionados.\nCrie um em ( + )');
             }
 
-            List<String> exercises = snapshot.data!;
+            _exercises = snapshot.data!;
 
             return StatefulBuilder(
               builder: (context, setStateListView) {
@@ -165,10 +168,10 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                   child: ListView.separated(
                     padding: const EdgeInsets.only(bottom: 70),
                     physics: const ClampingScrollPhysics(),
-                    itemCount: exercises.length,
+                    itemCount: _exercises.length,
                     separatorBuilder: (context, index) => const Divider(height: 0),
                     itemBuilder: (context, index) {
-                      String exercise = exercises[index];
+                      String exercise = _exercises[index];
 
                       return Stack(
                         children: [

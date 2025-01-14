@@ -52,124 +52,130 @@ class _LogsListViewState extends State<LogsListView> {
       itemBuilder: (context, index) {
         var log = widget.logs[index];
 
-        return Container(
-          decoration: BoxDecoration(color: index % 2 == 0 ? Colors.transparent : Colors.grey[300]),
-          padding: const EdgeInsets.all(4),
-          alignment: Alignment.center,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Row(
-              children: [
-                Expanded(flex: 3, child: Text('${log.weight} kg')),
-                Expanded(flex: 3, child: Text(log.reps.toString())),
-                Expanded(flex: 3, child: Text(log.date.formatReadableShort())),
-                const SizedBox(width: 12),
-                Expanded(flex: 6, child: Text(log.notes, maxLines: 3)),
-                if (widget.exercise != null)
-                  Expanded(
-                    flex: 2,
-                    child: Builder(
-                      builder: (context) {
-                        return IconButton(
-                          onPressed: () {
-                            showPopup(context, width: 200, height: 200, builder: (context) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  PopupIconButton(
-                                    icon: const Icon(Icons.unfold_more),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                            title: const Text('Visualização completa'),
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text('Peso: ${log.weight}'),
-                                                Text('Repetições: ${log.reps}'),
-                                                Text('Data: ${log.date.formatReadable()}'),
-                                                const SizedBox(height: 12),
-                                                const Text('Notas:'),
-                                                Flexible(
-                                                  child: SingleChildScrollView(
-                                                    child:
-                                                        Text(log.notes.isEmpty ? '[Vazio]' : log.notes, maxLines: null),
-                                                  ),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              // decoration: BoxDecoration(color: index % 2 == 0 ? Colors.transparent : Colors.grey[300]),
+              padding: const EdgeInsets.all(4),
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Row(
+                  children: [
+                    Expanded(flex: 3, child: Text('${log.weight} kg')),
+                    Expanded(flex: 3, child: Text(log.reps.toString())),
+                    Expanded(flex: 3, child: Text(log.date.formatReadableShort())),
+                    const SizedBox(width: 12),
+                    Expanded(flex: 6, child: Text(log.notes, maxLines: 3)),
+                    if (widget.exercise != null)
+                      Expanded(
+                        flex: 2,
+                        child: Builder(
+                          builder: (context) {
+                            return IconButton(
+                              onPressed: () {
+                                showPopup(context, width: 200, height: 200, builder: (context) {
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      PopupIconButton(
+                                        icon: const Icon(Icons.unfold_more),
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return AlertDialog(
+                                                insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                                title: const Text('Visualização completa'),
+                                                content: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text('Peso: ${log.weight}'),
+                                                    Text('Repetições: ${log.reps}'),
+                                                    Text('Data: ${log.date.formatReadable()}'),
+                                                    const SizedBox(height: 12),
+                                                    const Text('Notas:'),
+                                                    Flexible(
+                                                      child: SingleChildScrollView(
+                                                        child: Text(log.notes.isEmpty ? '[Vazio]' : log.notes,
+                                                            maxLines: null),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                child: const Text('Ok'),
-                                              ),
-                                            ],
+                                                actions: [
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: const Text('Ok'),
+                                                  ),
+                                                ],
+                                              );
+                                            },
                                           );
                                         },
-                                      );
-                                    },
-                                    child: const Text('Visualizar completo'),
-                                  ),
-                                  PopupIconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      await showLogDialog(
-                                        context,
-                                        title: 'Editar log',
-                                        log: log,
-                                        onConfirm: (weight, reps, date, notes) async {
-                                          await _logRepository.update(
-                                            oldLog: log,
-                                            newLog: Log(weight: weight, reps: reps, date: date, notes: notes),
+                                        child: const Text('Visualizar completo'),
+                                      ),
+                                      PopupIconButton(
+                                        icon: const Icon(Icons.edit),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          await showLogDialog(
+                                            context,
+                                            title: 'Editar log',
+                                            log: log,
+                                            onConfirm: (weight, reps, date, notes) async {
+                                              await _logRepository.update(
+                                                oldLog: log,
+                                                newLog: Log(weight: weight, reps: reps, date: date, notes: notes),
+                                              );
+                                              widget.onEdit!();
+                                            },
                                           );
-                                          widget.onEdit!();
                                         },
-                                      );
-                                    },
-                                    child: const Text('Editar'),
-                                  ),
-                                  PopupIconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      bool isSure = await showConfirmDialog(
-                                        context,
-                                        'Tem certeza que deseja excluir log?',
-                                        content: 'O seguinte log será excluído e NÃO poderá ser recuperado:'
-                                            '\n- Peso: ${log.weight} kg'
-                                            '\n- Repetições: ${log.reps}'
-                                            '\n- Data: ${log.date.formatReadable()}',
-                                        confirm: 'Sim, excluir',
-                                        cancel: 'Não, cancelar',
-                                      );
+                                        child: const Text('Editar'),
+                                      ),
+                                      PopupIconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          bool isSure = await showConfirmDialog(
+                                            context,
+                                            'Tem certeza que deseja excluir log?',
+                                            content: 'O seguinte log será excluído e NÃO poderá ser recuperado:'
+                                                '\n- Peso: ${log.weight} kg'
+                                                '\n- Repetições: ${log.reps}'
+                                                '\n- Data: ${log.date.formatReadable()}',
+                                            confirm: 'Sim, excluir',
+                                            cancel: 'Não, cancelar',
+                                          );
 
-                                      if (isSure) {
-                                        await _logRepository.delete(log);
-                                        widget.onDelete!();
-                                      }
-                                    },
-                                    child: const Text('Excluir'),
-                                  ),
-                                ],
-                              );
-                            });
+                                          if (isSure) {
+                                            await _logRepository.delete(log);
+                                            widget.onDelete!();
+                                          }
+                                        },
+                                        child: const Text('Excluir'),
+                                      ),
+                                    ],
+                                  );
+                                });
+                              },
+                              icon: const Icon(Icons.more_vert),
+                            );
                           },
-                          icon: const Icon(Icons.more_vert),
-                        );
-                      },
-                    ),
-                  ),
-              ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
-          ),
+            const Divider(height: 0),
+          ],
         );
       },
     );

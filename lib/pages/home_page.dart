@@ -1,8 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_log/main.dart';
 import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/show_confirm_dialog.dart';
+import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/widgets/empty_message.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/popup_buton.dart';
@@ -49,12 +53,20 @@ class _HomePageState extends State<HomePage> with LoadingManager {
             ElevatedButton(
               onPressed: () async {
                 runLoading(() async {
-                  await CategoryRepository().add(categoryController.text);
-                  await _updateCategories();
-                  setState(() {});
-                });
+                  String category = categoryController.text;
+                  final categoryRepository = CategoryRepository();
 
-                Navigator.pop(context);
+                  if (await categoryRepository.exists(category)) {
+                    showError(context, content: 'Já existe uma categoria com este nome.');
+                    return;
+                  } else {
+                    await CategoryRepository().add(category);
+                    await _updateCategories();
+                    setState(() {});
+
+                    Navigator.pop(context);
+                  }
+                });
               },
               child: const Text('Ok'),
             ),
@@ -136,7 +148,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                               onTap: () async {
                                 await FirebaseUIAuth.signOut(
                                   context: context,
-                                  auth: FirebaseAuth.instance,
+                                  auth: fa,
                                 );
                                 // ignore: use_build_context_synchronously
                                 Navigator.pop(context);
@@ -146,7 +158,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                         );
                       },
                       label: Text(
-                        FirebaseAuth.instance.currentUser?.email.toString() ?? '',
+                        fa.currentUser?.email.toString() ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -167,6 +179,10 @@ class _HomePageState extends State<HomePage> with LoadingManager {
         ),
         body: Column(
           children: [
+            TextButton(
+              onPressed: () => throw Exception(),
+              child: const Text("Throw Test Exception"),
+            ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(

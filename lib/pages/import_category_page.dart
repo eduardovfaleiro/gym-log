@@ -7,8 +7,9 @@ import 'package:gym_log/widgets/loading_manager.dart';
 
 class ImportCategoryPage extends StatefulWidget {
   final String category;
+  final List<String> exercises;
 
-  const ImportCategoryPage({super.key, required this.category});
+  const ImportCategoryPage({super.key, required this.category, required this.exercises});
 
   @override
   State<ImportCategoryPage> createState() => _ImportCategoryPageState();
@@ -46,6 +47,10 @@ class _ImportCategoryPageState extends State<ImportCategoryPage> with LoadingMan
                     runLoading(() async {
                       String selectedCategory = _selectedCategory!;
                       List<String> exercises = await ExerciseSelectionRepository().getAllFromCategory(selectedCategory);
+
+                      exercises.removeWhere((exercise) {
+                        return widget.exercises.contains(exercise);
+                      });
 
                       await ExerciseSelectionRepository().addAll(
                         exercises.map((exercise) => Exercise(name: exercise, category: widget.category)).toList(),

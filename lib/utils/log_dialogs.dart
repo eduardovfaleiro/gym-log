@@ -41,7 +41,7 @@ class DoubleInputFormatter extends TextInputFormatter {
   late final double _maxValue;
 
   DoubleInputFormatter({required this.maxLength}) {
-    _regex = RegExp(r'^(?:[0-9]{1,' + maxLength.toString().length.toString() + r'}|0)(?:\.[0-9]{0,2})?$');
+    _regex = RegExp(r'^(?:[0-9]{1,' + maxLength.toString() + r'}|0)(?:\.[0-9]{0,2})?$');
     _maxValue = int.parse('9' * maxLength) + .99;
   }
 
@@ -186,7 +186,6 @@ Future<void> showLogDialog(
                   ],
                 ),
               ),
-              maxLength: 4,
               keyboardType: const TextInputType.numberWithOptions(),
               inputFormatters: [IntInputFormatter(maxLength: 4)],
             ),
@@ -195,6 +194,7 @@ Future<void> showLogDialog(
               maxLines: null,
               controller: notesController,
               decoration: const InputDecoration(labelText: 'Notas'),
+              maxLength: 150,
             ),
           ],
         ),

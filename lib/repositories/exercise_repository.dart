@@ -2,26 +2,14 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:gym_log/utils/init.dart';
+import 'package:gym_log/main.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
 import '../entities/exercise.dart';
 
-// TODO(temporário)
-// final translator = {
-//   'Pernas': 'legs',
-//   'Costas': 'back',
-//   'Peito': 'chest',
-//   'Ombro': 'shoulders',
-//   'Abdômen': 'abs',
-//   'Antebraço': 'forearm',
-//   'Bíceps': 'biceps',
-//   'Tríceps': 'triceps',
-// };
-
 class ExerciseRepository {
   static CollectionReference<Map<String, dynamic>> get _exercisesCollection {
-    return fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('exercises');
+    return fs.collection('users').doc(fa.currentUser!.uid).collection('exercises');
   }
 
   Future<void> add(Exercise exercise) async {

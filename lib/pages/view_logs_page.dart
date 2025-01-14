@@ -60,44 +60,20 @@ class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
           body: Column(
             children: [
               Container(
-                decoration: const BoxDecoration(color: Colors.black),
                 padding: const EdgeInsets.all(8),
                 alignment: Alignment.center,
                 child: const Row(
                   children: [
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        'Peso',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        'Reps',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        'Data',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
+                    Expanded(flex: 3, child: Text('Peso')),
+                    Expanded(flex: 3, child: Text('Reps')),
+                    Expanded(flex: 3, child: Text('Data')),
                     SizedBox(width: 12),
-                    Expanded(
-                      flex: 6,
-                      child: Text(
-                        'Notas',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
+                    Expanded(flex: 6, child: Text('Notas')),
                     Expanded(flex: 2, child: SizedBox.shrink()),
                   ],
                 ),
               ),
+              const Divider(height: 0),
               Expanded(
                 child: Visibility(
                   visible: _logs.isNotEmpty,

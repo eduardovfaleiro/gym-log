@@ -6,10 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_log/entities/exercise.dart';
 
 import 'package:gym_log/entities/log.dart';
-import 'package:gym_log/utils/init.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
-import 'exercise_repository.dart';
+import '../main.dart';
 
 class LogRepository {
   final Exercise exercise;
@@ -23,7 +22,7 @@ class LogRepository {
 
     var exerciseQuery = await fs
         .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .doc(fa.currentUser!.uid)
         .collection('exercises')
         .where('category', isEqualTo: exercise.category)
         .where('name', isEqualTo: exercise.name)
@@ -32,12 +31,8 @@ class LogRepository {
 
     var exerciseDoc = exerciseQuery.docs.first;
 
-    _logsCollectionObj = fs
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('exercises')
-        .doc(exerciseDoc.id)
-        .collection('logs');
+    _logsCollectionObj =
+        fs.collection('users').doc(fa.currentUser!.uid).collection('exercises').doc(exerciseDoc.id).collection('logs');
 
     return _logsCollectionObj!;
   }

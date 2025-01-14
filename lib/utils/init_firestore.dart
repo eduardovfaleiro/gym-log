@@ -1,9 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
-// ignore: unused_import
-import '../entities/exercise.dart';
-import 'init.dart';
+import 'package:gym_log/main.dart';
 
 const _categoryAndExercises = [
   {
@@ -48,8 +44,6 @@ const _categoryAndExercises = [
       'Agachamento no smith',
       'Agachamento búlgaro',
       'Hack squat',
-      // 'Agachamento frontal',
-      // 'Agachamento sumô',
       'Passada com barra',
       'Passada com halteres',
       'Leg press',
@@ -58,9 +52,6 @@ const _categoryAndExercises = [
       'Mesa flexora',
       'Levantamento romeno',
       'Stiff',
-      // 'Cadeira adutora',
-      // 'Cadeira abdutora',
-      // 'Elevação pélvica',
       'Panturrilha sentado',
       'Panturrilha em pé',
     ],
@@ -130,7 +121,7 @@ const _categoryAndExercises = [
 ];
 
 Future<void> initFireStore() async {
-  var userCollection = fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid);
+  var userCollection = fs.collection('users').doc(fa.currentUser!.uid);
 
   var exercisesQuery = await userCollection.collection('exercises').get();
   for (var exerciseDoc in exercisesQuery.docs) {
@@ -161,8 +152,7 @@ Future<void> initFireStore() async {
     batch.set(categoryRef, {'name': category, 'order': order});
 
     for (String exercise in exercises) {
-      var exerciseDoc =
-          fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('exercisesSelection').doc();
+      var exerciseDoc = fs.collection('users').doc(fa.currentUser!.uid).collection('exercisesSelection').doc();
 
       batch.set(exerciseDoc, {'name': exercise, 'category': category, 'dateTime': DateTime.now()});
     }

@@ -8,8 +8,9 @@ import '../widgets/loading_manager.dart';
 
 class ExportCategoryPage extends StatefulWidget {
   final String category;
+  final List<String> exercises;
 
-  const ExportCategoryPage({super.key, required this.category});
+  const ExportCategoryPage({super.key, required this.category, required this.exercises});
 
   @override
   State<ExportCategoryPage> createState() => _ExportCategoryPageState();
@@ -47,6 +48,10 @@ class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingMan
                     runLoading(() async {
                       String selectedCategory = _selectedCategory!;
                       List<String> exercises = await ExerciseSelectionRepository().getAllFromCategory(widget.category);
+
+                      exercises.removeWhere((exercise) {
+                        return widget.exercises.contains(exercise);
+                      });
 
                       await ExerciseSelectionRepository().addAll(
                         exercises.map((exercise) => Exercise(name: exercise, category: selectedCategory)).toList(),

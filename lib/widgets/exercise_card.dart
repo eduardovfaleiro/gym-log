@@ -4,7 +4,6 @@ import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/utils/horizontal_router.dart';
 import 'package:gym_log/utils/show_popup.dart';
 import 'package:gym_log/widgets/popup_buton.dart';
-import 'package:popover/popover.dart';
 
 import '../entities/log.dart';
 import '../pages/exercise_chart_page.dart';

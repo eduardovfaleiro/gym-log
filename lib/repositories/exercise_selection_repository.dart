@@ -1,16 +1,13 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gym_log/main.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
 import '../entities/exercise.dart';
-import '../utils/init.dart';
-import 'exercise_repository.dart';
 
 class ExerciseSelectionRepository {
-  final _collection =
-      fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('exercisesSelection');
+  final _collection = fs.collection('users').doc(fa.currentUser!.uid).collection('exercisesSelection');
 
   Future<void> add(Exercise exercise) async {
     await runFs(() => _collection.add({...exercise.toMap(), 'dateTime': DateTime.now()}));
@@ -28,7 +25,6 @@ class ExerciseSelectionRepository {
 
   Future<Exercise?> get(Exercise exercise) async {
     var exercises = await _collection
-        // .where('category', isEqualTo: translator[exercise.category])
         .where('category', isEqualTo: exercise.category)
         .where('name', isEqualTo: exercise.name)
         .limit(1)
@@ -44,7 +40,6 @@ class ExerciseSelectionRepository {
   }
 
   Future<List<String>> getAllFromCategory(String category) async {
-    // var snapshot = await _collection.where('category', isEqualTo: translator[category]).orderBy('dateTime').get();
     var snapshot = await _collection.where('category', isEqualTo: category).orderBy('dateTime').get();
     var docs = snapshot.docs;
 
@@ -55,7 +50,6 @@ class ExerciseSelectionRepository {
 
   Future<void> delete(Exercise exercise) async {
     var exercises = await _collection
-        // .where('category', isEqualTo: translator[exercise.category])
         .where('category', isEqualTo: exercise.category)
         .where('name', isEqualTo: exercise.name)
         .limit(1)

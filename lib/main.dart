@@ -2,8 +2,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gym_log/widgets/brightness_manager.dart';
@@ -15,7 +17,10 @@ import 'package:gym_log/utils/init_firestore.dart';
 import 'firebase_options.dart';
 import 'pages/home_page.dart';
 import 'theme.dart';
-import 'utils/init.dart';
+
+late FirebaseFirestore fs;
+late FirebaseAuth fa;
+bool networkDisabled = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +28,15 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   fs = FirebaseFirestore.instance;
   fs.settings = const Settings(persistenceEnabled: true);
+
+  fa = FirebaseAuth.instance;
+
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
 
   await Hive.initFlutter();
   await Hive.openBox('config');
@@ -41,36 +55,38 @@ void main() async {
 
   runApp(
     BrightnessController(
-      child: Builder(builder: (context) {
-        TextTheme textTheme = createTextTheme(context, "Roboto", "Roboto");
-        MaterialTheme theme = MaterialTheme(textTheme);
+      child: Builder(
+        builder: (context) {
+          TextTheme textTheme = createTextTheme(context, "Roboto", "Roboto");
+          MaterialTheme theme = MaterialTheme(textTheme);
 
-        final brightness = BrightnessManager.of(context).brightness;
+          final brightness = BrightnessManager.of(context).brightness;
 
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          initialRoute: '/',
-          theme: brightness == Brightness.light ? theme.light() : theme.dark(),
-          routes: {
-            '/': (context) {
-              return const MainApp();
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            initialRoute: '/',
+            theme: brightness == Brightness.light ? theme.light() : theme.dark(),
+            routes: {
+              '/': (context) {
+                return const MainApp();
+              },
+              '/verify-email': (context) {
+                return EmailVerificationScreen(
+                  actions: [
+                    EmailVerifiedAction(() {
+                      Navigator.pushReplacementNamed(context, '/');
+                    }),
+                    AuthCancelledAction((context) {
+                      FirebaseUIAuth.signOut(context: context);
+                      Navigator.pushReplacementNamed(context, '/');
+                    }),
+                  ],
+                );
+              },
             },
-            '/verify-email': (context) {
-              return EmailVerificationScreen(
-                actions: [
-                  EmailVerifiedAction(() {
-                    Navigator.pushReplacementNamed(context, '/');
-                  }),
-                  AuthCancelledAction((context) {
-                    FirebaseUIAuth.signOut(context: context);
-                    Navigator.pushReplacementNamed(context, '/');
-                  }),
-                ],
-              );
-            },
-          },
-        );
-      }),
+          );
+        },
+      ),
     ),
   );
 }
@@ -88,7 +104,7 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseAuth.instance.authStateChanges(),
+      stream: fa.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.data == null) {
           return SignInScreen(

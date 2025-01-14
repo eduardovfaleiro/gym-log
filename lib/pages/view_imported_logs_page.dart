@@ -51,45 +51,21 @@ class _ViewImportedLogsPageState extends State<ViewImportedLogsPage> {
       body: Column(
         children: [
           Container(
-            decoration: const BoxDecoration(color: Colors.black),
             padding: const EdgeInsets.all(4),
             child: const Padding(
               padding: EdgeInsets.only(left: 8),
               child: Row(
                 children: [
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'Peso',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'Reps',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'Data',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+                  Expanded(flex: 3, child: Text('Peso')),
+                  Expanded(flex: 3, child: Text('Reps')),
+                  Expanded(flex: 3, child: Text('Data')),
                   SizedBox(width: 12),
-                  Expanded(
-                    flex: 6,
-                    child: Text(
-                      'Notas',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+                  Expanded(flex: 6, child: Text('Notas')),
                 ],
               ),
             ),
           ),
+          const Divider(height: 0),
           Expanded(
             child: Visibility(
               visible: widget.logs.isNotEmpty,

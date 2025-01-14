@@ -1,14 +1,17 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:gym_log/utils/init.dart';
 
+import '../main.dart';
 import '../utils/run_fs.dart';
 
 class CategoryRepository {
-  final _categoryCollection =
-      fs.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).collection('categories');
+  final _categoryCollection = fs.collection('users').doc(fa.currentUser!.uid).collection('categories');
+
+  Future<bool> exists(String name) async {
+    var categoriesQuery = await _categoryCollection.where('name', isEqualTo: name).limit(1).get();
+    return categoriesQuery.docs.isNotEmpty;
+  }
 
   Future<void> add(String name) async {
     var countQuery = await _categoryCollection.orderBy('order', descending: true).limit(1).get();
@@ -20,7 +23,7 @@ class CategoryRepository {
   Future<void> delete(String name) async {
     var exercisesQuery = await fs
         .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .doc(fa.currentUser!.uid)
         .collection('exercises')
         .where('category', isEqualTo: name)
         .get();
