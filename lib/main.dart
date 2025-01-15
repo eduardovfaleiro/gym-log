@@ -18,6 +18,14 @@ import 'firebase_options.dart';
 import 'pages/home_page.dart';
 import 'theme.dart';
 
+const kMaxLengthWeight = 4;
+const kMaxWeight = 9999.99;
+
+const kMaxLengthReps = 4;
+const kMaxReps = 9999;
+
+const kMaxLengthNotes = 150;
+
 late FirebaseFirestore fs;
 late FirebaseAuth fa;
 bool networkDisabled = false;

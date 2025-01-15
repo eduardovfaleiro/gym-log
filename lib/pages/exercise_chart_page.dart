@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_log/utils/exceptions.dart';
 import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/horizontal_router.dart';
 import 'package:gym_log/utils/log_dialogs.dart';
@@ -180,6 +181,15 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
 
                                     try {
                                       logs = ExcelService().convertExcelToLogs(excelPath);
+                                    } on ExcelValueException catch (error) {
+                                      showError(
+                                        context,
+                                        title: 'Ocorreu um erro na célula ${error.column}${error.row}',
+                                        content:
+                                            'O ${error.type.toReadableString().toLowerCase()} com valor "${error.value}" está inválido.'
+                                            '\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
+                                      );
+                                      return;
                                     } catch (error) {
                                       showError(
                                         context,
@@ -265,7 +275,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                               if (!isSure) return;
 
                                               runLoading(() async {
-                                                await _controller.importCsv(result.files.single.path!);
+                                                await LogRepository(widget.exercise).replaceAll(logs);
                                                 setState(() {});
                                                 Navigator.pop(context);
                                               });

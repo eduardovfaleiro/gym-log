@@ -72,7 +72,7 @@ class LogRepository {
           batch.delete(doc.reference);
         }
 
-        await batch.commit();
+        await runFs(() => batch.commit());
       }
 
       if (deletedCount < batchSize) {

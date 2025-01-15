@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gym_log/entities/log.dart';
+import 'package:gym_log/main.dart';
 import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/show_error.dart';
 import 'package:flutter/services.dart';
@@ -90,7 +91,7 @@ Future<void> showLogDialog(
   var notesController = TextEditingController(text: log?.notes);
 
   var dateNow = DateTime.now();
-  var dateController = TextEditingController(text: log?.date.formatReadable());
+  var dateController = TextEditingController(text: log?.date.formatReadable() ?? dateNow.formatReadable());
   DateTime selectedDate = log?.date ?? dateNow;
 
   var weightController = TextEditingController(text: log?.weight.toString());
@@ -126,7 +127,7 @@ Future<void> showLogDialog(
             TextField(
               controller: weightController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
-              inputFormatters: [DoubleInputFormatter(maxLength: 4)],
+              inputFormatters: [DoubleInputFormatter(maxLength: kMaxLengthWeight)],
               decoration: InputDecoration(
                 labelText: 'Peso (kg)',
                 suffix: Row(
@@ -187,14 +188,14 @@ Future<void> showLogDialog(
                 ),
               ),
               keyboardType: const TextInputType.numberWithOptions(),
-              inputFormatters: [IntInputFormatter(maxLength: 4)],
+              inputFormatters: [IntInputFormatter(maxLength: kMaxLengthReps)],
             ),
             TextField(
               keyboardType: TextInputType.multiline,
               maxLines: null,
               controller: notesController,
               decoration: const InputDecoration(labelText: 'Notas'),
-              maxLength: 150,
+              maxLength: kMaxLengthNotes,
             ),
           ],
         ),

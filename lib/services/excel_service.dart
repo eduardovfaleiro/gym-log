@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:excel/excel.dart';
+import 'package:gym_log/main.dart';
 import 'package:gym_log/repositories/log_repository.dart';
+import 'package:gym_log/utils/exceptions.dart';
 
 import '../entities/exercise.dart';
 import '../entities/log.dart';
@@ -48,11 +50,36 @@ class ExcelService {
     int reps;
     String notes;
 
-    for (var row in excel.tables[excel.tables.keys.first]!.rows.skip(1)) {
+    var rows = excel.tables[excel.tables.keys.first]!.rows;
+    var dateNow = DateTime.now();
+
+    for (int i = 1; i < rows.length; i++) {
+      // for (var row in excel.tables[excel.tables.keys.first]!.rows.skip(1)) {
+      var row = rows[i];
+
       weight = double.parse(row[0]!.value.toString());
+
+      if (weight > kMaxWeight) {
+        throw ExcelValueException(column: 'A', row: i, type: ExcelValueTypeError.weight, value: weight);
+      }
+
       reps = (row[1]!.value as IntCellValue).value;
+
+      if (reps > kMaxReps) {
+        throw ExcelValueException(column: 'B', row: i, type: ExcelValueTypeError.reps, value: reps);
+      }
+
       date = (row[2]!.value as DateCellValue).asDateTimeLocal();
+
+      if (date.isAfter(dateNow)) {
+        throw ExcelValueException(column: 'C', row: i, type: ExcelValueTypeError.date, value: date);
+      }
+
       notes = (row[3]!.value as TextCellValue).value.text!;
+
+      if (notes.length > kMaxLengthNotes) {
+        throw ExcelValueException(column: 'D', row: i, type: ExcelValueTypeError.notes, value: notes);
+      }
 
       log = Log(date: date, weight: weight, reps: reps, notes: notes);
       logs.add(log);

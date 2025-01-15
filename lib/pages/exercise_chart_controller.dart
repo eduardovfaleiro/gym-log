@@ -22,11 +22,6 @@ class ExerciseChartController {
     return logsRepMax;
   }
 
-  Future<void> importCsv(String path) async {
-    List<Log> logs = CsvService().convertCsvToLogs(path);
-    await LogRepository(exercise).replaceAll(logs);
-  }
-
   Future<void> exportAndOpenAsCsv() async {
     String csvData = await CsvService().convertLogsToCsv(
       exercise.name,

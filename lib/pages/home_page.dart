@@ -179,10 +179,6 @@ class _HomePageState extends State<HomePage> with LoadingManager {
         ),
         body: Column(
           children: [
-            TextButton(
-              onPressed: () => throw Exception(),
-              child: const Text("Throw Test Exception"),
-            ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
