@@ -39,6 +39,50 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
     _controller = ExerciseChartController(widget.exercise);
   }
 
+  Future<bool> _showConfirmExport(BuildContext context) {
+    return showConfirmDialog(
+      context,
+      'Tem certeza que deseja exportar os registros para planilha?',
+      content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
+      confirm: 'Sim, exportar',
+    );
+  }
+
+  Future<void> _pushViewImportedLogs({
+    required BuildContext context,
+    required String sheetName,
+    required List<Log> logs,
+  }) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return ViewImportedLogsPage(
+              title: sheetName,
+              logs: logs,
+              onConfirm: () async {
+                bool isSure = await showConfirmDialog(
+                  context,
+                  'Tem certeza que deseja importar os dados da planilha "$sheetName"?',
+                  content:
+                      'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
+                  confirm: 'Sim, importar e substituir dados',
+                  cancel: 'Não, cancelar',
+                );
+
+                if (!isSure) return;
+
+                runLoading(() async {
+                  await LogRepository(widget.exercise).replaceAll(logs);
+                  setState(() {});
+                  Navigator.pop(context);
+                });
+              });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LoadingPresenter(
@@ -107,23 +151,14 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                         Row(
                           children: [
                             Expanded(
-                              child: OutlinedButton(
+                              child: _OutlinedButton(
                                 onPressed: () async {
-                                  bool isSure = await showConfirmDialog(
-                                    context,
-                                    'Tem certeza que deseja exportar os registros para planilha?',
-                                    content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
-                                    confirm: 'Sim, exportar',
-                                  );
+                                  bool isSure = await _showConfirmExport(context);
 
                                   if (isSure) {
                                     _controller.exportAndOpenAsExcel();
                                   }
                                 },
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
-                                  minimumSize: const Size(0, 0),
-                                ),
                                 child: const Text(
                                   'xlsx',
                                   style: TextStyle(
@@ -134,23 +169,14 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                             ),
                             const SizedBox(width: 4),
                             Expanded(
-                              child: OutlinedButton(
+                              child: _OutlinedButton(
                                 onPressed: () async {
-                                  bool isSure = await showConfirmDialog(
-                                    context,
-                                    'Tem certeza que deseja exportar os registros para planilha?',
-                                    content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
-                                    confirm: 'Sim, exportar',
-                                  );
+                                  bool isSure = await _showConfirmExport(context);
 
                                   if (isSure) {
                                     _controller.exportAndOpenAsCsv();
                                   }
                                 },
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
-                                  minimumSize: const Size(0, 0),
-                                ),
                                 child: const Text('csv'),
                               ),
                             ),
@@ -168,26 +194,26 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                         Row(
                           children: [
                             Expanded(
-                              child: OutlinedButton(
+                              child: _OutlinedButton(
                                 onPressed: () async {
                                   FilePickerResult? result = await FilePicker.platform.pickFiles(
                                     allowedExtensions: ['xlsx'],
                                     type: FileType.custom,
                                   );
+                                  if (result == null) return;
 
-                                  if (result != null) {
+                                  runLoading(() async {
                                     String excelPath = result.files.single.path!;
                                     List<Log> logs = [];
 
                                     try {
                                       logs = ExcelService().convertExcelToLogs(excelPath);
-                                    } on ExcelValueException catch (error) {
+                                    } on SheetValueException catch (error) {
                                       showError(
                                         context,
                                         title: 'Ocorreu um erro na célula ${error.column}${error.row}',
                                         content:
-                                            'O ${error.type.toReadableString().toLowerCase()} com valor "${error.value}" está inválido.'
-                                            '\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
+                                            '${error.message}\n\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
                                       );
                                       return;
                                     } catch (error) {
@@ -199,41 +225,24 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                       return;
                                     }
 
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return ViewImportedLogsPage(
-                                            title: result.files.single.name,
-                                            logs: logs,
-                                            onConfirm: () async {
-                                              bool isSure = await showConfirmDialog(
-                                                context,
-                                                'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                                content:
-                                                    'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
-                                                confirm: 'Sim, importar e substituir dados',
-                                                cancel: 'Não, cancelar',
-                                              );
+                                    _pushViewImportedLogs(context: context, sheetName: result.names.first!, logs: logs);
+                                  });
 
-                                              if (!isSure) return;
-
-                                              runLoading(() async {
-                                                await LogRepository(widget.exercise).replaceAll(logs);
-                                                setState(() {});
-                                                Navigator.pop(context);
-                                              });
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  }
+                                  // Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) {
+                                  //       return ViewImportedLogsPage(
+                                  //           title: result.files.single.name,
+                                  //           logs: logs,
+                                  //           onConfirm: () async {
+                                  //             await _onConfirmImport(
+                                  //                 context: context, logs: logs, sheetName: result.names.first!);
+                                  //           });
+                                  //     },
+                                  //   ),
+                                  // );
                                 },
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
-                                  minimumSize: const Size(0, 0),
-                                ),
                                 child: const Text(
                                   'xlsx',
                                   style: TextStyle(
@@ -244,52 +253,40 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                             ),
                             const SizedBox(width: 4),
                             Expanded(
-                              child: OutlinedButton(
+                              child: _OutlinedButton(
                                 onPressed: () async {
                                   FilePickerResult? result = await FilePicker.platform.pickFiles(
                                     allowedExtensions: ['csv'],
                                     type: FileType.custom,
                                   );
+                                  if (result == null) return;
 
-                                  if (result != null) {
+                                  runLoading(() async {
                                     String csvPath = result.files.single.path!;
-                                    List<Log> logs = CsvService().convertCsvToLogs(csvPath);
+                                    List<Log> logs = [];
 
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return ViewImportedLogsPage(
-                                            title: result.files.single.name,
-                                            logs: logs,
-                                            onConfirm: () async {
-                                              bool isSure = await showConfirmDialog(
-                                                context,
-                                                'Tem certeza que deseja importar os dados da planilha "${result.names.first}"?',
-                                                content:
-                                                    'Todos os logs já existentes deste exercício serão REMOVIDOS e SUBSTITUÍDOS pelos logs desta planilha.',
-                                                confirm: 'Sim, importar e substituir dados',
-                                                cancel: 'Não, cancelar',
-                                              );
+                                    try {
+                                      logs = CsvService().convertCsvToLogs(csvPath);
+                                    } on SheetValueException catch (error) {
+                                      showError(
+                                        context,
+                                        title: 'Ocorreu um erro na célula ${error.column}${error.row}',
+                                        content:
+                                            '${error.message}\n\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
+                                      );
+                                      return;
+                                    } catch (error) {
+                                      showError(
+                                        context,
+                                        content:
+                                            'Não foi possível importar o arquivo .csv. Por favor, tente novamente.',
+                                      );
+                                      return;
+                                    }
 
-                                              if (!isSure) return;
-
-                                              runLoading(() async {
-                                                await LogRepository(widget.exercise).replaceAll(logs);
-                                                setState(() {});
-                                                Navigator.pop(context);
-                                              });
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  }
+                                    _pushViewImportedLogs(context: context, sheetName: result.names.first!, logs: logs);
+                                  });
                                 },
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
-                                  minimumSize: const Size(0, 0),
-                                ),
                                 child: const Text('csv'),
                               ),
                             ),
@@ -345,4 +342,14 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
       ),
     );
   }
+}
+
+class _OutlinedButton extends OutlinedButton {
+  _OutlinedButton({required super.onPressed, required super.child})
+      : super(
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+            minimumSize: const Size(0, 0),
+          ),
+        );
 }

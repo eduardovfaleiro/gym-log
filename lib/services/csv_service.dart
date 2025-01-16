@@ -4,6 +4,8 @@ import 'package:gym_log/entities/log.dart';
 import 'package:intl/intl.dart';
 import 'package:csv/csv.dart';
 
+import 'sheet_service.dart';
+
 class CsvService {
   List<Log> convertCsvToLogs(String path) {
     File file = File(path);
@@ -12,7 +14,9 @@ class CsvService {
     List<List> logs = const CsvToListConverter().convert(csvData);
     List<Log> logsObj = [];
 
-    for (var logList in logs.skip(1)) {
+    for (int i = 1; i < logs.length; i++) {
+      // for (var logList in logs.skip(1)) {
+      var logList = logs[i];
       var log = Log(
         weight: logList[0],
         reps: logList[1],
@@ -20,6 +24,7 @@ class CsvService {
         notes: logList[3],
       );
 
+      SheetService().validateLogFromCell(log: log, row: i);
       logsObj.add(log);
     }
 

@@ -6,13 +6,13 @@ import '../widgets/logs_list_view.dart';
 class ViewImportedLogsPage extends StatefulWidget {
   final String title;
   final List<Log> logs;
-  final void Function()? onConfirm;
+  final void Function() onConfirm;
 
   const ViewImportedLogsPage({
     super.key,
     required this.title,
     required this.logs,
-    this.onConfirm,
+    required this.onConfirm,
   });
 
   @override
