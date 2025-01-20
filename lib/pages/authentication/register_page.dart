@@ -1,19 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:gym_log/main.dart';
-import 'package:gym_log/pages/authentication/register_page.dart';
+import 'package:gym_log/pages/authentication/login_page.dart';
 import 'package:gym_log/utils/horizontal_router.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscureText = true;
@@ -21,16 +20,6 @@ class _LoginPageState extends State<LoginPage> {
 
   bool get isEmailValid => _emailController.text.isNotEmpty;
   bool get isPasswordValid => _passwordController.text.isNotEmpty;
-
-  String? _invalidCredentialError() {
-    if (!_invalidCredential) return null;
-
-    if (!isEmailValid || !isPasswordValid) {
-      return null;
-    }
-
-    return 'E-mail ou senha estão incorretos.';
-  }
 
   final _formKey = GlobalKey<FormState>();
 
@@ -43,27 +32,18 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                'Gym Log',
-                style: GoogleFonts.jockeyOne(
-                  textStyle: TextStyle(
-                      fontSize: Theme.of(context).textTheme.headlineLarge!.fontSize, fontWeight: FontWeight.bold),
-                ),
-
-                // style: TextStyle(fontSize: Theme.of(context).textTheme.headlineLarge!.fontSize, fontFamily: GoogleFonts.aBeeZeeTextTheme),
-              ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Row(
                     children: [
-                      const Text('Não possui uma conta ainda? '),
+                      const Text('Já possui uma conta? '),
                       InkWell(
                         onTap: () {
-                          Navigator.pushReplacement(context, HorizontalRouter(child: const RegisterPage()));
+                          Navigator.pushReplacement(context, BackHorizontalRouter(child: const LoginPage()));
                         },
                         child: const Text(
-                          'Cadastrar',
+                          'Entrar',
                           style: TextStyle(color: Colors.blue),
                         ),
                       ),
@@ -75,15 +55,6 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         TextFormField(
                           validator: (email) {
-                            String? invalidCredentialError = _invalidCredentialError();
-
-                            if (invalidCredentialError != null) {
-                              return invalidCredentialError;
-                            }
-
-                            if (!isEmailValid) {
-                              return 'O e-mail deve ser preenchido.';
-                            }
                             return null;
                           },
                           controller: _emailController,
@@ -92,16 +63,6 @@ class _LoginPageState extends State<LoginPage> {
                         TextFormField(
                           controller: _passwordController,
                           validator: (password) {
-                            String? invalidCredentialError = _invalidCredentialError();
-
-                            if (invalidCredentialError != null) {
-                              return invalidCredentialError;
-                            }
-
-                            if (password == null || password.isEmpty) {
-                              return 'A senha deve ser preenchida.';
-                            }
-
                             return null;
                           },
                           decoration: InputDecoration(
@@ -144,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
 
                               _formKey.currentState!.validate();
                             },
-                            child: const Text('Entrar')),
+                            child: const Text('Cadastrar')),
                       ),
                     ],
                   ),

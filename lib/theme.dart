@@ -345,6 +345,10 @@ class MaterialTheme {
         ),
         scaffoldBackgroundColor: colorScheme.surface,
         canvasColor: colorScheme.surface,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.inverseSurface, textStyle: TextStyle(color: colorScheme.surface)),
+        ),
       );
 
   List<ExtendedColor> get extendedColors => [];
