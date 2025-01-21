@@ -39,3 +39,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/google_logo.svg
+    - assets/gym_log_logo.svg
+    - assets/gym_log_horizontal_logo.svg

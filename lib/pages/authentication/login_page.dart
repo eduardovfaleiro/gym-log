@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gym_log/main.dart';
 import 'package:gym_log/pages/authentication/register_page.dart';
 import 'package:gym_log/utils/horizontal_router.dart';
+import 'package:gym_log/widgets/text_link.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -37,38 +38,45 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Column(
             children: [
-              Text(
-                'Gym Log',
-                style: GoogleFonts.jockeyOne(
-                  textStyle: TextStyle(
-                      fontSize: Theme.of(context).textTheme.headlineLarge!.fontSize, fontWeight: FontWeight.bold),
+              Flexible(
+                child: SvgPicture.asset(
+                  'assets/gym_log_horizontal_logo.svg',
+                  colorFilter: const ColorFilter.mode(
+                    // Theme.of(context).colorScheme.primaryFixedDim,
+                    Colors.grey,
+                    BlendMode.srcIn,
+                  ),
                 ),
-
-                // style: TextStyle(fontSize: Theme.of(context).textTheme.headlineLarge!.fontSize, fontFamily: GoogleFonts.aBeeZeeTextTheme),
               ),
+            ],
+          ),
+          Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Entrar na conta',
+                  style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 20),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Row(
                     children: [
                       const Text('Não possui uma conta ainda? '),
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(context, HorizontalRouter(child: const RegisterPage()));
-                        },
-                        child: const Text(
-                          'Cadastrar',
-                          style: TextStyle(color: Colors.blue),
-                        ),
-                      ),
+                      TextLink('Cadastrar', onTap: () {
+                        Navigator.pushReplacement(context, HorizontalRouter(child: const RegisterPage()));
+                      }),
                     ],
                   ),
+                  const SizedBox(height: 12),
                   Form(
                     key: _formKey,
                     child: Column(
@@ -89,6 +97,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _emailController,
                           decoration: const InputDecoration(labelText: 'E-mail'),
                         ),
+                        const SizedBox(height: 8),
                         TextFormField(
                           controller: _passwordController,
                           validator: (password) {
@@ -122,7 +131,16 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.only(top: 8, bottom: 16),
+                    alignment: Alignment.centerRight,
+                    child: TextLink(
+                      'Esqueceu sua senha?',
+                      onTap: () {
+                        Navigator.pushReplacement(context, HorizontalRouter(child: const RegisterPage()));
+                      },
+                    ),
+                  ),
                   Row(
                     children: [
                       Expanded(
@@ -163,23 +181,26 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               OutlinedButton(
-                  onPressed: () {},
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/google_logo.svg',
-                          height: 36,
-                        ),
-                        const Text('Entrar com Google'),
-                      ],
+                onPressed: () {},
+                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 36,
+                      child: SvgPicture.asset(
+                        'assets/google_logo.svg',
+                        height: 36,
+                        fit: BoxFit.fitHeight,
+                      ),
                     ),
-                  )),
+                    const Text('Entrar com Google'),
+                  ],
+                ),
+              ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
