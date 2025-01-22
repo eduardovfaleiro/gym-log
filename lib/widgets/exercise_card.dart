@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gym_log/entities/exercise.dart';
 import 'package:gym_log/repositories/log_repository.dart';
-import 'package:gym_log/utils/horizontal_router.dart';
+import 'package:gym_log/utils/routers.dart';
 import 'package:gym_log/utils/show_popup.dart';
 import 'package:gym_log/widgets/popup_buton.dart';
 

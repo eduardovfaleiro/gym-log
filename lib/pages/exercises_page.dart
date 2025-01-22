@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gym_log/pages/add_exercise_page.dart';
-import 'package:gym_log/utils/horizontal_router.dart';
+import 'package:gym_log/utils/routers.dart';
 import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/widgets/exercise_card.dart';
 import 'package:gym_log/widgets/loading_manager.dart';

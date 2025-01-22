@@ -14,7 +14,7 @@ import 'package:gym_log/widgets/popup_buton.dart';
 import '../entities/exercise.dart';
 import '../repositories/category_repository.dart';
 import '../repositories/exercise_repository.dart';
-import '../utils/horizontal_router.dart';
+import '../utils/routers.dart';
 import '../utils/show_popup.dart';
 import '../widgets/brightness_manager.dart';
 import '../widgets/exercise_card.dart';

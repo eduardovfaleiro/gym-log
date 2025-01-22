@@ -2,7 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_log/utils/exceptions.dart';
 import 'package:gym_log/utils/extensions.dart';
-import 'package:gym_log/utils/horizontal_router.dart';
+import 'package:gym_log/utils/routers.dart';
 import 'package:gym_log/utils/log_dialogs.dart';
 import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
