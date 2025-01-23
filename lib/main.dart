@@ -8,6 +8,7 @@ import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gym_log/pages/authentication_page.dart';
 import 'package:gym_log/pages/authentication/login_page.dart';
 import 'package:gym_log/widgets/brightness_manager.dart';
 import 'package:hive_flutter/hive_flutter.dart';
