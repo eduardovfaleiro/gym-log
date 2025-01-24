@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_log/main.dart';
-import 'package:gym_log/pages/authentication_page.dart';
 import 'package:gym_log/pages/authentication/register_page.dart';
 import 'package:gym_log/utils/routers.dart';
+import 'package:gym_log/utils/show_info_dialog.dart';
+import 'package:gym_log/widgets/auth_page_manager.dart';
 import 'package:gym_log/widgets/brightness_manager.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/text_link.dart';
@@ -110,6 +110,7 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                           TextLink(
                             'Cadastrar',
                             onTap: () {
+                              // AuthPageManager.of(context).updatePage(AuthPage.register);
                               Navigator.push(
                                 context,
                                 FadeRouter(child: const RegisterPage()),
@@ -174,7 +175,7 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.only(top: 8, bottom: 16),
+                        padding: const EdgeInsets.only(top: 8, bottom: 24),
                         alignment: Alignment.centerRight,
                         child: TextLink(
                           'Esqueceu sua senha?',
@@ -197,6 +198,16 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                                         email: _emailController.text,
                                         password: _passwordController.text,
                                       );
+
+                                      if (credential.user != null && !credential.user!.emailVerified) {
+                                        await fa.signOut();
+                                        showInfoDialog(
+                                          context,
+                                          title: 'E-mail não verificado',
+                                          content:
+                                              'Para continuar, acesse o link no e-mail enviado a ${credential.user!.email}.',
+                                        );
+                                      }
                                     } on FirebaseAuthException catch (e) {
                                       if (e.code == 'invalid-credential') {
                                         _invalidCredential = true;

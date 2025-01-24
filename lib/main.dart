@@ -8,8 +8,9 @@ import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gym_log/pages/authentication_page.dart';
 import 'package:gym_log/pages/authentication/login_page.dart';
+import 'package:gym_log/pages/authentication/register_page.dart';
+import 'package:gym_log/widgets/auth_page_manager.dart';
 import 'package:gym_log/widgets/brightness_manager.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -116,27 +117,13 @@ class _MainAppState extends State<MainApp> {
     return StreamBuilder(
       stream: fa.authStateChanges(),
       builder: (context, snapshot) {
-        if (snapshot.data == null) {
-          return const LoginPage();
-          // return SignInScreen(
-          //   actions: [
-          //     AuthStateChangeAction((context, state) {
-          //       final user = switch (state) {
-          //         SignedIn(user: final user) => user,
-          //         CredentialLinked(user: final user) => user,
-          //         UserCreated(credential: final cred) => cred.user,
-          //         _ => null,
-          //       };
-
-          //       switch (user) {
-          //         case User(emailVerified: true):
-          //           Navigator.pushReplacementNamed(context, '/');
-          //         case User(emailVerified: false, email: final String _):
-          //           Navigator.pushNamed(context, '/verify-email');
-          //       }
-          //     }),
-          //   ],
+        if (snapshot.data == null || !snapshot.data!.emailVerified) {
+          // return Visibility(
+          //   visible: AuthPageManager.of(context).page == AuthPage.login,
+          //   replacement: const RegisterPage(),
+          //   child: const LoginPage(),
           // );
+          return const LoginPage();
         }
 
         return FutureBuilder(

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -7,6 +9,8 @@ import 'package:gym_log/main.dart';
 import 'package:gym_log/pages/authentication/login_page.dart';
 import 'package:gym_log/pages/authentication/register_page.dart';
 import 'package:gym_log/utils/routers.dart';
+import 'package:gym_log/utils/show_info_dialog.dart';
+import 'package:gym_log/widgets/auth_page_manager.dart';
 import 'package:gym_log/widgets/brightness_manager.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/text_link.dart';
@@ -103,10 +107,8 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                             TextLink(
                               'Entrar',
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  FadeRouter(child: const LoginPage()),
-                                );
+                                Navigator.pop(context);
+                                // AuthPageManager.of(context).updatePage(AuthPage.login);
                               },
                             ),
                           ],
@@ -164,7 +166,7 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                           ),
                         ),
                         const Padding(
-                          padding: EdgeInsets.only(top: 6, bottom: 16),
+                          padding: EdgeInsets.only(top: 6, bottom: 24),
                           child: Text(''),
                         ),
                         Row(
@@ -181,6 +183,14 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                                         final credential = await fa.createUserWithEmailAndPassword(
                                           email: _emailController.text,
                                           password: _passwordController.text,
+                                        );
+                                        await credential.user!.sendEmailVerification();
+                                        Navigator.pop(context);
+                                        showInfoDialog(
+                                          context,
+                                          title: 'Enviamos uma verificação de e-mail',
+                                          content:
+                                              'Para continuar, acesse o link no e-mail que enviamos a ${credential.user!.email}.',
                                         );
                                       } on FirebaseAuthException catch (e) {
                                         if (e.code == 'weak-password') {
@@ -228,6 +238,7 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
 
                           // Once signed in, return the UserCredential
                           await fa.signInWithCredential(credential);
+                          Navigator.pop(context);
                         });
                       },
                       style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),
