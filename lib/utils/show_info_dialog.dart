@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Future<void> showInfoDialog(BuildContext context, {required String title, required String content}) async {
+Future<void> showInfo(BuildContext context, {required String title, required String content}) async {
   await showDialog(
     context: context,
     builder: (context) {

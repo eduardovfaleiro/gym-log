@@ -1,10 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_log/main.dart';
+import 'package:gym_log/pages/authentication/auth_appbar.dart';
+import 'package:gym_log/pages/authentication/forgot_password_page.dart';
 import 'package:gym_log/pages/authentication/register_page.dart';
+import 'package:gym_log/services/google_sign_in_service.dart';
 import 'package:gym_log/utils/routers.dart';
+import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/utils/show_info_dialog.dart';
 import 'package:gym_log/widgets/auth_page_manager.dart';
 import 'package:gym_log/widgets/brightness_manager.dart';
@@ -41,45 +47,10 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
 
   @override
   Widget build(BuildContext context) {
-    final brightnessManager = BrightnessManager.of(context);
-
     return LoadingPresenter(
       isLoadingNotifier: isLoadingNotifier,
       child: Scaffold(
-        appBar: AppBar(
-          title: SizedBox(
-            child: Stack(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text('Bem-vindo ao', style: Theme.of(context).textTheme.bodyMedium),
-                      SvgPicture.asset(
-                        'assets/gym_log_horizontal_logo.svg',
-                        height: 24,
-                        fit: BoxFit.fitHeight,
-                        colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
-                      ),
-                    ],
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    onPressed: () {
-                      brightnessManager.updateBrightness(brightnessManager.brightness);
-                    },
-                    icon: const Icon(Icons.light_mode),
-                    selectedIcon: const Icon(Icons.dark_mode),
-                    isSelected: brightnessManager.brightness == Brightness.dark,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        appBar: const AuthAppBar(),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Column(
@@ -180,7 +151,7 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                         child: TextLink(
                           'Esqueceu sua senha?',
                           onTap: () {
-                            Navigator.pushReplacement(context, HorizontalRouter(child: const RegisterPage()));
+                            Navigator.push(context, FadeRouter(child: const ForgotPasswordPage()));
                           },
                         ),
                       ),
@@ -201,7 +172,7 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
 
                                       if (credential.user != null && !credential.user!.emailVerified) {
                                         await fa.signOut();
-                                        showInfoDialog(
+                                        showInfo(
                                           context,
                                           title: 'E-mail não verificado',
                                           content:
@@ -211,6 +182,12 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                                     } on FirebaseAuthException catch (e) {
                                       if (e.code == 'invalid-credential') {
                                         _invalidCredential = true;
+                                      } else if (e.code == 'network-request-failed') {
+                                        showError(
+                                          context,
+                                          content: 'Não foi possível estabelecer conexão com o servidor. '
+                                              'Por favor, cheque sua conexão e tente novamente.',
+                                        );
                                       }
                                     }
 
@@ -238,20 +215,13 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                   OutlinedButton(
                     onPressed: () async {
                       runLoading(() async {
-                        // Trigger the authentication flow
-                        final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+                        var signIn = await GoogleSignInService().signIn(context);
 
-                        // Obtain the auth details from the request
-                        final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-
-                        // Create a new credential
-                        final credential = GoogleAuthProvider.credential(
-                          accessToken: googleAuth?.accessToken,
-                          idToken: googleAuth?.idToken,
-                        );
-
-                        // Once signed in, return the UserCredential
-                        await FirebaseAuth.instance.signInWithCredential(credential);
+                        if (signIn.result) {
+                          Navigator.pop(context);
+                        } else if (signIn.message.isNotEmpty) {
+                          showError(context, content: signIn.message);
+                        }
                       });
                     },
                     style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),

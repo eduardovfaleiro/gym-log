@@ -6,14 +6,18 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_log/main.dart';
+import 'package:gym_log/pages/authentication/auth_appbar.dart';
 import 'package:gym_log/pages/authentication/login_page.dart';
 import 'package:gym_log/pages/authentication/register_page.dart';
 import 'package:gym_log/utils/routers.dart';
+import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/utils/show_info_dialog.dart';
 import 'package:gym_log/widgets/auth_page_manager.dart';
 import 'package:gym_log/widgets/brightness_manager.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/text_link.dart';
+
+import '../../services/google_sign_in_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -37,45 +41,10 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
 
   @override
   Widget build(BuildContext context) {
-    final brightnessManager = BrightnessManager.of(context);
-
     return LoadingPresenter(
       isLoadingNotifier: isLoadingNotifier,
       child: Scaffold(
-        appBar: AppBar(
-          title: SizedBox(
-            child: Stack(
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text('Bem-vindo ao', style: Theme.of(context).textTheme.bodyMedium),
-                      SvgPicture.asset(
-                        'assets/gym_log_horizontal_logo.svg',
-                        height: 24,
-                        fit: BoxFit.fitHeight,
-                        colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
-                      ),
-                    ],
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    onPressed: () {
-                      brightnessManager.updateBrightness(brightnessManager.brightness);
-                    },
-                    icon: const Icon(Icons.light_mode),
-                    selectedIcon: const Icon(Icons.dark_mode),
-                    isSelected: brightnessManager.brightness == Brightness.dark,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        appBar: const AuthAppBar(),
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -186,7 +155,7 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                                         );
                                         await credential.user!.sendEmailVerification();
                                         Navigator.pop(context);
-                                        showInfoDialog(
+                                        showInfo(
                                           context,
                                           title: 'Enviamos uma verificação de e-mail',
                                           content:
@@ -197,6 +166,12 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                                           _weakPassword = true;
                                         } else if (e.code == 'email-already-in-use') {
                                           _emailInUse = true;
+                                        } else if (e.code == 'network-request-failed') {
+                                          showError(
+                                            context,
+                                            content: 'Não foi possível estabelecer conexão com o servidor. '
+                                                'Por favor, cheque sua conexão e tente novamente.',
+                                          );
                                         }
                                       }
 
@@ -224,21 +199,13 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                     OutlinedButton(
                       onPressed: () {
                         runLoading(() async {
-                          // Trigger the authentication flow
-                          final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+                          var signIn = await GoogleSignInService().signIn(context);
 
-                          // Obtain the auth details from the request
-                          final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-
-                          // Create a new credential
-                          final credential = GoogleAuthProvider.credential(
-                            accessToken: googleAuth?.accessToken,
-                            idToken: googleAuth?.idToken,
-                          );
-
-                          // Once signed in, return the UserCredential
-                          await fa.signInWithCredential(credential);
-                          Navigator.pop(context);
+                          if (signIn.result) {
+                            Navigator.pop(context);
+                          } else if (signIn.message.isNotEmpty) {
+                            showError(context, content: signIn.message);
+                          }
                         });
                       },
                       style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),
