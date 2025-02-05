@@ -142,41 +142,43 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                           children: [
                             Expanded(
                               child: ElevatedButton(
-                                  onPressed: () {
-                                    runLoading(() async {
-                                      _weakPassword = false;
-                                      _emailInUse = false;
-                                      if (!_formKey.currentState!.validate()) return;
+                                  onPressed: () async {
+                                    setLoading(true);
+                                    // runLoading(() async {
+                                    _weakPassword = false;
+                                    _emailInUse = false;
+                                    if (!_formKey.currentState!.validate()) return;
 
-                                      try {
-                                        final credential = await fa.createUserWithEmailAndPassword(
-                                          email: _emailController.text,
-                                          password: _passwordController.text,
-                                        );
-                                        await credential.user!.sendEmailVerification();
-                                        Navigator.pop(context);
-                                        showInfo(
+                                    try {
+                                      final credential = await fa.createUserWithEmailAndPassword(
+                                        email: _emailController.text,
+                                        password: _passwordController.text,
+                                      );
+                                      await credential.user!.sendEmailVerification();
+                                      Navigator.pop(context);
+                                      showInfo(
+                                        context,
+                                        title: 'Enviamos uma verificação de e-mail',
+                                        content:
+                                            'Para continuar, acesse o link no e-mail que enviamos a ${credential.user!.email}.',
+                                      );
+                                    } on FirebaseAuthException catch (e) {
+                                      if (e.code == 'weak-password') {
+                                        _weakPassword = true;
+                                      } else if (e.code == 'email-already-in-use') {
+                                        _emailInUse = true;
+                                      } else if (e.code == 'network-request-failed') {
+                                        showError(
                                           context,
-                                          title: 'Enviamos uma verificação de e-mail',
-                                          content:
-                                              'Para continuar, acesse o link no e-mail que enviamos a ${credential.user!.email}.',
+                                          content: 'Não foi possível estabelecer conexão com o servidor. '
+                                              'Por favor, cheque sua conexão e tente novamente.',
                                         );
-                                      } on FirebaseAuthException catch (e) {
-                                        if (e.code == 'weak-password') {
-                                          _weakPassword = true;
-                                        } else if (e.code == 'email-already-in-use') {
-                                          _emailInUse = true;
-                                        } else if (e.code == 'network-request-failed') {
-                                          showError(
-                                            context,
-                                            content: 'Não foi possível estabelecer conexão com o servidor. '
-                                                'Por favor, cheque sua conexão e tente novamente.',
-                                          );
-                                        }
                                       }
+                                    }
 
-                                      _formKey.currentState!.validate();
-                                    });
+                                    _formKey.currentState!.validate();
+                                    // });
+                                    setLoading(false);
                                   },
                                   child: const Text('Cadastrar')),
                             ),
@@ -197,16 +199,18 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                       ),
                     ),
                     OutlinedButton(
-                      onPressed: () {
-                        runLoading(() async {
-                          var signIn = await GoogleSignInService().signIn(context);
+                      onPressed: () async {
+                        setLoading(true);
+                        // runLoading(() async {
+                        var signIn = await GoogleSignInService().signIn(context);
 
-                          if (signIn.result) {
-                            Navigator.pop(context);
-                          } else if (signIn.message.isNotEmpty) {
-                            showError(context, content: signIn.message);
-                          }
-                        });
+                        if (signIn.result) {
+                          Navigator.pop(context);
+                        } else if (signIn.message.isNotEmpty) {
+                          showError(context, content: signIn.message);
+                        }
+                        // });
+                        setLoading(false);
                       },
                       style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),
                       child: Row(

@@ -84,7 +84,7 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                               // AuthPageManager.of(context).updatePage(AuthPage.register);
                               Navigator.push(
                                 context,
-                                FadeRouter(child: const RegisterPage()),
+                                NoAnimationRouter(child: const RegisterPage()),
                               );
                             },
                           ),
@@ -151,7 +151,7 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                         child: TextLink(
                           'Esqueceu sua senha?',
                           onTap: () {
-                            Navigator.push(context, FadeRouter(child: const ForgotPasswordPage()));
+                            Navigator.push(context, NoAnimationRouter(child: const ForgotPasswordPage()));
                           },
                         ),
                       ),
@@ -159,40 +159,42 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                         children: [
                           Expanded(
                             child: ElevatedButton(
-                                onPressed: () {
-                                  runLoading(() async {
-                                    _invalidCredential = false;
-                                    if (!_formKey.currentState!.validate()) return;
+                                onPressed: () async {
+                                  setLoading(true);
+                                  // runLoading(() async {
+                                  _invalidCredential = false;
+                                  if (!_formKey.currentState!.validate()) return;
 
-                                    try {
-                                      final credential = await fa.signInWithEmailAndPassword(
-                                        email: _emailController.text,
-                                        password: _passwordController.text,
+                                  try {
+                                    final credential = await fa.signInWithEmailAndPassword(
+                                      email: _emailController.text,
+                                      password: _passwordController.text,
+                                    );
+
+                                    if (credential.user != null && !credential.user!.emailVerified) {
+                                      await fa.signOut();
+                                      showInfo(
+                                        context,
+                                        title: 'E-mail não verificado',
+                                        content:
+                                            'Para continuar, acesse o link no e-mail enviado a ${credential.user!.email}.',
                                       );
-
-                                      if (credential.user != null && !credential.user!.emailVerified) {
-                                        await fa.signOut();
-                                        showInfo(
-                                          context,
-                                          title: 'E-mail não verificado',
-                                          content:
-                                              'Para continuar, acesse o link no e-mail enviado a ${credential.user!.email}.',
-                                        );
-                                      }
-                                    } on FirebaseAuthException catch (e) {
-                                      if (e.code == 'invalid-credential') {
-                                        _invalidCredential = true;
-                                      } else if (e.code == 'network-request-failed') {
-                                        showError(
-                                          context,
-                                          content: 'Não foi possível estabelecer conexão com o servidor. '
-                                              'Por favor, cheque sua conexão e tente novamente.',
-                                        );
-                                      }
                                     }
+                                  } on FirebaseAuthException catch (e) {
+                                    if (e.code == 'invalid-credential') {
+                                      _invalidCredential = true;
+                                    } else if (e.code == 'network-request-failed') {
+                                      showError(
+                                        context,
+                                        content: 'Não foi possível estabelecer conexão com o servidor. '
+                                            'Por favor, cheque sua conexão e tente novamente.',
+                                      );
+                                    }
+                                  }
 
-                                    _formKey.currentState!.validate();
-                                  });
+                                  _formKey.currentState!.validate();
+                                  // });
+                                  setLoading(false);
                                 },
                                 child: const Text('Entrar')),
                           ),
@@ -214,15 +216,21 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                   ),
                   OutlinedButton(
                     onPressed: () async {
-                      runLoading(() async {
-                        var signIn = await GoogleSignInService().signIn(context);
+                      setLoading(true);
+                      // runLoading(() async {
+                      var signIn = await GoogleSignInService().signIn(context);
 
-                        if (signIn.result) {
-                          Navigator.pop(context);
-                        } else if (signIn.message.isNotEmpty) {
-                          showError(context, content: signIn.message);
-                        }
-                      });
+                      if (!signIn.result && signIn.message.isNotEmpty) {
+                        showError(context, content: signIn.message);
+                      }
+
+                      // if (signIn.result) {
+                      //   Navigator.pop(context);
+                      // } else if (signIn.message.isNotEmpty) {
+                      //   showError(context, content: signIn.message);
+                      // }
+                      // });
+                      setLoading(false);
                     },
                     style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),
                     child: Row(

@@ -44,20 +44,22 @@ class _ImportCategoryPageState extends State<ImportCategoryPage> with LoadingMan
                       return;
                     }
 
-                    runLoading(() async {
-                      String selectedCategory = _selectedCategory!;
-                      List<String> exercises = await ExerciseSelectionRepository().getAllFromCategory(selectedCategory);
+                    setLoading(true);
+                    // runLoading(() async {
+                    String selectedCategory = _selectedCategory!;
+                    List<String> exercises = await ExerciseSelectionRepository().getAllFromCategory(selectedCategory);
 
-                      exercises.removeWhere((exercise) {
-                        return widget.exercises.contains(exercise);
-                      });
-
-                      await ExerciseSelectionRepository().addAll(
-                        exercises.map((exercise) => Exercise(name: exercise, category: widget.category)).toList(),
-                      );
-                      // ignore: use_build_context_synchronously
-                      Navigator.pop(context);
+                    exercises.removeWhere((exercise) {
+                      return widget.exercises.contains(exercise);
                     });
+
+                    await ExerciseSelectionRepository().addAll(
+                      exercises.map((exercise) => Exercise(name: exercise, category: widget.category)).toList(),
+                    );
+                    // ignore: use_build_context_synchronously
+                    Navigator.pop(context);
+                    // });
+                    setLoading(false);
                   },
                   child: const Text('Importar'),
                 ),

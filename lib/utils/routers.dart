@@ -39,19 +39,12 @@ class BackHorizontalRouter extends PageRouteBuilder {
         );
 }
 
-class FadeRouter extends PageRouteBuilder {
+class NoAnimationRouter extends PageRouteBuilder {
   final Widget child;
 
-  FadeRouter({required this.child})
+  NoAnimationRouter({required this.child})
       : super(
           pageBuilder: (_, __, ___) => child,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const curve = Curves.easeInOut;
-
-            var tween = Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve));
-            var fadeAnimation = animation.drive(tween);
-
-            return FadeTransition(opacity: fadeAnimation, child: child);
-          },
+          transitionDuration: Duration.zero,
         );
 }

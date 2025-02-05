@@ -195,13 +195,15 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                                     return PopupButton(
                                         label: 'Excluir',
                                         onTap: () async {
-                                          runLoading(() async {
-                                            Navigator.pop(context);
-                                            await ExerciseSelectionRepository().delete(
-                                              Exercise(name: exercise, category: widget.category),
-                                            );
-                                            setState(() {});
-                                          });
+                                          setLoading(true);
+                                          // runLoading(() async {
+                                          Navigator.pop(context);
+                                          await ExerciseSelectionRepository().delete(
+                                            Exercise(name: exercise, category: widget.category),
+                                          );
+                                          setState(() {});
+                                          // });
+                                          setLoading(false);
                                         });
                                   });
                                 },
@@ -233,13 +235,17 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
               const SizedBox(width: 8),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_selectedExercise.isEmpty) return;
 
-                    runLoading(() async {
-                      await ExerciseRepository().add(Exercise(name: _selectedExerciseName, category: widget.category));
-                      Navigator.pop(context, true);
-                    });
+                    setLoading(true);
+
+                    // runLoading(() async {
+                    await ExerciseRepository().add(Exercise(name: _selectedExerciseName, category: widget.category));
+                    Navigator.pop(context, true);
+                    // });
+
+                    setLoading(false);
                   },
                   child: const Text('Adicionar'),
                 ),

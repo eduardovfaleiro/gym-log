@@ -123,10 +123,10 @@ const _categoryAndExercises = [
 Future<void> initFireStore() async {
   var userCollection = fs.collection('users').doc(fa.currentUser!.uid);
 
-  var exercisesQuery = await userCollection.collection('exercises').get();
-  for (var exerciseDoc in exercisesQuery.docs) {
-    exerciseDoc.reference.collection('logs').get();
-  }
+  // var exercisesQuery = await userCollection.collection('exercises').get();
+  // for (var exerciseDoc in exercisesQuery.docs) {
+  //   exerciseDoc.reference.collection('logs').get();
+  // }
 
   var exercisesSelectionCollection = userCollection.collection('exercisesSelection');
   var categoriesCollection = userCollection.collection('categories');

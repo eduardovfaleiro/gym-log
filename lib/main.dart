@@ -130,7 +130,10 @@ class _MainAppState extends State<MainApp> {
           future: initFireStore(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Container(
+                color: Theme.of(context).colorScheme.surface,
+                child: const Center(child: CircularProgressIndicator()),
+              );
             }
 
             return const HomePage();

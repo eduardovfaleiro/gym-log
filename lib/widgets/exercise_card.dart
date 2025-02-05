@@ -114,10 +114,12 @@ class ExerciseCard extends StatelessWidget with LoadingManager {
                           );
 
                           if (isSure) {
-                            runLoading(() async {
-                              await ExerciseRepository().delete(exercise);
-                              onDelete();
-                            });
+                            setLoading(true);
+                            // runLoading(() async {
+                            await ExerciseRepository().delete(exercise);
+                            onDelete();
+                            // });
+                            setLoading(false);
                           }
                         },
                       );

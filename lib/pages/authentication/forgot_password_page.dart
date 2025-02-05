@@ -32,7 +32,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> with LoadingMan
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Para alterar a senha da sua conta, você precisa informar seu endereço de e-mail e acessar o e-mail enviado.',
+                'Para alterar a senha da sua conta, você precisa informar seu endereço de e-mail '
+                'e acessar o link no e-mail que enviaremos a você.',
               ),
               const SizedBox(height: 20),
               Form(
@@ -52,22 +53,27 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> with LoadingMan
               Row(
                 children: [
                   Expanded(
-                      child: ElevatedButton(
-                          onPressed: () async {
-                            runLoading(() async {
-                              if (!_formKey.currentState!.validate()) return;
+                    child: ElevatedButton(
+                        onPressed: () async {
+                          // runLoading(() async {
+                          if (!_formKey.currentState!.validate()) return;
 
-                              await fa.sendPasswordResetEmail(email: _emailController.text);
-                              await showInfo(
-                                context,
-                                title: 'Recuperar senha',
-                                content: 'Caso o e-mail informado esteja associado a uma conta existente, '
-                                    'um e-mail para alterar senha foi enviado a ${_emailController.text}.',
-                              );
-                              Navigator.pop(context);
-                            });
-                          },
-                          child: const Text('Enviar'))),
+                          setLoading(true);
+
+                          await fa.sendPasswordResetEmail(email: _emailController.text);
+                          await showInfo(
+                            context,
+                            title: 'Recuperar senha',
+                            content: 'Caso o e-mail informado esteja associado a uma conta existente, '
+                                'um e-mail para alterar senha foi enviado a ${_emailController.text}.',
+                          );
+                          Navigator.pop(context);
+                          // });
+
+                          setLoading(false);
+                        },
+                        child: const Text('Enviar')),
+                  ),
                 ],
               ),
             ],

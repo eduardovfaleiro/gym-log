@@ -45,20 +45,22 @@ class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingMan
                       return;
                     }
 
-                    runLoading(() async {
-                      String selectedCategory = _selectedCategory!;
-                      List<String> exercises = await ExerciseSelectionRepository().getAllFromCategory(widget.category);
+                    // runLoading(() async {
+                    setLoading(true);
+                    String selectedCategory = _selectedCategory!;
+                    List<String> exercises = await ExerciseSelectionRepository().getAllFromCategory(widget.category);
 
-                      exercises.removeWhere((exercise) {
-                        return widget.exercises.contains(exercise);
-                      });
-
-                      await ExerciseSelectionRepository().addAll(
-                        exercises.map((exercise) => Exercise(name: exercise, category: selectedCategory)).toList(),
-                      );
-                      // ignore: use_build_context_synchronously
-                      Navigator.pop(context);
+                    exercises.removeWhere((exercise) {
+                      return widget.exercises.contains(exercise);
                     });
+
+                    await ExerciseSelectionRepository().addAll(
+                      exercises.map((exercise) => Exercise(name: exercise, category: selectedCategory)).toList(),
+                    );
+                    // ignore: use_build_context_synchronously
+                    Navigator.pop(context);
+                    // });
+                    setLoading(false);
                   },
                   child: const Text('Exportar'),
                 ),

@@ -87,14 +87,16 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                           orderedExercises.add(OrderedExercise(name: _exercises![i], order: i));
                         }
 
-                        runLoading(() async {
-                          setStateList(() {});
+                        setLoading(true);
+                        // runLoading(() async {
+                        setStateList(() {});
 
-                          ExerciseRepository().updateOrder(
-                            category: widget.category,
-                            orderedExercises: orderedExercises,
-                          );
-                        });
+                        ExerciseRepository().updateOrder(
+                          category: widget.category,
+                          orderedExercises: orderedExercises,
+                        );
+                        // });
+                        setLoading(false);
                       },
                     )
                     // child: ListView.separated(

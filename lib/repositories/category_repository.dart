@@ -66,6 +66,6 @@ class CategoryRepository {
       batch.update(categoryDoc.reference, {'order': orderedCategories[categoryName]});
     }
 
-    await batch.commit();
+    await runFs(() => batch.commit());
   }
 }

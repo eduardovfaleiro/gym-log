@@ -72,11 +72,13 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
 
                 if (!isSure) return;
 
-                runLoading(() async {
-                  await LogRepository(widget.exercise).replaceAll(logs);
-                  setState(() {});
-                  Navigator.pop(context);
-                });
+                setLoading(true);
+                // runLoading(() async {
+                await LogRepository(widget.exercise).replaceAll(logs);
+                setState(() {});
+                Navigator.pop(context);
+                // });
+                setLoading(false);
               });
         },
       ),
@@ -202,31 +204,34 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                   );
                                   if (result == null) return;
 
-                                  runLoading(() async {
-                                    String excelPath = result.files.single.path!;
-                                    List<Log> logs = [];
+                                  setLoading(true);
+                                  // runLoading(() async {
+                                  String excelPath = result.files.single.path!;
+                                  List<Log> logs = [];
 
-                                    try {
-                                      logs = ExcelService().convertExcelToLogs(excelPath);
-                                    } on SheetValueException catch (error) {
-                                      showError(
-                                        context,
-                                        title: 'Ocorreu um erro na célula ${error.column}${error.row}',
-                                        content:
-                                            '${error.message}\n\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
-                                      );
-                                      return;
-                                    } catch (error) {
-                                      showError(
-                                        context,
-                                        content:
-                                            'Não foi possível importar o arquivo .xlsx. Por favor, tente novamente.',
-                                      );
-                                      return;
-                                    }
+                                  try {
+                                    logs = ExcelService().convertExcelToLogs(excelPath);
+                                  } on SheetValueException catch (error) {
+                                    showError(
+                                      context,
+                                      title: 'Ocorreu um erro na célula ${error.column}${error.row}',
+                                      content:
+                                          '${error.message}\n\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
+                                    );
+                                    setLoading(false);
+                                    return;
+                                  } catch (error) {
+                                    showError(
+                                      context,
+                                      content: 'Não foi possível importar o arquivo .xlsx. Por favor, tente novamente.',
+                                    );
+                                    setLoading(false);
+                                    return;
+                                  }
 
-                                    _pushViewImportedLogs(context: context, sheetName: result.names.first!, logs: logs);
-                                  });
+                                  _pushViewImportedLogs(context: context, sheetName: result.names.first!, logs: logs);
+                                  setLoading(false);
+                                  // });
 
                                   // Navigator.push(
                                   //   context,
@@ -261,31 +266,35 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                   );
                                   if (result == null) return;
 
-                                  runLoading(() async {
-                                    String csvPath = result.files.single.path!;
-                                    List<Log> logs = [];
+                                  setLoading(true);
+                                  // runLoading(() async {
+                                  String csvPath = result.files.single.path!;
+                                  List<Log> logs = [];
 
-                                    try {
-                                      logs = CsvService().convertCsvToLogs(csvPath);
-                                    } on SheetValueException catch (error) {
-                                      showError(
-                                        context,
-                                        title: 'Ocorreu um erro na célula ${error.column}${error.row}',
-                                        content:
-                                            '${error.message}\n\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
-                                      );
-                                      return;
-                                    } catch (error) {
-                                      showError(
-                                        context,
-                                        content:
-                                            'Não foi possível importar o arquivo .csv. Por favor, tente novamente.',
-                                      );
-                                      return;
-                                    }
+                                  try {
+                                    logs = CsvService().convertCsvToLogs(csvPath);
+                                  } on SheetValueException catch (error) {
+                                    showError(
+                                      context,
+                                      title: 'Ocorreu um erro na célula ${error.column}${error.row}',
+                                      content:
+                                          '${error.message}\n\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
+                                    );
+                                    setLoading(false);
+                                    return;
+                                  } catch (error) {
+                                    showError(
+                                      context,
+                                      content: 'Não foi possível importar o arquivo .csv. Por favor, tente novamente.',
+                                    );
+                                    setLoading(false);
+                                    return;
+                                  }
 
-                                    _pushViewImportedLogs(context: context, sheetName: result.names.first!, logs: logs);
-                                  });
+                                  _pushViewImportedLogs(context: context, sheetName: result.names.first!, logs: logs);
+                                  setLoading(false);
+
+                                  // });
                                 },
                                 child: const Text('csv'),
                               ),
