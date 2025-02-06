@@ -14,7 +14,7 @@ class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           onPressed: () {
-            brightnessManager.updateBrightness(brightnessManager.brightness);
+            brightnessManager.switchBrightness();
           },
           icon: const Icon(Icons.light_mode),
           selectedIcon: const Icon(Icons.dark_mode),

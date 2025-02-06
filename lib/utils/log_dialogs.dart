@@ -105,119 +105,127 @@ Future<void> showLogDialog(
       return AlertDialog(
         title: Text(title),
         insetPadding: const EdgeInsets.all(16),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: dateController,
-                decoration: const InputDecoration(labelText: 'Data'),
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    initialDate: selectedDate,
-                    context: context,
-                    firstDate: DateTime(2000),
-                    lastDate: dateNow,
-                  );
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: dateController,
+                  decoration: const InputDecoration(labelText: 'Data'),
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      initialDate: selectedDate,
+                      context: context,
+                      firstDate: DateTime(2000),
+                      lastDate: dateNow,
+                    );
 
-                  if (pickedDate == null) return;
-                  selectedDate = pickedDate;
-                  dateController.text = selectedDate.formatReadable();
-                },
-                readOnly: true,
-                inputFormatters: const [],
-              ),
-              TextFormField(
-                validator: (weight) {
-                  if (weight!.isEmpty) return 'O peso deve ser preenchido.';
-                  if (double.parse(weight) <= 0) return 'O peso deve ser maior que 0.';
+                    if (pickedDate == null) return;
+                    selectedDate = pickedDate;
+                    dateController.text = selectedDate.formatReadable();
+                  },
+                  readOnly: true,
+                  inputFormatters: const [],
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  validator: (weight) {
+                    if (weight!.isEmpty) return 'O peso deve ser preenchido.';
+                    if (double.parse(weight) <= 0) return 'O peso deve ser maior que 0.';
 
-                  return null;
-                },
-                controller: weightController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
-                inputFormatters: [DoubleInputFormatter(maxLength: kMaxLengthWeight)],
-                decoration: InputDecoration(
-                  labelText: 'Peso (kg)',
-                  suffix: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          double weight = double.tryParse(weightController.text) ?? 0;
-                          if (weight >= kMaxWeight - 1) return;
+                    return null;
+                  },
+                  controller: weightController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
+                  inputFormatters: [DoubleInputFormatter(maxLength: kMaxLengthWeight)],
+                  decoration: InputDecoration(
+                    labelText: 'Peso (kg)',
+                    suffix: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            double weight = double.tryParse(weightController.text) ?? 0;
+                            if (weight >= kMaxWeight - 1) return;
 
-                          weight++;
-                          weightController.text = weight.toString();
-                        },
-                        icon: const Icon(Icons.add),
-                        padding: EdgeInsets.zero,
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          double weight = double.tryParse(weightController.text) ?? 0;
-                          if (weight < 1) return;
+                            weight++;
+                            weightController.text = weight.toString();
+                          },
+                          icon: const Icon(Icons.add),
+                          padding: EdgeInsets.zero,
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            double weight = double.tryParse(weightController.text) ?? 0;
+                            if (weight < 1) return;
 
-                          weight--;
-                          weightController.text = weight.toString();
-                        },
-                        icon: const Icon(Icons.remove),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ],
+                            weight--;
+                            weightController.text = weight.toString();
+                          },
+                          icon: const Icon(Icons.remove),
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              TextFormField(
-                validator: (reps) {
-                  if (reps!.isEmpty) return 'As repetições devem ser preenchidas.';
-                  if (int.parse(reps) <= 0) return 'As repetições devem ser maiores que 0.';
+                const SizedBox(height: 8),
+                TextFormField(
+                  validator: (reps) {
+                    if (reps!.isEmpty) return 'As repetições devem ser preenchidas.';
+                    if (int.parse(reps) <= 0) return 'As repetições devem ser maiores que 0.';
 
-                  return null;
-                },
-                controller: repsController,
-                decoration: InputDecoration(
-                  labelText: 'Repetições',
-                  suffix: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          int reps = int.tryParse(repsController.text) ?? 0;
-                          if (reps >= kMaxReps - 1) return;
+                    return null;
+                  },
+                  controller: repsController,
+                  decoration: InputDecoration(
+                    labelText: 'Repetições',
+                    suffix: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            int reps = int.tryParse(repsController.text) ?? 0;
+                            if (reps >= kMaxReps - 1) return;
 
-                          reps++;
-                          repsController.text = reps.toString();
-                        },
-                        icon: const Icon(Icons.add),
-                        padding: EdgeInsets.zero,
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          int reps = int.tryParse(repsController.text) ?? 0;
-                          if (reps < 1) return;
-                          reps--;
+                            reps++;
+                            repsController.text = reps.toString();
+                          },
+                          icon: const Icon(Icons.add),
+                          padding: EdgeInsets.zero,
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            int reps = int.tryParse(repsController.text) ?? 0;
+                            if (reps < 1) return;
+                            reps--;
 
-                          repsController.text = reps.toString();
-                        },
-                        icon: const Icon(Icons.remove),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ],
+                            repsController.text = reps.toString();
+                          },
+                          icon: const Icon(Icons.remove),
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(),
+                  inputFormatters: [IntInputFormatter(maxLength: kMaxLengthReps)],
+                ),
+                const SizedBox(height: 8),
+                Flexible(
+                  child: TextField(
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                    controller: notesController,
+                    decoration: const InputDecoration(labelText: 'Notas'),
+                    maxLength: kMaxLengthNotes,
                   ),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(),
-                inputFormatters: [IntInputFormatter(maxLength: kMaxLengthReps)],
-              ),
-              TextField(
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                controller: notesController,
-                decoration: const InputDecoration(labelText: 'Notas'),
-                maxLength: kMaxLengthNotes,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         actions: [

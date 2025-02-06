@@ -32,7 +32,6 @@ class _HomePageState extends State<HomePage> with LoadingManager {
   List<Exercise> _exercisesSearched = [];
   List<String> _categories = [];
 
-  // TODO(talvez criar meu próprio controller)
   String _oldValueSearchController = '';
   final _searchController = TextEditingController();
   late FocusNode _focusNode;
@@ -54,7 +53,6 @@ class _HomePageState extends State<HomePage> with LoadingManager {
             ElevatedButton(
               onPressed: () async {
                 setLoading(true);
-                // runLoading(() async {
                 String category = categoryController.text;
                 final categoryRepository = CategoryRepository();
 
@@ -69,7 +67,6 @@ class _HomePageState extends State<HomePage> with LoadingManager {
 
                   Navigator.pop(context);
                 }
-                // });
                 setLoading(false);
               },
               child: const Text('Ok'),
@@ -89,11 +86,6 @@ class _HomePageState extends State<HomePage> with LoadingManager {
     super.initState();
 
     _focusNode = FocusNode();
-
-    // runLoading(() async {
-    //   await _updateCategories();
-    //   setState(() {});
-    // });
 
     setLoading(true);
 
@@ -131,7 +123,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
 
     return LoadingPresenter(
       isLoadingNotifier: isLoadingNotifier,
-      showLoadingAnimation: true,
+      showLoadingAnimation: false,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -140,67 +132,64 @@ class _HomePageState extends State<HomePage> with LoadingManager {
           child: const Icon(Icons.add),
         ),
         appBar: AppBar(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // const Text('Gym Log'),
-              SvgPicture.asset(
-                'assets/gym_log_horizontal_logo.svg',
-                height: 20,
-                fit: BoxFit.fitHeight,
-                colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.primary,
-                  BlendMode.srcIn,
-                ),
-              ),
-              Row(
-                children: [
-                  Container(
-                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .4),
-                    child: Builder(
-                      builder: (context) {
-                        return TextButton.icon(
-                          icon: const Icon(Icons.account_circle_outlined),
-                          onPressed: () async {
-                            showPopup(
-                              context,
-                              builder: (context) {
-                                return PopupButton(
-                                  label: 'Desconectar',
-                                  onTap: () async {
-                                    setLoading(true);
-                                    await FirebaseUIAuth.signOut(
-                                      context: context,
-                                      auth: fa,
-                                    );
-                                    Navigator.pop(context);
-                                    setLoading(false);
-                                  },
-                                );
-                              },
-                            );
-                          },
-                          label: Text(
-                            fa.currentUser?.email.toString() ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      brightnessManager.updateBrightness(brightnessManager.brightness);
-                    },
-                    icon: const Icon(Icons.light_mode),
-                    selectedIcon: const Icon(Icons.dark_mode),
-                    isSelected: brightnessManager.brightness == Brightness.dark,
-                  ),
-                ],
-              ),
-            ],
+          title: SvgPicture.asset(
+            'assets/gym_log_horizontal_logo.svg',
+            height: 20,
+            fit: BoxFit.fitHeight,
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).colorScheme.primary,
+              BlendMode.srcIn,
+            ),
           ),
+          actions: [
+            Container(
+              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .4),
+              child: Builder(
+                builder: (context) {
+                  return TextButton.icon(
+                    icon: const Icon(Icons.account_circle_outlined),
+                    onPressed: () async {
+                      showPopup(
+                        context,
+                        xOffset: -48,
+                        builder: (context) {
+                          return PopupButton(
+                            label: 'Desconectar',
+                            onTap: () async {
+                              setLoading(true);
+                              await FirebaseUIAuth.signOut(
+                                context: context,
+                                auth: fa,
+                              );
+                              Navigator.pop(context);
+                              setLoading(false);
+                            },
+                          );
+                        },
+                      );
+                    },
+                    label: Text(
+                      fa.currentUser?.email.toString() ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                },
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: 40,
+              child: IconButton(
+                onPressed: () {
+                  brightnessManager.switchBrightness();
+                },
+                icon: const Icon(Icons.light_mode),
+                selectedIcon: const Icon(Icons.dark_mode),
+                isSelected: brightnessManager.brightness == Brightness.dark,
+              ),
+            ),
+          ],
         ),
         body: Column(
           children: [
@@ -258,7 +247,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
 
                     return ReorderableListView(
                       physics: const ClampingScrollPhysics(),
-                      onReorder: (oldIndex, newIndex) {
+                      onReorder: (oldIndex, newIndex) async {
                         if (oldIndex < newIndex) {
                           newIndex -= 1;
                         }
@@ -273,9 +262,8 @@ class _HomePageState extends State<HomePage> with LoadingManager {
 
                         setLoading(true);
                         setStateListView(() {});
-                        CategoryRepository().updateOrder(orderedCategories: orderedCategories).whenComplete(() {
-                          setLoading(false);
-                        });
+                        await CategoryRepository().updateOrder(orderedCategories: orderedCategories);
+                        setLoading(false);
                       },
                       children: List.generate(_categories.length, (index) {
                         String category = _categories[index];
@@ -285,11 +273,11 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                           children: [
                             ActionCard(
                               onTap: () async {
+                                _focusNode = FocusNode();
                                 await Navigator.push(
                                   context,
                                   HorizontalRouter(child: ExercisesPage(category: _categories[index])),
                                 );
-                                _focusNode = FocusNode();
                               },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -27,7 +27,7 @@ const kMaxWeight = 9999.99;
 const kMaxLengthReps = 4;
 const kMaxReps = 9999;
 
-const kMaxLengthNotes = 150;
+const kMaxLengthNotes = 120;
 
 late FirebaseFirestore fs;
 late FirebaseAuth fa;
@@ -118,11 +118,6 @@ class _MainAppState extends State<MainApp> {
       stream: fa.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.data == null || !snapshot.data!.emailVerified) {
-          // return Visibility(
-          //   visible: AuthPageManager.of(context).page == AuthPage.login,
-          //   replacement: const RegisterPage(),
-          //   child: const LoginPage(),
-          // );
           return const LoginPage();
         }
 

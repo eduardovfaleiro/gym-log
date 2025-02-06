@@ -6,6 +6,7 @@ Future<void> showPopup(
   required WidgetBuilder builder,
   double height = 40,
   double width = 150,
+  double xOffset = 0,
 }) async {
   await showPopover(
     barrierColor: Colors.transparent,
@@ -18,5 +19,6 @@ Future<void> showPopup(
     width: width,
     height: height,
     direction: PopoverDirection.bottom,
+    contentDxOffset: xOffset,
   );
 }

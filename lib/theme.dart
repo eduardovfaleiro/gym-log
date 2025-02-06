@@ -357,6 +357,27 @@ class MaterialTheme {
             shadowColor: Colors.transparent,
           ),
         ),
+        dropdownMenuTheme: DropdownMenuThemeData(
+          inputDecorationTheme: InputDecorationTheme(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.amber),
+            ),
+            outlineBorder: const BorderSide(color: Colors.amber),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.amber),
+            ),
+          ),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          behavior: SnackBarBehavior.floating,
+          showCloseIcon: true,
+          insetPadding: const EdgeInsets.all(16),
+          elevation: 0,
+          backgroundColor: colorScheme.onSurface,
+        ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             side: const BorderSide(color: Colors.grey),

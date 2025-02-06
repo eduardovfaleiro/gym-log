@@ -63,12 +63,25 @@ class ExerciseCard extends StatelessWidget with LoadingManager {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(exercise.name),
+              Visibility(
+                visible: showCategory,
+                child: Text(
+                  exercise.category,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).colorScheme.primary),
+                ),
+              ),
+            ],
+          ),
           Row(
             children: [
               IconButton(
                 onPressed: () {
-                  showAddLog(context, exercise: exercise, onConfirm: (weight, reps, date, notes) {
-                    LogRepository(exercise).add(
+                  showAddLog(context, exercise: exercise, onConfirm: (weight, reps, date, notes) async {
+                    await LogRepository(exercise).add(
                       Log(
                         date: date,
                         reps: reps,
@@ -76,59 +89,51 @@ class ExerciseCard extends StatelessWidget with LoadingManager {
                         notes: notes,
                       ),
                     );
+                    // ignore: use_build_context_synchronously
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Log adicionado com sucesso!'),
+                        duration: Duration(milliseconds: 2000),
+                      ),
+                    );
                   });
                 },
-                icon: const Icon(Icons.post_add_rounded),
+                icon: const Icon(Icons.note_add_outlined),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(exercise.name),
-                  Visibility(
-                    visible: showCategory,
-                    child: Text(
-                      exercise.category,
-                      style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).primaryColor),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Builder(
-            builder: (context) {
-              return IconButton(
-                onPressed: () {
-                  showPopup(
-                    context,
-                    builder: (context) {
-                      return PopupButton(
-                        label: 'Excluir',
-                        onTap: () async {
-                          Navigator.pop(context);
-                          bool isSure = await showConfirmDialog(
-                            context,
-                            'Tem certeza que deseja excluir o exercício "${exercise.name}"?',
-                            content: 'Os logs deste exercício NÃO poderão ser recuperados.',
-                            confirm: 'Sim, excluir',
-                          );
+              Builder(
+                builder: (context) {
+                  return IconButton(
+                    onPressed: () {
+                      showPopup(
+                        context,
+                        builder: (context) {
+                          return PopupButton(
+                            label: 'Excluir',
+                            onTap: () async {
+                              Navigator.pop(context);
+                              bool isSure = await showConfirmDialog(
+                                context,
+                                'Tem certeza que deseja excluir o exercício "${exercise.name}"?',
+                                content: 'Os logs deste exercício NÃO poderão ser recuperados.',
+                                confirm: 'Sim, excluir',
+                              );
 
-                          if (isSure) {
-                            setLoading(true);
-                            // runLoading(() async {
-                            await ExerciseRepository().delete(exercise);
-                            onDelete();
-                            // });
-                            setLoading(false);
-                          }
+                              if (isSure) {
+                                setLoading(true);
+                                await ExerciseRepository().delete(exercise);
+                                onDelete();
+                                setLoading(false);
+                              }
+                            },
+                          );
                         },
                       );
                     },
+                    icon: const Icon(Icons.more_vert, size: 24),
                   );
                 },
-                icon: const Icon(Icons.more_vert, size: 24),
-              );
-            },
+              ),
+            ],
           ),
         ],
       ),

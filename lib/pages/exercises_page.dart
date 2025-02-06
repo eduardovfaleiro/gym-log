@@ -55,67 +55,49 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
             return StatefulBuilder(
               builder: (context, setStateList) {
                 return Visibility(
-                    visible: _exercises?.isNotEmpty ?? true,
-                    replacement: const EmptyMessage('Você ainda não selecionou nenhum exercício. Selecione em ( + )'),
-                    child: ReorderableListView(
-                      children: List.generate(_exercises?.length ?? 0, (index) {
-                        var exercise = Exercise(name: _exercises![index], category: widget.category);
+                  visible: _exercises?.isNotEmpty ?? true,
+                  replacement: const EmptyMessage('Você ainda não selecionou nenhum exercício. Selecione em ( + )'),
+                  child: ReorderableListView(
+                    children: List.generate(_exercises?.length ?? 0, (index) {
+                      var exercise = Exercise(name: _exercises![index], category: widget.category);
 
-                        return Column(
-                          key: UniqueKey(),
-                          children: [
-                            ExerciseCard(
-                              exercise: exercise,
-                              onDelete: () {
-                                setState(() {});
-                              },
-                            ),
-                            const Divider(height: 0),
-                          ],
-                        );
-                      }),
-                      onReorder: (oldIndex, newIndex) async {
-                        if (oldIndex < newIndex) {
-                          newIndex -= 1;
-                        }
-                        final String exercise = _exercises!.removeAt(oldIndex);
-                        _exercises!.insert(newIndex, exercise);
+                      return Column(
+                        key: UniqueKey(),
+                        children: [
+                          ExerciseCard(
+                            exercise: exercise,
+                            onDelete: () {
+                              setState(() {});
+                            },
+                          ),
+                          const Divider(height: 0),
+                        ],
+                      );
+                    }),
+                    onReorder: (oldIndex, newIndex) async {
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
+                      final String exercise = _exercises!.removeAt(oldIndex);
+                      _exercises!.insert(newIndex, exercise);
 
-                        List<OrderedExercise> orderedExercises = [];
+                      List<OrderedExercise> orderedExercises = [];
 
-                        for (int i = 0; i < _exercises!.length; i++) {
-                          orderedExercises.add(OrderedExercise(name: _exercises![i], order: i));
-                        }
+                      for (int i = 0; i < _exercises!.length; i++) {
+                        orderedExercises.add(OrderedExercise(name: _exercises![i], order: i));
+                      }
 
-                        setLoading(true);
-                        // runLoading(() async {
-                        setStateList(() {});
+                      setStateList(() {});
 
-                        ExerciseRepository().updateOrder(
-                          category: widget.category,
-                          orderedExercises: orderedExercises,
-                        );
-                        // });
-                        setLoading(false);
-                      },
-                    )
-                    // child: ListView.separated(
-                    //   physics: const ClampingScrollPhysics(),
-                    //   itemCount: exercises?.length ?? 0,
-                    //   separatorBuilder: (context, index) {
-                    //     return const Divider(height: 0);
-                    //   },
-                    //   itemBuilder: (context, index) {
-                    //     var exercise = Exercise(name: exercises![index], category: widget.category);
-
-                    //     return ExerciseCard(
-                    //         exercise: exercise,
-                    //         onDelete: () {
-                    //           setState(() {});
-                    //         });
-                    //   },
-                    // ),
-                    );
+                      setLoading(true);
+                      await ExerciseRepository().updateOrder(
+                        category: widget.category,
+                        orderedExercises: orderedExercises,
+                      );
+                      setLoading(false);
+                    },
+                  ),
+                );
               },
             );
           },

@@ -201,7 +201,6 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                     OutlinedButton(
                       onPressed: () async {
                         setLoading(true);
-                        // runLoading(() async {
                         var signIn = await GoogleSignInService().signIn(context);
 
                         if (signIn.result) {
@@ -209,7 +208,6 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                         } else if (signIn.message.isNotEmpty) {
                           showError(context, content: signIn.message);
                         }
-                        // });
                         setLoading(false);
                       },
                       style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),
