@@ -11,11 +11,11 @@ import '../services/csv_service.dart';
 
 class ExerciseChartController {
   final Exercise exercise;
+  List<Log> logs = [];
 
   ExerciseChartController(this.exercise);
 
-  // TODO(estava trocando isso aqui)
-  List<Log> getSortedLogsByDate(List<Log> logs) {
+  List<Log> getChartLogs() {
     var logsRepMax = LogService().convertLogsToRepMax(logs);
     logsRepMax.sort((a, b) => a.date.compareTo(b.date));
 
@@ -39,11 +39,9 @@ class ExerciseChartController {
     List<int> excelFile = (await ExcelService().convertLogsToExcel(exercise))!;
     String outputPath = '/storage/emulated/0/Download/${exercise.name}.xlsx';
 
-    // if (excelFile != null) {
     File(outputPath)
       ..createSync(recursive: true)
       ..writeAsBytesSync(excelFile);
-    // }
 
     await OpenFile.open(outputPath);
   }

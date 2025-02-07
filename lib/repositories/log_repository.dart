@@ -46,6 +46,15 @@ class LogRepository {
     return logs.docs.map((log) => Log.fromFireStoreMap(log.data())).toList();
   }
 
+  // Future<List<Log>> getTopRepMaxOfDay() async {
+  //   var logsCollection = await _logsCollection();
+  //   var logs = await logsCollection.get();
+
+  //   log('LogRepository.getAll()');
+
+  //   return logs.docs.map((log) => Log.fromFireStoreMap(log.data())).toList();
+  // }
+
   Future<void> add(Log log) async {
     var logsCollection = await _logsCollection();
     await runFs(() => logsCollection.add(log.toMap()));

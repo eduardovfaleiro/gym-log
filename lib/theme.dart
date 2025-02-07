@@ -358,16 +358,12 @@ class MaterialTheme {
           ),
         ),
         dropdownMenuTheme: DropdownMenuThemeData(
+          menuStyle: MenuStyle(
+            shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            elevation: const WidgetStatePropertyAll(0),
+          ),
           inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.amber),
-            ),
-            outlineBorder: const BorderSide(color: Colors.amber),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.amber),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         snackBarTheme: SnackBarThemeData(

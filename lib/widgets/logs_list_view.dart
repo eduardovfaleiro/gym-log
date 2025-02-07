@@ -16,14 +16,12 @@ import '../entities/exercise.dart';
 class LogsListView extends StatefulWidget {
   final List<Log> logs;
 
-  final Exercise? exercise;
-  final void Function()? onDelete;
-  final void Function()? onEdit;
+  final void Function(Log log)? onDelete;
+  final void Function(Log oldLog, Log newLog)? onEdit;
 
   const LogsListView({
     super.key,
     required this.logs,
-    this.exercise,
     this.onDelete,
     this.onEdit,
   });
@@ -33,15 +31,15 @@ class LogsListView extends StatefulWidget {
 }
 
 class _LogsListViewState extends State<LogsListView> {
-  late LogRepository _logRepository;
+  // late LogRepository _logRepository;
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.exercise != null) {
-      _logRepository = LogRepository(widget.exercise!);
-    }
+    // if (widget.exercise != null) {
+    //   _logRepository = LogRepository(widget.exercise!);
+    // }
   }
 
   @override
@@ -68,7 +66,7 @@ class _LogsListViewState extends State<LogsListView> {
                     Expanded(flex: 3, child: Text(log.date.formatReadableShort())),
                     const SizedBox(width: 12),
                     Expanded(flex: 6, child: Text(log.notes, maxLines: 3)),
-                    if (widget.exercise != null)
+                    if (widget.onDelete != null || widget.onEdit != null)
                       Expanded(
                         flex: 2,
                         child: Builder(
@@ -100,8 +98,10 @@ class _LogsListViewState extends State<LogsListView> {
                                                     const Text('Notas:'),
                                                     Flexible(
                                                       child: SingleChildScrollView(
-                                                        child: Text(log.notes.isEmpty ? '[Vazio]' : log.notes,
-                                                            maxLines: null),
+                                                        child: Text(
+                                                          log.notes.isEmpty ? '[Vazio]' : log.notes,
+                                                          maxLines: null,
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
@@ -128,12 +128,11 @@ class _LogsListViewState extends State<LogsListView> {
                                             context,
                                             title: 'Editar log',
                                             log: log,
-                                            onConfirm: (weight, reps, date, notes) async {
-                                              await _logRepository.update(
-                                                oldLog: log,
-                                                newLog: Log(weight: weight, reps: reps, date: date, notes: notes),
+                                            onConfirm: (weight, reps, date, notes) {
+                                              widget.onEdit!(
+                                                log,
+                                                Log(date: date, weight: weight, reps: reps, notes: notes),
                                               );
-                                              widget.onEdit!();
                                             },
                                           );
                                         },
@@ -155,8 +154,17 @@ class _LogsListViewState extends State<LogsListView> {
                                           );
 
                                           if (isSure) {
-                                            await _logRepository.delete(log);
-                                            widget.onDelete!();
+                                            widget.onDelete!(log);
+                                            // await _logRepository.delete(log);
+                                            // // ignore: use_build_context_synchronously
+                                            // ScaffoldMessenger.of(context).showSnackBar(
+                                            //   const SnackBar(
+                                            //     content: Text('Log excluído com sucesso!'),
+                                            //     duration: Duration(milliseconds: 3000),
+                                            //   ),
+                                            // );
+
+                                            // widget.onDelete!();
                                           }
                                         },
                                         child: const Text('Excluir'),

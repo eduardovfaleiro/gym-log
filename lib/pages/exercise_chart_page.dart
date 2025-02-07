@@ -30,7 +30,7 @@ class ExerciseChartPage extends StatefulWidget {
 
 class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManager {
   late final ExerciseChartController _controller;
-  List<Log> _logs = [];
+  final _chartUpdater = ValueNotifier(false);
 
   @override
   void initState() {
@@ -46,6 +46,10 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
       content: 'O arquivo será salvo na pasta de Downloads do dispositivo.',
       confirm: 'Sim, exportar',
     );
+  }
+
+  void _updateChart() {
+    _chartUpdater.value = !_chartUpdater.value;
   }
 
   Future<void> _pushViewImportedLogs({
@@ -73,11 +77,10 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                 if (!isSure) return;
 
                 setLoading(true);
-                // runLoading(() async {
                 await LogRepository(widget.exercise).replaceAll(logs);
                 setState(() {});
+                // ignore: use_build_context_synchronously
                 Navigator.pop(context);
-                // });
                 setLoading(false);
               });
         },
@@ -100,18 +103,18 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                   const Text(
                     'Somente insira a melhor série (geralmente a primeira) do dia que deseja deste exercício em específico.',
                   ),
-                  const SizedBox(height: 8),
-                  DropdownButton(
-                    value: Config.getInt('repMax', defaultValue: 1),
-                    isExpanded: true,
-                    items: List.generate(
-                      13,
-                      (rpm) => DropdownMenuItem(value: rpm, child: Text('Normalizar para $rpm RPM')),
-                    ).sublist(1, 13),
-                    onChanged: (rpm) async {
-                      setState(() {
-                        Config.setInt('repMax', rpm!);
-                      });
+                  const SizedBox(height: 20),
+                  DropdownMenu(
+                    initialSelection: Config.getInt('repMax', defaultValue: 1),
+                    dropdownMenuEntries:
+                        List.generate(13, (rpm) => DropdownMenuEntry(value: rpm, label: '$rpm RPM')).sublist(1, 13),
+                    width: double.infinity,
+                    label: const Text('Normalizar para'),
+                    onSelected: (selectedRpm) async {
+                      setLoading(true);
+                      Config.setInt('repMax', selectedRpm!);
+                      _updateChart();
+                      setLoading(false);
                     },
                   ),
                 ],
@@ -120,23 +123,28 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
             FutureBuilder(
               future: LogRepository(widget.exercise).getAll(),
               builder: (context, snapshot) {
-                _logs = snapshot.data ?? [];
+                _controller.logs = snapshot.data ?? [];
 
-                return SfCartesianChart(
-                  zoomPanBehavior: ZoomPanBehavior(
-                    enablePanning: true,
-                  ),
-                  primaryXAxis: CategoryAxis(
-                    autoScrollingDelta: 4,
-                  ),
-                  series: <CartesianSeries<Log, String>>[
-                    LineSeries<Log, String>(
-                        dataSource: _controller.getSortedLogsByDate(_logs),
-                        xValueMapper: (Log sales, _) => sales.date.formatReadableShort(),
-                        yValueMapper: (Log sales, _) => double.parse(sales.weight.toStringAsFixed(1)),
-                        name: 'Sales',
-                        dataLabelSettings: const DataLabelSettings(isVisible: true))
-                  ],
+                return ValueListenableBuilder(
+                  valueListenable: _chartUpdater,
+                  builder: (context, _, __) {
+                    return SfCartesianChart(
+                      zoomPanBehavior: ZoomPanBehavior(
+                        enablePanning: true,
+                      ),
+                      primaryXAxis: CategoryAxis(
+                        autoScrollingDelta: 4,
+                      ),
+                      series: <CartesianSeries<Log, String>>[
+                        LineSeries<Log, String>(
+                          dataSource: _controller.getChartLogs(),
+                          xValueMapper: (Log log, _) => log.date.formatReadableShort(),
+                          yValueMapper: (Log log, _) => double.parse(log.weight.toStringAsFixed(1)),
+                          dataLabelSettings: const DataLabelSettings(isVisible: true),
+                        )
+                      ],
+                    );
+                  },
                 );
               },
             ),
@@ -161,12 +169,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                     _controller.exportAndOpenAsExcel();
                                   }
                                 },
-                                child: const Text(
-                                  'xlsx',
-                                  style: TextStyle(
-                                    color: Color(0xff217346),
-                                  ),
-                                ),
+                                child: const Text('xlsx'),
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -205,7 +208,6 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                   if (result == null) return;
 
                                   setLoading(true);
-                                  // runLoading(() async {
                                   String excelPath = result.files.single.path!;
                                   List<Log> logs = [];
 
@@ -231,22 +233,6 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
 
                                   _pushViewImportedLogs(context: context, sheetName: result.names.first!, logs: logs);
                                   setLoading(false);
-                                  // });
-
-                                  // Navigator.push(
-                                  //   context,
-                                  //   MaterialPageRoute(
-                                  //     builder: (context) {
-                                  //       return ViewImportedLogsPage(
-                                  //           title: result.files.single.name,
-                                  //           logs: logs,
-                                  //           onConfirm: () async {
-                                  //             await _onConfirmImport(
-                                  //                 context: context, logs: logs, sheetName: result.names.first!);
-                                  //           });
-                                  //     },
-                                  //   ),
-                                  // );
                                 },
                                 child: const Text(
                                   'xlsx',
@@ -267,7 +253,6 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                   if (result == null) return;
 
                                   setLoading(true);
-                                  // runLoading(() async {
                                   String csvPath = result.files.single.path!;
                                   List<Log> logs = [];
 
@@ -293,8 +278,6 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
 
                                   _pushViewImportedLogs(context: context, sheetName: result.names.first!, logs: logs);
                                   setLoading(false);
-
-                                  // });
                                 },
                                 child: const Text('csv'),
                               ),
@@ -321,7 +304,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                 HorizontalRouter(
                                   child: ViewLogsPage(
                                     exercise: widget.exercise,
-                                    logs: _logs,
+                                    logs: _controller.logs,
                                     onUpdate: () {
                                       setState(() {});
                                     },

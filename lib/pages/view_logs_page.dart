@@ -26,27 +26,27 @@ class ViewLogsPage extends StatefulWidget {
 class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
   bool _updated = false;
   List<Log> _logs = [];
+  late final LogRepository _logRepository;
 
   @override
   void initState() {
     super.initState();
     _logs = widget.logs;
+    _logRepository = LogRepository(widget.exercise);
   }
 
   Future<void> _updateLogs() async {
-    setLoading(true);
-
     _logs = await ViewLogsController().getSortedLogsByDate(widget.exercise);
     setState(() {});
-    _updated = true;
 
-    setLoading(false);
+    _updated = true;
   }
 
   @override
   Widget build(BuildContext context) {
     return LoadingPresenter(
       isLoadingNotifier: isLoadingNotifier,
+      showLoadingAnimation: false,
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {
           if (didPop && _updated) {
@@ -83,9 +83,28 @@ class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
                   ),
                   child: LogsListView(
                     logs: _logs,
-                    exercise: widget.exercise,
-                    onDelete: _updateLogs,
-                    onEdit: _updateLogs,
+                    onDelete: (Log log) async {
+                      setLoading(true);
+                      await _logRepository.delete(log);
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Log excluído com sucesso!'),
+                          duration: Duration(milliseconds: 3000),
+                        ),
+                      );
+                      await _updateLogs();
+                      setLoading(false);
+                    },
+                    onEdit: (Log oldLog, Log newLog) async {
+                      setLoading(true);
+                      await _logRepository.update(
+                        oldLog: oldLog,
+                        newLog: newLog,
+                      );
+                      await _updateLogs();
+                      setLoading(false);
+                    },
                   ),
                 ),
               ),

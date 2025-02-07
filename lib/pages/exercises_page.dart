@@ -60,7 +60,7 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                   child: ReorderableListView(
                     children: List.generate(_exercises?.length ?? 0, (index) {
                       var exercise = Exercise(name: _exercises![index], category: widget.category);
-
+//TODO(nome do exercicio tá dando overflow)
                       return Column(
                         key: UniqueKey(),
                         children: [
