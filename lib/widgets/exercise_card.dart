@@ -39,12 +39,12 @@ class ActionCard extends StatelessWidget {
   }
 }
 
-class ExerciseCard extends StatelessWidget with LoadingManager {
+class ExerciseCard extends StatelessWidget {
   final Exercise exercise;
-  final void Function() onDelete;
+  final Function() onDelete;
   final bool showCategory;
 
-  ExerciseCard({
+  const ExerciseCard({
     super.key,
     required this.exercise,
     required this.onDelete,
@@ -63,18 +63,21 @@ class ExerciseCard extends StatelessWidget with LoadingManager {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(exercise.name),
-              Visibility(
-                visible: showCategory,
-                child: Text(
-                  exercise.category,
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).colorScheme.primary),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(exercise.name),
+                Visibility(
+                  visible: showCategory,
+                  child: Text(
+                    exercise.category,
+                    style:
+                        Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).colorScheme.primary),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Row(
             children: [
@@ -119,10 +122,7 @@ class ExerciseCard extends StatelessWidget with LoadingManager {
                               );
 
                               if (isSure) {
-                                setLoading(true);
-                                await ExerciseRepository().delete(exercise);
                                 onDelete();
-                                setLoading(false);
                               }
                             },
                           );

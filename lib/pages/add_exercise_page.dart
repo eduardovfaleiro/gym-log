@@ -91,6 +91,7 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
   Widget build(BuildContext context) {
     return LoadingPresenter(
       isLoadingNotifier: isLoadingNotifier,
+      showLoadingAnimation: false,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Adicionar exercício'),
@@ -177,7 +178,7 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                         children: [
                           RadioListTile(
                             title: Text(exercise),
-                            value: exercise.toLowerCase(),
+                            value: exercise,
                             groupValue: _selectedExercise,
                             onChanged: (value) {
                               setStateListView(() {
@@ -196,13 +197,11 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                                         label: 'Excluir',
                                         onTap: () async {
                                           setLoading(true);
-                                          // runLoading(() async {
                                           Navigator.pop(context);
                                           await ExerciseSelectionRepository().delete(
                                             Exercise(name: exercise, category: widget.category),
                                           );
                                           setState(() {});
-                                          // });
                                           setLoading(false);
                                         });
                                   });
@@ -240,10 +239,8 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
 
                     setLoading(true);
 
-                    // runLoading(() async {
                     await ExerciseRepository().add(Exercise(name: _selectedExerciseName, category: widget.category));
                     Navigator.pop(context, true);
-                    // });
 
                     setLoading(false);
                   },

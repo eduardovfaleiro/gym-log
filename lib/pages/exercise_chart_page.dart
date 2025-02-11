@@ -234,12 +234,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                   _pushViewImportedLogs(context: context, sheetName: result.names.first!, logs: logs);
                                   setLoading(false);
                                 },
-                                child: const Text(
-                                  'xlsx',
-                                  style: TextStyle(
-                                    color: Color(0xff217346),
-                                  ),
-                                ),
+                                child: const Text('xlsx'),
                               ),
                             ),
                             const SizedBox(width: 4),

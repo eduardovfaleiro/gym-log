@@ -24,6 +24,7 @@ class ExercisesPage extends StatefulWidget {
 
 class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
   List<String>? _exercises;
+  final _exerciseRepository = ExerciseRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +49,7 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
           title: Text(widget.category),
         ),
         body: FutureBuilder(
-          future: ExerciseRepository().getAllFromCategory(widget.category),
+          future: _exerciseRepository.getAllFromCategory(widget.category),
           builder: (context, snapshot) {
             _exercises = snapshot.data;
 
@@ -60,14 +61,17 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                   child: ReorderableListView(
                     children: List.generate(_exercises?.length ?? 0, (index) {
                       var exercise = Exercise(name: _exercises![index], category: widget.category);
-//TODO(nome do exercicio tá dando overflow)
+                      //TODO(nome do exercicio tá dando overflow)
                       return Column(
                         key: UniqueKey(),
                         children: [
                           ExerciseCard(
                             exercise: exercise,
-                            onDelete: () {
+                            onDelete: () async {
+                              setLoading(true);
+                              await _exerciseRepository.delete(exercise);
                               setState(() {});
+                              setLoading(false);
                             },
                           ),
                           const Divider(height: 0),
@@ -90,7 +94,7 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                       setStateList(() {});
 
                       setLoading(true);
-                      await ExerciseRepository().updateOrder(
+                      await _exerciseRepository.updateOrder(
                         category: widget.category,
                         orderedExercises: orderedExercises,
                       );

@@ -20,7 +20,7 @@ Future<bool> showConfirmDialog(
                   },
                   child: Text(cancel),
                 ),
-                ElevatedButton(
+                TextButton(
                   onPressed: () {
                     Navigator.pop(context, true);
                   },

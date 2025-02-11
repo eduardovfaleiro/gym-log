@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +37,10 @@ class _HomePageState extends State<HomePage> with LoadingManager {
   String _oldValueSearchController = '';
   final _searchController = TextEditingController();
   late FocusNode _focusNode;
+  Timer? _debounce;
+
+  final _exerciseRepository = ExerciseRepository();
+  final _categoryRepository = CategoryRepository();
 
   Future<void> _addCategory(BuildContext context) async {
     var categoryController = TextEditingController();
@@ -54,14 +60,13 @@ class _HomePageState extends State<HomePage> with LoadingManager {
               onPressed: () async {
                 setLoading(true);
                 String category = categoryController.text;
-                final categoryRepository = CategoryRepository();
 
-                if (await categoryRepository.exists(category)) {
+                if (await _categoryRepository.exists(category)) {
                   showError(context, content: 'Já existe uma categoria com este nome.');
                   setLoading(false);
                   return;
                 } else {
-                  await CategoryRepository().add(category);
+                  await _categoryRepository.add(category);
                   await _updateCategories();
                   setState(() {});
 
@@ -78,7 +83,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
   }
 
   Future<void> _updateCategories() async {
-    _categories = await CategoryRepository().getAll();
+    _categories = await _categoryRepository.getAll();
   }
 
   @override
@@ -104,14 +109,22 @@ class _HomePageState extends State<HomePage> with LoadingManager {
         return;
       }
 
-      _exercisesSearched = await ExerciseRepository().getAllWithArgs(name: _searchController.text.trim());
-      setState(() {});
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
+      _debounce = Timer(const Duration(milliseconds: 300), () async {
+        await _updateSearchedExercises();
+        setState(() {});
+      });
     });
+  }
+
+  Future<void> _updateSearchedExercises() async {
+    _exercisesSearched = await _exerciseRepository.getAllWithArgs(name: _searchController.text.trim());
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debounce?.cancel();
     _focusNode.dispose();
 
     super.dispose();
@@ -149,24 +162,66 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                   return TextButton.icon(
                     icon: const Icon(Icons.account_circle_outlined),
                     onPressed: () async {
-                      showPopup(
-                        context,
-                        xOffset: -48,
-                        builder: (context) {
-                          return PopupButton(
-                            label: 'Desconectar',
-                            onTap: () async {
-                              setLoading(true);
-                              await FirebaseUIAuth.signOut(
-                                context: context,
-                                auth: fa,
-                              );
-                              Navigator.pop(context);
-                              setLoading(false);
-                            },
-                          );
-                        },
-                      );
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Conta'),
+                              content: Text('Você está logado como ${fa.currentUser?.email.toString()}.'),
+                              actions: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('Permanecer nesta conta'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        bool isSure = await showConfirmDialog(
+                                          context,
+                                          'Tem certeza que deseja desconectar desta conta?',
+                                          content: 'As alterações que você realizou não serão perdidas.',
+                                          confirm: 'Sim, desconectar',
+                                        );
+                                        if (!isSure) return;
+
+                                        setLoading(true);
+                                        await FirebaseUIAuth.signOut(
+                                          context: context,
+                                          auth: fa,
+                                        );
+                                        Navigator.pop(context);
+                                        setLoading(false);
+                                      },
+                                      child: const Text('Desconectar'),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          });
+
+                      // showPopup(
+                      //   context,
+                      //   xOffset: -48,
+                      //   builder: (context) {
+                      //     return PopupButton(
+                      //       label: 'Desconectar',
+                      //       onTap: () async {
+                      //         setLoading(true);
+                      //         await FirebaseUIAuth.signOut(
+                      //           context: context,
+                      //           auth: fa,
+                      //         );
+                      //         Navigator.pop(context);
+                      //         setLoading(false);
+                      //       },
+                      //     );
+                      //   },
+                      // );
                     },
                     label: Text(
                       fa.currentUser?.email.toString() ?? '',
@@ -211,11 +266,6 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                 controller: _searchController,
               ),
             ),
-            Container(
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.only(left: 12, right: 12, top: 16, bottom: 8),
-              child: Text('Categorias', style: Theme.of(context).textTheme.titleLarge),
-            ),
             Expanded(
               child: Visibility(
                 visible: _searchController.text.isBlank,
@@ -223,10 +273,16 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                   physics: const ClampingScrollPhysics(),
                   itemCount: _exercisesSearched.length,
                   itemBuilder: (context, index) {
+                    Exercise exercise = _exercisesSearched[index];
+
                     return ExerciseCard(
-                      exercise: _exercisesSearched[index],
-                      onDelete: () {
+                      exercise: exercise,
+                      onDelete: () async {
+                        setLoading(true);
+                        await _exerciseRepository.delete(exercise);
+                        await _updateSearchedExercises();
                         setState(() {});
+                        setLoading(false);
                       },
                       showCategory: true,
                     );
@@ -235,97 +291,111 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                     return const Divider(height: 0);
                   },
                 ),
-                child: StatefulBuilder(
-                  builder: (context, setStateListView) {
-                    if (isLoading) {
-                      return const SizedBox.shrink();
-                    }
+                child: Expanded(
+                  child: Column(
+                    children: [
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 12, right: 12, top: 16, bottom: 8),
+                        child: Text('Categorias', style: Theme.of(context).textTheme.titleLarge),
+                      ),
+                      Expanded(
+                        child: StatefulBuilder(
+                          builder: (context, setStateListView) {
+                            if (isLoading) {
+                              return const SizedBox.shrink();
+                            }
 
-                    if (_categories.isEmpty) {
-                      return const EmptyMessage('Você não possui categorias para selecionar.\nCrie uma em ( + )');
-                    }
+                            if (_categories.isEmpty) {
+                              return const EmptyMessage(
+                                  'Você não possui categorias para selecionar.\nCrie uma em ( + )');
+                            }
 
-                    return ReorderableListView(
-                      physics: const ClampingScrollPhysics(),
-                      onReorder: (oldIndex, newIndex) async {
-                        if (oldIndex < newIndex) {
-                          newIndex -= 1;
-                        }
-                        final String category = _categories.removeAt(oldIndex);
-                        _categories.insert(newIndex, category);
+                            return ReorderableListView(
+                              physics: const ClampingScrollPhysics(),
+                              onReorder: (oldIndex, newIndex) async {
+                                if (oldIndex < newIndex) {
+                                  newIndex -= 1;
+                                }
+                                final String category = _categories.removeAt(oldIndex);
+                                _categories.insert(newIndex, category);
 
-                        Map<String, int> orderedCategories = {};
+                                Map<String, int> orderedCategories = {};
 
-                        for (int i = 0; i < _categories.length; i++) {
-                          orderedCategories[_categories[i]] = i;
-                        }
+                                for (int i = 0; i < _categories.length; i++) {
+                                  orderedCategories[_categories[i]] = i;
+                                }
 
-                        setLoading(true);
-                        setStateListView(() {});
-                        await CategoryRepository().updateOrder(orderedCategories: orderedCategories);
-                        setLoading(false);
-                      },
-                      children: List.generate(_categories.length, (index) {
-                        String category = _categories[index];
-
-                        return Column(
-                          key: UniqueKey(),
-                          children: [
-                            ActionCard(
-                              onTap: () async {
-                                _focusNode = FocusNode();
-                                await Navigator.push(
-                                  context,
-                                  HorizontalRouter(child: ExercisesPage(category: _categories[index])),
-                                );
+                                setLoading(true);
+                                setStateListView(() {});
+                                await _categoryRepository.updateOrder(orderedCategories: orderedCategories);
+                                setLoading(false);
                               },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(_categories[index]),
-                                  Builder(
-                                    builder: (context) {
-                                      return IconButton(
-                                        onPressed: () {
-                                          showPopup(
-                                            context,
+                              children: List.generate(_categories.length, (index) {
+                                String category = _categories[index];
+
+                                return Column(
+                                  key: UniqueKey(),
+                                  children: [
+                                    ActionCard(
+                                      onTap: () async {
+                                        _focusNode = FocusNode();
+                                        await Navigator.push(
+                                          context,
+                                          HorizontalRouter(child: ExercisesPage(category: _categories[index])),
+                                        );
+                                      },
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(_categories[index]),
+                                          Builder(
                                             builder: (context) {
-                                              return PopupButton(
-                                                label: 'Excluir',
-                                                onTap: () async {
-                                                  Navigator.pop(context);
-                                                  bool isSure = await showConfirmDialog(
+                                              return IconButton(
+                                                onPressed: () {
+                                                  showPopup(
                                                     context,
-                                                    'Tem certeza que deseja excluir a categoria "$category"?',
-                                                    content:
-                                                        'Os logs dos exercícios desta categoria NÃO poderão ser recuperados.',
-                                                    confirm: 'Sim, excluir',
+                                                    builder: (context) {
+                                                      return PopupButton(
+                                                        label: 'Excluir',
+                                                        onTap: () async {
+                                                          Navigator.pop(context);
+                                                          bool isSure = await showConfirmDialog(
+                                                            context,
+                                                            'Tem certeza que deseja excluir a categoria "$category"?',
+                                                            content:
+                                                                'Os logs dos exercícios desta categoria NÃO poderão ser recuperados.',
+                                                            confirm: 'Sim, excluir',
+                                                          );
+                                                          if (isSure) {
+                                                            setLoading(true);
+                                                            await _categoryRepository.delete(category);
+                                                            await _updateCategories();
+                                                            setStateListView(() {});
+                                                            setLoading(false);
+                                                          }
+                                                        },
+                                                      );
+                                                    },
                                                   );
-                                                  if (isSure) {
-                                                    setLoading(true);
-                                                    await CategoryRepository().delete(category);
-                                                    await _updateCategories();
-                                                    setStateListView(() {});
-                                                    setLoading(false);
-                                                  }
                                                 },
+                                                icon: const Icon(Icons.more_vert, size: 24),
                                               );
                                             },
-                                          );
-                                        },
-                                        icon: const Icon(Icons.more_vert, size: 24),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Divider(height: 0),
-                          ],
-                        );
-                      }),
-                    );
-                  },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Divider(height: 0),
+                                  ],
+                                );
+                              }),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

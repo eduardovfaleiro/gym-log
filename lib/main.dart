@@ -81,19 +81,6 @@ void main() async {
               '/': (context) {
                 return const MainApp();
               },
-              '/verify-email': (context) {
-                return EmailVerificationScreen(
-                  actions: [
-                    EmailVerifiedAction(() {
-                      Navigator.pushReplacementNamed(context, '/');
-                    }),
-                    AuthCancelledAction((context) {
-                      FirebaseUIAuth.signOut(context: context);
-                      Navigator.pushReplacementNamed(context, '/');
-                    }),
-                  ],
-                );
-              },
             },
           );
         },
