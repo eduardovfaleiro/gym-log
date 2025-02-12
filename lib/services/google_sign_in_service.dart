@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_log/main.dart';
 import 'package:gym_log/utils/result.dart';
-import 'package:gym_log/utils/show_error.dart';
 
 class GoogleSignInService {
   Future<Result<bool>> signIn(BuildContext context) async {

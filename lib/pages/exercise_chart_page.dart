@@ -1,22 +1,24 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:gym_log/utils/exceptions.dart';
-import 'package:gym_log/utils/extensions.dart';
-import 'package:gym_log/utils/routers.dart';
-import 'package:gym_log/utils/log_dialogs.dart';
-import 'package:gym_log/utils/show_error.dart';
-import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/entities/log.dart';
+import 'package:gym_log/pages/view_logs_page.dart';
 import 'package:gym_log/repositories/config.dart';
 import 'package:gym_log/services/csv_service.dart';
 import 'package:gym_log/services/excel_service.dart';
-import 'package:gym_log/pages/view_logs_page.dart';
+import 'package:gym_log/utils/exceptions.dart';
+import 'package:gym_log/utils/extensions.dart';
+import 'package:gym_log/utils/log_dialogs.dart';
+import 'package:gym_log/utils/routers.dart';
+import 'package:gym_log/utils/show_error.dart';
+import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../entities/exercise.dart';
-import 'exercise_chart_controller.dart';
 import '../repositories/log_repository.dart';
 import '../utils/show_confirm_dialog.dart';
+import 'exercise_chart_controller.dart';
 import 'view_imported_logs_page.dart';
 
 class ExerciseChartPage extends StatefulWidget {
@@ -29,7 +31,9 @@ class ExerciseChartPage extends StatefulWidget {
 }
 
 class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManager {
+  // TODO(os dois estão criando LogRepository, tá paia)
   late final ExerciseChartController _controller;
+  late final LogRepository _logRepository;
   final _chartUpdater = ValueNotifier(false);
 
   @override
@@ -37,6 +41,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
     super.initState();
 
     _controller = ExerciseChartController(widget.exercise);
+    _logRepository = LogRepository(widget.exercise);
   }
 
   Future<bool> _showConfirmExport(BuildContext context) {
@@ -77,7 +82,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                 if (!isSure) return;
 
                 setLoading(true);
-                await LogRepository(widget.exercise).replaceAll(logs);
+                await _logRepository.replaceAll(logs);
                 setState(() {});
                 // ignore: use_build_context_synchronously
                 Navigator.pop(context);
@@ -98,30 +103,22 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Column(
-                children: [
-                  const Text(
-                    'Somente insira a melhor série (geralmente a primeira) do dia que deseja deste exercício em específico.',
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownMenu(
-                    initialSelection: Config.getInt('repMax', defaultValue: 1),
-                    dropdownMenuEntries:
-                        List.generate(13, (rpm) => DropdownMenuEntry(value: rpm, label: '$rpm RPM')).sublist(1, 13),
-                    width: double.infinity,
-                    label: const Text('Normalizar para'),
-                    onSelected: (selectedRpm) async {
-                      setLoading(true);
-                      Config.setInt('repMax', selectedRpm!);
-                      _updateChart();
-                      setLoading(false);
-                    },
-                  ),
-                ],
+              child: DropdownMenu(
+                initialSelection: Config.getInt('repMax', defaultValue: 1),
+                dropdownMenuEntries:
+                    List.generate(13, (rpm) => DropdownMenuEntry(value: rpm, label: '$rpm RPM')).sublist(1, 13),
+                width: double.infinity,
+                label: const Text('Normalizar para'),
+                onSelected: (selectedRpm) async {
+                  setLoading(true);
+                  Config.setInt('repMax', selectedRpm!);
+                  _updateChart();
+                  setLoading(false);
+                },
               ),
             ),
             FutureBuilder(
-              future: LogRepository(widget.exercise).getAll(),
+              future: _logRepository.getAll(),
               builder: (context, snapshot) {
                 _controller.logs = snapshot.data ?? [];
 
@@ -318,10 +315,8 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            showAddLog(context, exercise: widget.exercise, onConfirm: (weight, reps, date, notes) {
-              LogRepository(widget.exercise)
-                  .add(Log(date: date, reps: reps, weight: weight, notes: notes))
-                  .then((_) => setState(() {}));
+            showAddLog(context, exercise: widget.exercise, onConfirm: (logToAdd) {
+              _logRepository.add(logToAdd).then((_) => setState(() {}));
             });
           },
           child: const Icon(Icons.add),

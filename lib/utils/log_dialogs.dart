@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/main.dart';
 import 'package:gym_log/utils/extensions.dart';
-import 'package:gym_log/utils/show_error.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
 
 import '../entities/exercise.dart';
 import '../repositories/log_repository.dart';
@@ -68,7 +66,7 @@ class DoubleInputFormatter extends TextInputFormatter {
 
 Future<void> showAddLog(
   BuildContext context, {
-  required void Function(double weight, int reps, DateTime date, String notes) onConfirm,
+  required void Function(Log log) onConfirm,
   required Exercise exercise,
 }) async {
   Log? lastLogFromExercise = await LogRepository(exercise).getLast();
@@ -86,7 +84,7 @@ Future<void> showLogDialog(
   BuildContext context, {
   required String title,
   required Log? log,
-  required void Function(double weight, int reps, DateTime date, String notes) onConfirm,
+  required void Function(Log log) onConfirm,
 }) async {
   var notesController = TextEditingController(text: log?.notes);
 
@@ -237,7 +235,7 @@ Future<void> showLogDialog(
               double weight = double.parse(weightController.text);
               int reps = int.parse(repsController.text);
 
-              onConfirm(weight, reps, selectedDate, notesController.text);
+              onConfirm(Log(weight: weight, reps: reps, date: selectedDate, notes: notesController.text));
 
               Navigator.pop(context);
             },

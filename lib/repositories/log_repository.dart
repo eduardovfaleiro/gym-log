@@ -2,10 +2,9 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gym_log/entities/exercise.dart';
-
 import 'package:gym_log/entities/log.dart';
+import 'package:gym_log/services/log_service.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
 import '../main.dart';
@@ -46,18 +45,23 @@ class LogRepository {
     return logs.docs.map((log) => Log.fromFireStoreMap(log.data())).toList();
   }
 
-  // Future<List<Log>> getTopRepMaxOfDay() async {
-  //   var logsCollection = await _logsCollection();
-  //   var logs = await logsCollection.get();
-
-  //   log('LogRepository.getAll()');
-
-  //   return logs.docs.map((log) => Log.fromFireStoreMap(log.data())).toList();
-  // }
-
   Future<void> add(Log log) async {
     var logsCollection = await _logsCollection();
     await runFs(() => logsCollection.add(log.toMap()));
+  }
+
+  Future<bool> isPR(Log log) async {
+    var logs = await getAll();
+    var logsRepMax = LogService().convertLogsToRepMax(logs);
+
+    if (logsRepMax.length > 1) throw Exception();
+
+    // TODO(pode dar problema)
+    if (logsRepMax.first == log) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   Future<void> replaceAll(List<Log> logs) async {

@@ -3,7 +3,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_log/main.dart';
 import 'package:gym_log/pages/authentication/auth_appbar.dart';
 import 'package:gym_log/pages/authentication/forgot_password_page.dart';
@@ -12,8 +11,6 @@ import 'package:gym_log/services/google_sign_in_service.dart';
 import 'package:gym_log/utils/routers.dart';
 import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/utils/show_info_dialog.dart';
-import 'package:gym_log/widgets/auth_page_manager.dart';
-import 'package:gym_log/widgets/brightness_manager.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/text_link.dart';
 

@@ -2,11 +2,11 @@
 
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gym_log/main.dart';
+import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/utils/show_error.dart';
@@ -32,7 +32,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with LoadingManager {
   List<Exercise> _exercisesSearched = [];
-  List<String> _categories = [];
+  List<String>? _categories = [];
 
   String _oldValueSearchController = '';
   final _searchController = TextEditingController();
@@ -203,25 +203,6 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                               ],
                             );
                           });
-
-                      // showPopup(
-                      //   context,
-                      //   xOffset: -48,
-                      //   builder: (context) {
-                      //     return PopupButton(
-                      //       label: 'Desconectar',
-                      //       onTap: () async {
-                      //         setLoading(true);
-                      //         await FirebaseUIAuth.signOut(
-                      //           context: context,
-                      //           auth: fa,
-                      //         );
-                      //         Navigator.pop(context);
-                      //         setLoading(false);
-                      //       },
-                      //     );
-                      //   },
-                      // );
                     },
                     label: Text(
                       fa.currentUser?.email.toString() ?? '',
@@ -277,6 +258,17 @@ class _HomePageState extends State<HomePage> with LoadingManager {
 
                     return ExerciseCard(
                       exercise: exercise,
+                      onAddLog: (log) async {
+                        setLoading(true);
+                        await LogRepository(exercise).add(log);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Log adicionado com sucesso!'),
+                            duration: Duration(milliseconds: 2000),
+                          ),
+                        );
+                        setLoading(false);
+                      },
                       onDelete: () async {
                         setLoading(true);
                         await _exerciseRepository.delete(exercise);
@@ -291,111 +283,110 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                     return const Divider(height: 0);
                   },
                 ),
-                child: Expanded(
-                  child: Column(
-                    children: [
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 12, right: 12, top: 16, bottom: 8),
-                        child: Text('Categorias', style: Theme.of(context).textTheme.titleLarge),
-                      ),
-                      Expanded(
-                        child: StatefulBuilder(
-                          builder: (context, setStateListView) {
-                            if (isLoading) {
-                              return const SizedBox.shrink();
-                            }
+                child: Column(
+                  children: [
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.only(left: 12, right: 12, top: 16, bottom: 8),
+                      child: Text('Categorias', style: Theme.of(context).textTheme.titleLarge),
+                    ),
+                    Expanded(
+                      child: StatefulBuilder(
+                        builder: (context, setStateListView) {
+                          if (_categories == null) {
+                            return const SizedBox.shrink();
+                          }
 
-                            if (_categories.isEmpty) {
-                              return const EmptyMessage(
-                                  'Você não possui categorias para selecionar.\nCrie uma em ( + )');
-                            }
+                          List<String> categories = _categories!;
 
-                            return ReorderableListView(
-                              physics: const ClampingScrollPhysics(),
-                              onReorder: (oldIndex, newIndex) async {
-                                if (oldIndex < newIndex) {
-                                  newIndex -= 1;
-                                }
-                                final String category = _categories.removeAt(oldIndex);
-                                _categories.insert(newIndex, category);
+                          if (categories.isEmpty) {
+                            return const EmptyMessage('Você não possui categorias para selecionar.\nCrie uma em ( + )');
+                          }
 
-                                Map<String, int> orderedCategories = {};
+                          return ReorderableListView(
+                            physics: const ClampingScrollPhysics(),
+                            onReorder: (oldIndex, newIndex) async {
+                              if (oldIndex < newIndex) {
+                                newIndex -= 1;
+                              }
+                              final String category = categories.removeAt(oldIndex);
+                              categories.insert(newIndex, category);
 
-                                for (int i = 0; i < _categories.length; i++) {
-                                  orderedCategories[_categories[i]] = i;
-                                }
+                              Map<String, int> orderedCategories = {};
 
-                                setLoading(true);
-                                setStateListView(() {});
-                                await _categoryRepository.updateOrder(orderedCategories: orderedCategories);
-                                setLoading(false);
-                              },
-                              children: List.generate(_categories.length, (index) {
-                                String category = _categories[index];
+                              for (int i = 0; i < categories.length; i++) {
+                                orderedCategories[categories[i]] = i;
+                              }
 
-                                return Column(
-                                  key: UniqueKey(),
-                                  children: [
-                                    ActionCard(
-                                      onTap: () async {
-                                        _focusNode = FocusNode();
-                                        await Navigator.push(
-                                          context,
-                                          HorizontalRouter(child: ExercisesPage(category: _categories[index])),
-                                        );
-                                      },
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(_categories[index]),
-                                          Builder(
-                                            builder: (context) {
-                                              return IconButton(
-                                                onPressed: () {
-                                                  showPopup(
-                                                    context,
-                                                    builder: (context) {
-                                                      return PopupButton(
-                                                        label: 'Excluir',
-                                                        onTap: () async {
-                                                          Navigator.pop(context);
-                                                          bool isSure = await showConfirmDialog(
-                                                            context,
-                                                            'Tem certeza que deseja excluir a categoria "$category"?',
-                                                            content:
-                                                                'Os logs dos exercícios desta categoria NÃO poderão ser recuperados.',
-                                                            confirm: 'Sim, excluir',
-                                                          );
-                                                          if (isSure) {
-                                                            setLoading(true);
-                                                            await _categoryRepository.delete(category);
-                                                            await _updateCategories();
-                                                            setStateListView(() {});
-                                                            setLoading(false);
-                                                          }
-                                                        },
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                                icon: const Icon(Icons.more_vert, size: 24),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
+                              setStateListView(() {});
+                              setLoading(true);
+                              await _categoryRepository.updateOrder(orderedCategories: orderedCategories);
+                              setLoading(false);
+                            },
+                            children: List.generate(categories.length, (index) {
+                              String category = categories[index];
+
+                              return Column(
+                                key: UniqueKey(),
+                                children: [
+                                  ActionCard(
+                                    onTap: () async {
+                                      _focusNode = FocusNode();
+                                      await Navigator.push(
+                                        context,
+                                        HorizontalRouter(child: ExercisesPage(category: categories[index])),
+                                      );
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(categories[index]),
+                                        Builder(
+                                          builder: (context) {
+                                            return IconButton(
+                                              onPressed: () {
+                                                showPopup(
+                                                  context,
+                                                  builder: (context) {
+                                                    return PopupButton(
+                                                      label: 'Excluir',
+                                                      onTap: () async {
+                                                        Navigator.pop(context);
+                                                        bool isSure = await showConfirmDialog(
+                                                          context,
+                                                          'Tem certeza que deseja excluir a categoria "$category"?',
+                                                          content:
+                                                              'Os logs dos exercícios desta categoria NÃO poderão ser recuperados.',
+                                                          confirm: 'Sim, excluir',
+                                                        );
+                                                        if (isSure) {
+                                                          setLoading(true);
+                                                          await _categoryRepository.delete(category);
+                                                          await _updateCategories();
+                                                          setStateListView(() {});
+                                                          setLoading(false);
+                                                        }
+                                                      },
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                              icon: const Icon(Icons.more_vert, size: 24),
+                                            );
+                                          },
+                                        ),
+                                      ],
                                     ),
-                                    const Divider(height: 0),
-                                  ],
-                                );
-                              }),
-                            );
-                          },
-                        ),
+                                  ),
+                                  const Divider(height: 0),
+                                ],
+                              );
+                            }),
+                          );
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

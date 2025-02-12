@@ -1,8 +1,6 @@
 import 'package:gym_log/repositories/exercise_repository.dart';
 import 'package:gym_log/repositories/exercise_selection_repository.dart';
 
-import '../entities/exercise.dart';
-
 class AddExerciseController {
   final String category;
 

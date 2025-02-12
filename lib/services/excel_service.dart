@@ -1,16 +1,14 @@
 import 'dart:io';
 
 import 'package:excel/excel.dart';
-import 'package:gym_log/main.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/services/sheet_service.dart';
-import 'package:gym_log/utils/exceptions.dart';
-import 'package:gym_log/utils/extensions.dart';
 
 import '../entities/exercise.dart';
 import '../entities/log.dart';
 
 class ExcelService {
+  // TODO(tá criando LogRepository toda hora)
   Future<List<int>?> convertLogsToExcel(Exercise exercise) async {
     List<Log> logs = await LogRepository(exercise).getAll();
 

@@ -1,17 +1,11 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:gym_log/entities/log.dart';
-import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/log_dialogs.dart';
 import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/utils/show_popup.dart';
-import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/popup_buton.dart';
-
-import '../entities/exercise.dart';
 
 class LogsListView extends StatefulWidget {
   final List<Log> logs;
@@ -128,11 +122,8 @@ class _LogsListViewState extends State<LogsListView> {
                                             context,
                                             title: 'Editar log',
                                             log: log,
-                                            onConfirm: (weight, reps, date, notes) {
-                                              widget.onEdit!(
-                                                log,
-                                                Log(date: date, weight: weight, reps: reps, notes: notes),
-                                              );
+                                            onConfirm: (editedLog) {
+                                              widget.onEdit!(log, editedLog);
                                             },
                                           );
                                         },

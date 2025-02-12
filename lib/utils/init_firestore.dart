@@ -124,10 +124,10 @@ Future<void> initFireStore() async {
   var userCollection = fs.collection('users').doc(fa.currentUser!.uid);
 
   // Serve para sincronizar os dados
-  // var exercisesQuery = await userCollection.collection('exercises').get();
-  // for (var exerciseDoc in exercisesQuery.docs) {
-  //   exerciseDoc.reference.collection('logs').get();
-  // }
+  var exercisesQuery = await userCollection.collection('exercises').get();
+  for (var exerciseDoc in exercisesQuery.docs) {
+    exerciseDoc.reference.collection('logs').get();
+  }
 
   var exercisesSelectionCollection = userCollection.collection('exercisesSelection');
   var categoriesCollection = userCollection.collection('categories');

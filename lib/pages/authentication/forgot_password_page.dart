@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:gym_log/main.dart';
-import 'package:gym_log/pages/authentication/auth_appbar.dart';
 import 'package:gym_log/utils/show_info_dialog.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 

@@ -1,17 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:gym_log/pages/add_exercise_page.dart';
+import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/utils/routers.dart';
-import 'package:gym_log/utils/show_confirm_dialog.dart';
+import 'package:gym_log/utils/show_snackbar.dart';
 import 'package:gym_log/widgets/exercise_card.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
-import 'package:popover/popover.dart';
 
 import '../entities/exercise.dart';
-import '../entities/log.dart';
 import '../repositories/exercise_repository.dart';
-import '../repositories/log_repository.dart';
 import '../widgets/empty_message.dart';
-import 'exercise_chart_page.dart';
 
 class ExercisesPage extends StatefulWidget {
   final String category;
@@ -61,12 +60,24 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                   child: ReorderableListView(
                     children: List.generate(_exercises?.length ?? 0, (index) {
                       var exercise = Exercise(name: _exercises![index], category: widget.category);
-                      //TODO(nome do exercicio tá dando overflow)
                       return Column(
                         key: UniqueKey(),
                         children: [
                           ExerciseCard(
                             exercise: exercise,
+                            onAddLog: (log) async {
+                              setLoading(true);
+                              final logRepository = LogRepository(exercise);
+
+                              await logRepository.add(log);
+                              bool isPR = await logRepository.isPR(log);
+
+                              if (isPR) {
+                                showSnackBar('Novo PR alcançado!', context);
+                              }
+                              showSnackBar('Log adicionado com sucesso!', context);
+                              setLoading(false);
+                            },
                             onDelete: () async {
                               setLoading(true);
                               await _exerciseRepository.delete(exercise);

@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/log_repository.dart';
-import 'package:gym_log/services/log_service.dart';
 import 'package:gym_log/services/excel_service.dart';
+import 'package:gym_log/services/log_service.dart';
 import 'package:open_file/open_file.dart';
 
 import '../entities/exercise.dart';
@@ -11,11 +11,14 @@ import '../services/csv_service.dart';
 
 class ExerciseChartController {
   final Exercise exercise;
+  late final LogRepository _logRepository;
   List<Log> logs = [];
 
-  ExerciseChartController(this.exercise);
+  ExerciseChartController(this.exercise) : _logRepository = LogRepository(exercise);
 
   List<Log> getChartLogs() {
+    if (logs.isEmpty) return [];
+
     var logsRepMax = LogService().convertLogsToRepMax(logs);
     logsRepMax.sort((a, b) => a.date.compareTo(b.date));
 
@@ -25,7 +28,7 @@ class ExerciseChartController {
   Future<void> exportAndOpenAsCsv() async {
     String csvData = await CsvService().convertLogsToCsv(
       exercise.name,
-      await LogRepository(exercise).getAll(),
+      await _logRepository.getAll(),
     );
 
     String outputPath = '/storage/emulated/0/Download/${exercise.name}.csv';

@@ -9,13 +9,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gym_log/pages/authentication/login_page.dart';
-import 'package:gym_log/pages/authentication/register_page.dart';
-import 'package:gym_log/widgets/auth_page_manager.dart';
-import 'package:gym_log/widgets/brightness_manager.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-
 import 'package:gym_log/util.dart';
 import 'package:gym_log/utils/init_firestore.dart';
+import 'package:gym_log/widgets/brightness_manager.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'firebase_options.dart';
 import 'pages/home_page.dart';

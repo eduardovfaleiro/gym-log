@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gym_log/pages/view_imported_logs_page.dart';
 
 class HorizontalRouter extends PageRouteBuilder {
   final Widget child;

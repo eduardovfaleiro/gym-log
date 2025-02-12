@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gym_log/entities/exercise.dart';
-import 'package:gym_log/repositories/log_repository.dart';
+import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/utils/routers.dart';
 import 'package:gym_log/utils/show_popup.dart';
 import 'package:gym_log/widgets/popup_buton.dart';
 
-import '../entities/log.dart';
 import '../pages/exercise_chart_page.dart';
-import '../repositories/exercise_repository.dart';
 import '../utils/log_dialogs.dart';
 import '../utils/show_confirm_dialog.dart';
-import 'loading_manager.dart';
 
 class ActionCard extends StatelessWidget {
   final void Function() onTap;
@@ -42,12 +39,14 @@ class ActionCard extends StatelessWidget {
 class ExerciseCard extends StatelessWidget {
   final Exercise exercise;
   final Function() onDelete;
+  final Function(Log log) onAddLog;
   final bool showCategory;
 
   const ExerciseCard({
     super.key,
     required this.exercise,
     required this.onDelete,
+    required this.onAddLog,
     this.showCategory = false,
   });
 
@@ -83,22 +82,23 @@ class ExerciseCard extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () {
-                  showAddLog(context, exercise: exercise, onConfirm: (weight, reps, date, notes) async {
-                    await LogRepository(exercise).add(
-                      Log(
-                        date: date,
-                        reps: reps,
-                        weight: weight,
-                        notes: notes,
-                      ),
-                    );
-                    // ignore: use_build_context_synchronously
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Log adicionado com sucesso!'),
-                        duration: Duration(milliseconds: 2000),
-                      ),
-                    );
+                  showAddLog(context, exercise: exercise, onConfirm: (log) async {
+                    await onAddLog(log);
+                    //                     await LogRepository(exercise).add(
+                    //   Log(
+                    //     date: date,
+                    //     reps: reps,
+                    //     weight: weight,
+                    //     notes: notes,
+                    //   ),
+                    // );
+                    // // ignore: use_build_context_synchronously
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(
+                    //     content: Text('Log adicionado com sucesso!'),
+                    //     duration: Duration(milliseconds: 2000),
+                    //   ),
+                    // );
                   });
                 },
                 icon: const Icon(Icons.note_add_outlined),
