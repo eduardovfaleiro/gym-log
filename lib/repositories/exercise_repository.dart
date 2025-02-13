@@ -73,11 +73,14 @@ class ExerciseRepository {
     var docRef = exerciseQuery.docs.first.reference;
     var logs = await docRef.collection('logs').get();
 
+    WriteBatch batch = fs.batch();
+
     for (var log in logs.docs) {
-      await log.reference.delete();
+      batch.delete(log.reference);
     }
 
-    await runFs(() => docRef.delete());
+    batch.delete(docRef);
+    await runFs(() => batch.commit());
   }
 
   Future<List<String>> getAllFromCategory(String category) async {

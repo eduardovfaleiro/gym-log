@@ -74,8 +74,9 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
 
                               if (isPR) {
                                 showSnackBar('Novo PR alcançado!', context);
+                              } else {
+                                showSnackBar('Log adicionado com sucesso!', context);
                               }
-                              showSnackBar('Log adicionado com sucesso!', context);
                               setLoading(false);
                             },
                             onDelete: () async {

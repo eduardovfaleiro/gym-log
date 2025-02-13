@@ -235,7 +235,8 @@ Future<void> showLogDialog(
               double weight = double.parse(weightController.text);
               int reps = int.parse(repsController.text);
 
-              onConfirm(Log(weight: weight, reps: reps, date: selectedDate, notes: notesController.text));
+              // TODO(adicionei o id aqui, talvez dê problema)
+              onConfirm(Log(id: log?.id, weight: weight, reps: reps, date: selectedDate, notes: notesController.text));
 
               Navigator.pop(context);
             },

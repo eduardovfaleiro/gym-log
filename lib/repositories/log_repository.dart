@@ -2,9 +2,11 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:gym_log/entities/exercise.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/services/log_service.dart';
+import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
 import '../main.dart';
@@ -54,14 +56,12 @@ class LogRepository {
     var logs = await getAll();
     var logsRepMax = LogService().convertLogsToRepMax(logs);
 
-    if (logsRepMax.length > 1) throw Exception();
+    String today = DateTime.now().formatReadableShort();
+    Log? logRepMax = logsRepMax.firstWhereOrNull((log) => log.date.formatReadableShort() == today);
 
-    // TODO(pode dar problema)
-    if (logsRepMax.first == log) {
-      return true;
-    } else {
-      return false;
-    }
+    if (logRepMax == null) return true;
+    if (logRepMax == log) return true;
+    return false;
   }
 
   Future<void> replaceAll(List<Log> logs) async {
@@ -101,28 +101,24 @@ class LogRepository {
   }
 
   Future<Log?> getLast() async {
-    var logsCollection = await _logsCollection();
-    var logs = await logsCollection.orderBy('date').limit(1).get();
+    try {
+      var logsCollection = await _logsCollection();
+      var logs = await logsCollection.orderBy('dateTime', descending: true).limit(1).get();
 
-    if (logs.docs.isEmpty) return null;
+      if (logs.docs.isEmpty) return null;
 
-    var logData = logs.docs.first;
-    Log logObj = Log.fromFireStoreMap(logData.data());
+      var logData = logs.docs.first;
+      Log logObj = Log.fromFireStoreMap(logData.data());
 
-    log('LogRepository.getLast()');
-
-    return logObj;
+      return logObj;
+    } finally {
+      log('LogRepository.getLast()');
+    }
   }
 
   Future<void> delete(Log log) async {
     var logsCollection = await _logsCollection();
-    // TODO(otimizar usando um índice talvez)
-    var logsQuery = await logsCollection
-        .where('weight', isEqualTo: log.weight)
-        .where('reps', isEqualTo: log.reps)
-        .where('date', isEqualTo: log.date)
-        .limit(1)
-        .get();
+    var logsQuery = await logsCollection.where('id', isEqualTo: log.id).limit(1).get();
 
     await runFs(() => logsQuery.docs.first.reference.delete());
   }
@@ -130,14 +126,8 @@ class LogRepository {
   Future<void> update({required Log oldLog, required Log newLog}) async {
     var logsCollection = await _logsCollection();
 
-    // TODO(vai dar problema no futuro. corrigir quando der)
-    var logsQuery = await logsCollection
-        .where('weight', isEqualTo: oldLog.weight)
-        .where('reps', isEqualTo: oldLog.reps)
-        .where('date', isEqualTo: oldLog.date)
-        .limit(1)
-        .get();
+    var logsQuery = await logsCollection.where('id', isEqualTo: oldLog.id).limit(1).get();
 
-    await runFs(() => logsQuery.docs.first.reference.update(newLog.toMap()));
+    await runFs(() => logsQuery.docs.first.reference.update(newLog.copyWith(id: oldLog.id).toMap()));
   }
 }

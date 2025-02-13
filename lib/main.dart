@@ -37,6 +37,14 @@ void main() async {
   fs = FirebaseFirestore.instance;
   fs.settings = const Settings(persistenceEnabled: true);
 
+  // TODO(continuar)
+  await fs.waitForPendingWrites();
+
+  await fs.terminate();
+  await fs.clearPersistence();
+
+  fs.settings = const Settings(persistenceEnabled: true);
+
   fa = FirebaseAuth.instance;
 
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;

@@ -35,6 +35,7 @@ class LogService {
 
     var logsRepMax = logs.map(
       (e) => Log(
+        id: e.id,
         date: e.date,
         weight: getRepMax(e.weight, currentReps: e.reps, targetReps: reps),
         reps: reps,

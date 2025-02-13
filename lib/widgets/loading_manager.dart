@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 mixin LoadingManager {
@@ -6,6 +8,7 @@ mixin LoadingManager {
 
   void setLoading(bool enabled) {
     isLoadingNotifier.value = enabled;
+    log('LoadingManager.setLoading($enabled)');
   }
 
   void runLoading(Function() callback) async {
