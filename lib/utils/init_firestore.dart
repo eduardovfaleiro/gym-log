@@ -123,11 +123,11 @@ const _categoryAndExercises = [
 Future<void> initFireStore() async {
   var userCollection = fs.collection('users').doc(fa.currentUser!.uid);
 
-  // Serve para sincronizar os dados
-  var exercisesQuery = await userCollection.collection('exercises').get();
-  for (var exerciseDoc in exercisesQuery.docs) {
-    exerciseDoc.reference.collection('logs').get();
-  }
+  // // Serve para sincronizar os dados
+  // var exercisesQuery = await userCollection.collection('exercises').get();
+  // for (var exerciseDoc in exercisesQuery.docs) {
+  //   exerciseDoc.reference.collection('logs').get();
+  // }
 
   var exercisesSelectionCollection = userCollection.collection('exercisesSelection');
   var categoriesCollection = userCollection.collection('categories');
@@ -136,8 +136,8 @@ Future<void> initFireStore() async {
   var categoriesSnapshot = await categoriesCollection.get();
 
   if (exerciseSelectionSnapshot.docs.isNotEmpty || categoriesSnapshot.docs.isNotEmpty) {
-    await fs.disableNetwork();
-    networkDisabled = true;
+    // await fs.disableNetwork();
+    // networkDisabled = true;
     return;
   }
 
@@ -160,6 +160,6 @@ Future<void> initFireStore() async {
   }
 
   await batch.commit();
-  await fs.disableNetwork();
-  networkDisabled = true;
+  // await fs.disableNetwork();
+  // networkDisabled = true;
 }

@@ -37,13 +37,14 @@ void main() async {
   fs = FirebaseFirestore.instance;
   fs.settings = const Settings(persistenceEnabled: true);
 
-  // TODO(continuar)
-  await fs.waitForPendingWrites();
+  // bool hasConnection = await hasInternetConnection();
+  // if (hasConnection) {
+  //   await fs.waitForPendingWrites();
+  //   await fs.terminate();
+  //   await fs.clearPersistence();
 
-  await fs.terminate();
-  await fs.clearPersistence();
-
-  fs.settings = const Settings(persistenceEnabled: true);
+  //   fs.settings = const Settings(persistenceEnabled: true);
+  // }
 
   fa = FirebaseAuth.instance;
 
