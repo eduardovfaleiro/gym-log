@@ -9,7 +9,7 @@ A ideia é registrar os dados de cada série (peso e repetições) e visualizar 
 - Interface amigável: Design clean para uma experiência de usuário sem complicações.
 
 ## Tecnologias Utilizadas
-- Front-end: [Flutter]
-- Back-end & banco de dados: [Firebase]
+- Front-end: Flutter
+- Back-end & banco de dados: Firebase
 
 ## Em desenvolvimento, em breve na PlayStore! 😊
