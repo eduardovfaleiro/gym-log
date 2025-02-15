@@ -15,4 +15,4 @@ A ideia é registrar os dados de cada série (peso e repetições) e visualizar 
 ![Screenshot_1739593826-imageonline co-merged](https://github.com/user-attachments/assets/253657b6-790a-4fa3-a145-c674eb23ff9a)
 
 
-### Em desenvolvimento, em breve na PlayStore! 😊
+### Em desenvolvimento, muitas dessas telas podem mudar no futuro -- ou novas funcionalidades podem surgir! 😊
