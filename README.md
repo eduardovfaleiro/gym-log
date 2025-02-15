@@ -11,4 +11,4 @@ Tecnologias Utilizadas
 Front-end: [Flutter]
 Back-end & banco de dados: [Firebase]
 
-# Em desenvolvimento 😊
+## Em desenvolvimento, em breve na PlayStore! 😊
