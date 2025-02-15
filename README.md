@@ -12,4 +12,5 @@ A ideia é registrar os dados de cada série (peso e repetições) e visualizar 
 - Front-end: Flutter
 - Back-end & banco de dados: Firebase
 
-## Em desenvolvimento, em breve na PlayStore! 😊
+
+### Em desenvolvimento, em breve na PlayStore! 😊
