@@ -25,17 +25,6 @@ class LogsListView extends StatefulWidget {
 }
 
 class _LogsListViewState extends State<LogsListView> {
-  // late LogRepository _logRepository;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // if (widget.exercise != null) {
-    //   _logRepository = LogRepository(widget.exercise!);
-    // }
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -48,7 +37,6 @@ class _LogsListViewState extends State<LogsListView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              // decoration: BoxDecoration(color: index % 2 == 0 ? Colors.transparent : Colors.grey[300]),
               padding: const EdgeInsets.all(4),
               alignment: Alignment.center,
               child: Padding(
@@ -146,16 +134,6 @@ class _LogsListViewState extends State<LogsListView> {
 
                                           if (isSure) {
                                             widget.onDelete!(log);
-                                            // await _logRepository.delete(log);
-                                            // // ignore: use_build_context_synchronously
-                                            // ScaffoldMessenger.of(context).showSnackBar(
-                                            //   const SnackBar(
-                                            //     content: Text('Log excluído com sucesso!'),
-                                            //     duration: Duration(milliseconds: 3000),
-                                            //   ),
-                                            // );
-
-                                            // widget.onDelete!();
                                           }
                                         },
                                         child: const Text('Excluir'),

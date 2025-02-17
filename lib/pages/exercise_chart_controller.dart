@@ -11,10 +11,15 @@ import '../services/csv_service.dart';
 
 class ExerciseChartController {
   final Exercise exercise;
-  late final LogRepository _logRepository;
+  late final LogRepository logRepository;
+
   List<Log> logs = [];
 
-  ExerciseChartController(this.exercise) : _logRepository = LogRepository(exercise);
+  ExerciseChartController(this.exercise) : logRepository = LogRepository(exercise);
+
+  Future<void> loadLogs() async {
+    logs = await logRepository.getAll();
+  }
 
   List<Log> getChartLogs() {
     if (logs.isEmpty) return [];
@@ -28,7 +33,7 @@ class ExerciseChartController {
   Future<void> exportAndOpenAsCsv() async {
     String csvData = await CsvService().convertLogsToCsv(
       exercise.name,
-      await _logRepository.getAll(),
+      await logRepository.getAll(),
     );
 
     String outputPath = '/storage/emulated/0/Download/${exercise.name}.csv';

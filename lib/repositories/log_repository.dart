@@ -151,10 +151,14 @@ class LogRepository {
   }
 
   Future<void> delete(Log log) async {
-    var logsCollection = await _logsCollection();
-    var logsQuery = await logsCollection.where('id', isEqualTo: log.id).limit(1).get();
-
-    await runFs(() => logsQuery.docs.first.reference.delete());
+    var exerciseDoc = await _exerciseDoc();
+    await runFs(
+      () => exerciseDoc.reference.update(
+        {
+          'logs': FieldValue.arrayRemove([log.toMap()])
+        },
+      ),
+    );
   }
 
   Future<void> update({required Log oldLog, required Log newLog}) async {

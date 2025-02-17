@@ -24,22 +24,25 @@ class PopupButton extends StatelessWidget {
 }
 
 class PopupIconButton extends StatelessWidget {
-  final Widget icon;
+  final Widget? icon;
   final Widget child;
   final void Function() onTap;
 
-  const PopupIconButton({super.key, required this.child, required this.icon, required this.onTap});
+  const PopupIconButton({super.key, required this.child, this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return PopupCustomButton(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            icon,
-            const SizedBox(width: 8),
+            if (icon != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: icon,
+              ),
             child,
           ],
         ),
@@ -58,10 +61,21 @@ class PopupCustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Ink(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        child: child,
-      ),
+      child: PopupContainer(child: child),
+    );
+  }
+}
+
+class PopupContainer extends StatelessWidget {
+  final Widget child;
+
+  const PopupContainer({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Ink(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: child,
     );
   }
 }

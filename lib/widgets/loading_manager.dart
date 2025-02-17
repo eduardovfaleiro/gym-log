@@ -10,12 +10,6 @@ mixin LoadingManager {
     isLoadingNotifier.value = enabled;
     log('LoadingManager.setLoading($enabled)');
   }
-
-  void runLoading(Function() callback) async {
-    isLoadingNotifier.value = true;
-    await callback();
-    isLoadingNotifier.value = false;
-  }
 }
 
 class LoadingPresenter extends StatelessWidget {
