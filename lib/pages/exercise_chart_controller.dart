@@ -4,6 +4,7 @@ import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/services/excel_service.dart';
 import 'package:gym_log/services/log_service.dart';
+import 'package:gym_log/utils/get_unique_file_path.dart';
 import 'package:open_file/open_file.dart';
 
 import '../entities/exercise.dart';
@@ -30,27 +31,47 @@ class ExerciseChartController {
     return logsRepMax;
   }
 
-  Future<void> exportAndOpenAsCsv() async {
+  Future<void> updateLog(Log log) async {
+    await logRepository.update(newLog: log, currentLogList: logs);
+  }
+
+  Future<({ResultType resultType, String fileName})> exportAndOpenAsCsv() async {
     String csvData = await CsvService().convertLogsToCsv(
       exercise.name,
       await logRepository.getAll(),
     );
 
-    String outputPath = '/storage/emulated/0/Download/${exercise.name}.csv';
+    String outputPath = await getUniqueFilePath(
+      directory: '/storage/emulated/0/Download/',
+      baseName: exercise.name,
+      extension: 'csv',
+    );
+
+    String fileName = outputPath.split('/').last;
+
     File file = File(outputPath);
     await file.writeAsString(csvData);
 
-    await OpenFile.open(outputPath);
+    var openResult = await OpenFile.open(outputPath);
+    return (resultType: openResult.type, fileName: fileName);
   }
 
-  Future<void> exportAndOpenAsExcel() async {
-    List<int> excelFile = (await ExcelService().convertLogsToExcel(exercise))!;
-    String outputPath = '/storage/emulated/0/Download/${exercise.name}.xlsx';
+  Future<({ResultType resultType, String fileName})> exportAndOpenAsExcel() async {
+    List<int> excelFile = (await ExcelService().convertLogsToExcel(exercise, logs))!;
+
+    String outputPath = await getUniqueFilePath(
+      directory: '/storage/emulated/0/Download/',
+      baseName: exercise.name,
+      extension: 'xlsx',
+    );
+
+    String fileName = outputPath.split('/').last;
 
     File(outputPath)
       ..createSync(recursive: true)
       ..writeAsBytesSync(excelFile);
 
-    await OpenFile.open(outputPath);
+    var openResult = await OpenFile.open(outputPath);
+    return (resultType: openResult.type, fileName: fileName);
   }
 }

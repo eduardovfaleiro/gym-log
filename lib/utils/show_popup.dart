@@ -3,7 +3,7 @@ import 'package:popover/popover.dart';
 
 Future<void> showPopup(
   BuildContext context, {
-  required WidgetBuilder builder,
+  required Widget Function(BuildContext context) builder,
   double height = 40,
   double width = 150,
   double xOffset = 0,

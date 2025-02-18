@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/repositories/log_repository.dart';
@@ -5,7 +7,6 @@ import 'package:gym_log/widgets/loading_manager.dart';
 
 import '../entities/exercise.dart';
 import '../widgets/logs_list_view.dart';
-import 'view_logs_controller.dart';
 
 class ViewLogsPage extends StatefulWidget {
   final List<Log> logs;
@@ -36,7 +37,7 @@ class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
   }
 
   Future<void> _updateLogs() async {
-    _logs = await ViewLogsController().getSortedLogsByDate(widget.exercise);
+    _logs = await _logRepository.getAll();
     setState(() {});
 
     _updated = true;
@@ -86,7 +87,6 @@ class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
                     onDelete: (Log log) async {
                       setLoading(true);
                       await _logRepository.delete(log);
-                      // ignore: use_build_context_synchronously
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Log excluído com sucesso!'),
@@ -98,10 +98,7 @@ class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
                     },
                     onEdit: (Log oldLog, Log newLog) async {
                       setLoading(true);
-                      await _logRepository.update(
-                        oldLog: oldLog,
-                        newLog: newLog,
-                      );
+                      await _logRepository.update(newLog: newLog, currentLogList: widget.logs);
                       await _updateLogs();
                       setLoading(false);
                     },

@@ -153,19 +153,26 @@ class LogRepository {
   Future<void> delete(Log log) async {
     var exerciseDoc = await _exerciseDoc();
     await runFs(
-      () => exerciseDoc.reference.update(
-        {
-          'logs': FieldValue.arrayRemove([log.toMap()])
-        },
-      ),
+      () => exerciseDoc.reference.update({
+        'logs': FieldValue.arrayRemove([log.toMap()])
+      }),
     );
   }
 
-  Future<void> update({required Log oldLog, required Log newLog}) async {
-    var logsCollection = await _logsCollection();
+  Future<void> update({required Log newLog, required List<Log> currentLogList}) async {
+    int index = currentLogList.indexWhere((log) => log.id == newLog.id);
+    currentLogList[index] = newLog;
 
-    var logsQuery = await logsCollection.where('id', isEqualTo: oldLog.id).limit(1).get();
+    var exerciseDoc = await _exerciseDoc();
 
-    await runFs(() => logsQuery.docs.first.reference.update(newLog.copyWith(id: oldLog.id).toMap()));
+    await runFs(() => exerciseDoc.reference.update({'logs': currentLogList.map((log) => log.toMap())}));
   }
+
+  // Future<void> update({required Log oldLog, required Log newLog}) async {
+  //   var logsCollection = await _logsCollection();
+
+  //   var logsQuery = await logsCollection.where('id', isEqualTo: oldLog.id).limit(1).get();
+
+  //   await runFs(() => logsQuery.docs.first.reference.update(newLog.copyWith(id: oldLog.id).toMap()));
+  // }
 }

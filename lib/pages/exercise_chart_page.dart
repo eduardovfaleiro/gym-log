@@ -1,26 +1,29 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:community_material_icon/community_material_icon.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:gym_log/entities/log.dart';
+import 'package:gym_log/pages/exercise_chart_controller.dart';
+import 'package:gym_log/pages/view_imported_logs_page.dart';
+import 'package:gym_log/pages/view_logs_page.dart';
 import 'package:gym_log/repositories/config.dart';
-import 'package:gym_log/services/csv_service.dart';
-import 'package:gym_log/services/excel_service.dart';
 import 'package:gym_log/utils/exceptions.dart';
 import 'package:gym_log/utils/extensions.dart';
-import 'package:gym_log/utils/log_dialogs.dart';
+import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/utils/show_error.dart';
-import 'package:gym_log/utils/show_popup.dart';
 import 'package:gym_log/utils/show_snackbar.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/logs_list_view.dart';
+import 'package:gym_log/widgets/popup_buton.dart';
+import 'package:open_file/open_file.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../entities/exercise.dart';
-import '../utils/show_confirm_dialog.dart';
-import '../widgets/popup_buton.dart';
-import 'exercise_chart_controller.dart';
-import 'view_imported_logs_page.dart';
+import '../entities/log.dart';
+import '../services/csv_service.dart';
+import '../services/excel_service.dart';
+import '../utils/log_dialogs.dart';
+import '../utils/show_popup.dart';
 
 class ExerciseChartPage extends StatefulWidget {
   final Exercise exercise;
@@ -35,12 +38,17 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
   late final ExerciseChartController _controller;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
 
     _controller = ExerciseChartController(widget.exercise);
-    // setLoading(true);
-    _controller.loadLogs();
+
+    setLoading(true);
+
+    _controller.loadLogs().whenComplete(() {
+      setState(() {});
+      setLoading(false);
+    });
   }
 
   Future<bool> _showConfirmExport(BuildContext context) {
@@ -112,7 +120,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                               children: [
                                 PopupContainer(
                                   child: Container(
-                                    padding: const EdgeInsets.only(left: 8, top: 12, bottom: 4),
+                                    padding: const EdgeInsets.only(left: 12, top: 12, bottom: 4),
                                     width: 200,
                                     child: Text('Exportar para', style: Theme.of(context).textTheme.titleMedium!),
                                   ),
@@ -120,9 +128,15 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                 PopupIconButton(
                                   onTap: () async {
                                     bool isSure = await _showConfirmExport(context);
+                                    if (!isSure) return;
 
-                                    if (isSure) {
-                                      _controller.exportAndOpenAsCsv();
+                                    var result = await _controller.exportAndOpenAsCsv();
+                                    if (result.resultType != ResultType.done) {
+                                      showSnackBar(
+                                        'Arquivo "${result.fileName}" criado em Downloads',
+                                        context,
+                                        duration: const Duration(seconds: 4),
+                                      );
                                     }
                                   },
                                   child: const Text('csv'),
@@ -130,16 +144,22 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                 PopupIconButton(
                                   onTap: () async {
                                     bool isSure = await _showConfirmExport(context);
+                                    if (!isSure) return;
 
-                                    if (isSure) {
-                                      _controller.exportAndOpenAsExcel();
+                                    var result = await _controller.exportAndOpenAsExcel();
+                                    if (result.resultType != ResultType.done) {
+                                      showSnackBar(
+                                        'Arquivo "${result.fileName}" criado em Downloads',
+                                        context,
+                                        duration: const Duration(seconds: 4),
+                                      );
                                     }
                                   },
                                   child: const Text('xlsx'),
                                 ),
                                 PopupContainer(
                                   child: Container(
-                                    padding: const EdgeInsets.only(left: 8, top: 12, bottom: 4),
+                                    padding: const EdgeInsets.only(left: 12, top: 12, bottom: 4),
                                     width: 200,
                                     child: Text(
                                       'Importar de',
@@ -281,15 +301,38 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
-                    alignment: Alignment.center,
-                    child: const Row(
+                    child: Stack(
+                      alignment: Alignment.centerLeft,
                       children: [
-                        Expanded(flex: 3, child: Text('Peso')),
-                        Expanded(flex: 3, child: Text('Reps')),
-                        Expanded(flex: 3, child: Text('Data')),
-                        SizedBox(width: 12),
-                        Expanded(flex: 6, child: Text('Notas')),
-                        Expanded(flex: 2, child: SizedBox.shrink()),
+                        const Row(
+                          children: [
+                            Expanded(flex: 3, child: Text('Peso')),
+                            Expanded(flex: 3, child: Text('Reps')),
+                            Expanded(flex: 3, child: Text('Data')),
+                            SizedBox(width: 12),
+                            Expanded(flex: 6, child: Text('Notas')),
+                            Expanded(flex: 2, child: SizedBox.shrink()),
+                          ],
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ViewLogsPage(
+                                      exercise: widget.exercise,
+                                      logs: _controller.logs,
+                                      onUpdate: () {
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(CommunityMaterialIcons.arrow_expand)),
+                        )
                       ],
                     ),
                   ),
@@ -312,10 +355,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                         },
                         onEdit: (Log oldLog, Log newLog) async {
                           setLoading(true);
-                          await _controller.logRepository.update(
-                            oldLog: oldLog,
-                            newLog: newLog,
-                          );
+                          await _controller.updateLog(newLog);
                           setState(() {});
                           setLoading(false);
                         },
@@ -325,35 +365,6 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                 ],
               ),
             ),
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 8),
-            //   child: Column(
-            //     children: [
-            //       Row(
-            //         children: [
-            //           Expanded(
-            //             child: OutlinedButton(
-            //                 onPressed: () {
-            //                   Navigator.push(
-            //                     context,
-            //                     HorizontalRouter(
-            //                       child: ViewLogsPage(
-            //                         exercise: widget.exercise,
-            //                         logs: _controller.logs,
-            //                         onUpdate: () {
-            //                           setState(() {});
-            //                         },
-            //                       ),
-            //                     ),
-            //                   );
-            //                 },
-            //                 child: const Text('Visualizar logs')),
-            //           ),
-            //         ],
-            //       ),
-            //     ],
-            //   ),
-            // ),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -361,6 +372,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
             showAddLog(context, exercise: widget.exercise, onConfirm: (logToAdd) async {
               setLoading(true);
               await _controller.logRepository.add(logToAdd);
+              await _controller.loadLogs();
               setState(() {});
               setLoading(false);
             });
