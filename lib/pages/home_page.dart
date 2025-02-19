@@ -66,6 +66,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                   setLoading(false);
                   return;
                 } else {
+                  await CategoryRepositoryX().add(category);
                   await _categoryRepository.add(category);
                   await _updateCategories();
                   setState(() {});
@@ -136,7 +137,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
 
     return LoadingPresenter(
       isLoadingNotifier: isLoadingNotifier,
-      showLoadingAnimation: false,
+      showLoadingAnimation: true,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {

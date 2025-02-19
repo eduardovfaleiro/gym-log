@@ -1,9 +1,73 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gym_log/entities/category.dart';
 
 import '../main.dart';
+import '../utils/generate_id.dart';
 import '../utils/run_fs.dart';
+
+class CategoryRepositoryX {
+  DocumentSnapshot<Map<String, dynamic>>? _userDocObj;
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> _userDoc() async {
+    if (_userDocObj != null) return _userDocObj!;
+
+    _userDocObj = await fs.collection('users').doc(fa.currentUser!.uid).get();
+    return _userDocObj!;
+  }
+
+  Future<bool> exists(String name) async {
+    var categoriesQuery = await _categoryCollection.where('name', isEqualTo: name).limit(1).get();
+    return categoriesQuery.docs.isNotEmpty;
+  }
+
+  Future<void> add(String name) async {
+    final userDoc = await _userDoc();
+
+    var categories = await userDoc.get('categories');
+    int newOrder = categories.length;
+
+    await runFs(
+      () {
+        userDoc.reference.update({
+          'categories': FieldValue.arrayUnion([
+            {'id': generateId(), 'name': name, 'order': newOrder}
+          ]),
+        });
+      },
+    );
+  }
+
+  // TODO(estava fazendo aqui)
+  Future<void> delete(Category category) async {
+    final userDoc = await _userDoc();
+
+    await runFs(
+      () => userDoc.reference.update({
+        'categories': FieldValue.arrayRemove([category.toMap()])
+      }),
+    );
+  }
+
+  Future<List<String>> getAll() async {
+    log('CategoryRepository.getAll()');
+
+    final userDoc = await _userDoc();
+
+    List<Map<String, dynamic>> categories = await userDoc.get('categories');
+    categories.sort((a, b) => a['order'].compareTo(b['order']));
+
+    return List.from(categories.map((category) => category['name']));
+
+    // var categoriesQuery = await _categoryCollection.orderBy('order').get();
+    // List<String> categories = categoriesQuery.docs.map((category) => category.data()['name'] as String).toList();
+
+    // log('CategoryRepository.getAll()');
+
+    // return categories;
+  }
+}
 
 class CategoryRepository {
   final _categoryCollection = fs.collection('users').doc(fa.currentUser!.uid).collection('categories');
