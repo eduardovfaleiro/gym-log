@@ -2,9 +2,39 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gym_log/main.dart';
+import 'package:gym_log/utils/generate_id.dart';
+import 'package:gym_log/utils/get_new_order.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
 import '../entities/exercise.dart';
+
+class ExerciseRepositoryX {
+  CollectionReference<Map<String, dynamic>> getExercisesCollection() {
+    return fs.collection('users').doc(fa.currentUser!.uid).collection('exercises');
+  }
+
+  // TODO(continuar, tava avaliando se vale a pena botar todos os exercicios num unico documento e se isso reduz o num de leituras, em comparação com deixar tudo no doc user)
+  Future<void> add(Exercise exercise) async {
+    final collection = getExercisesCollection();
+
+    collection.
+  }
+  // Future<void> add(Exercise exercise) async {
+  //   final userDoc = getUserDoc();
+  //   var exercises = await userDoc.get('exercises');
+  //   int newOrder = getNewOrder(exercises);
+
+  //   await runFs(
+  //     () => userDoc.reference.update(
+  //       {
+  //         'exercises': FieldValue.arrayUnion([
+  //           {...exercise.toMap(), 'id': generateId(), 'order': newOrder}
+  //         ])
+  //       },
+  //     ),
+  //   );
+  // }
+}
 
 class ExerciseRepository {
   static CollectionReference<Map<String, dynamic>> get _exercisesCollection {

@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gym_log/entities/category.dart';
 import 'package:gym_log/main.dart';
 import 'package:gym_log/repositories/log_repository.dart';
 import 'package:gym_log/utils/extensions.dart';
@@ -32,7 +33,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with LoadingManager {
   List<Exercise> _exercisesSearched = [];
-  List<String>? _categories = [];
+  // List<String>? _categories = [];
+  List<Category>? _categories = [];
 
   String _oldValueSearchController = '';
   final _searchController = TextEditingController();
@@ -42,7 +44,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
   final _exerciseRepository = ExerciseRepository();
   final _categoryRepository = CategoryRepository();
 
-  Future<void> _addCategory(BuildContext context) async {
+  Future<void> _addCategory() async {
     var categoryController = TextEditingController();
 
     await showDialog(
@@ -66,8 +68,8 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                   setLoading(false);
                   return;
                 } else {
-                  await CategoryRepositoryX().add(category);
                   await _categoryRepository.add(category);
+                  // await _categoryRepository.add(category);
                   await _updateCategories();
                   setState(() {});
 
@@ -84,7 +86,9 @@ class _HomePageState extends State<HomePage> with LoadingManager {
   }
 
   Future<void> _updateCategories() async {
+    // _categories = await _categoryRepository.getAll();
     _categories = await _categoryRepository.getAll();
+    print('');
   }
 
   @override
@@ -141,7 +145,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            _addCategory(context);
+            _addCategory();
           },
           child: const Icon(Icons.add),
         ),
@@ -298,7 +302,8 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                             return const SizedBox.shrink();
                           }
 
-                          List<String> categories = _categories!;
+                          // List<String> categories = _categories!;
+                          List<Category> categories = _categories!;
 
                           if (categories.isEmpty) {
                             return const EmptyMessage('Você não possui categorias para selecionar.\nCrie uma em ( + )');
@@ -310,13 +315,13 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                               if (oldIndex < newIndex) {
                                 newIndex -= 1;
                               }
-                              final String category = categories.removeAt(oldIndex);
+                              final category = categories.removeAt(oldIndex);
                               categories.insert(newIndex, category);
 
                               Map<String, int> orderedCategories = {};
 
                               for (int i = 0; i < categories.length; i++) {
-                                orderedCategories[categories[i]] = i;
+                                orderedCategories[categories[i].id] = i;
                               }
 
                               setStateListView(() {});
@@ -325,7 +330,8 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                               setLoading(false);
                             },
                             children: List.generate(categories.length, (index) {
-                              String category = categories[index];
+                              // String category = categories[index];
+                              var category = categories[index];
 
                               return Column(
                                 key: UniqueKey(),
@@ -335,13 +341,13 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                       _focusNode = FocusNode();
                                       await Navigator.push(
                                         context,
-                                        HorizontalRouter(child: ExercisesPage(category: categories[index])),
+                                        HorizontalRouter(child: ExercisesPage(category: categories[index].name)),
                                       );
                                     },
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(categories[index]),
+                                        Text(categories[index].name),
                                         Builder(
                                           builder: (context) {
                                             return IconButton(
@@ -355,16 +361,18 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                                         Navigator.pop(context);
                                                         bool isSure = await showConfirmDialog(
                                                           context,
-                                                          'Tem certeza que deseja excluir a categoria "$category"?',
+                                                          'Tem certeza que deseja excluir a categoria "${category.name}"?',
                                                           content:
                                                               'Os logs dos exercícios desta categoria NÃO poderão ser recuperados.',
                                                           confirm: 'Sim, excluir',
                                                         );
                                                         if (isSure) {
                                                           setLoading(true);
+                                                          // await _categoryRepository.delete(category);
                                                           await _categoryRepository.delete(category);
                                                           await _updateCategories();
-                                                          setStateListView(() {});
+                                                          // setStateListView(() {});
+                                                          setState(() {});
                                                           setLoading(false);
                                                         }
                                                       },

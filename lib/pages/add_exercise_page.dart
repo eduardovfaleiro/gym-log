@@ -238,7 +238,8 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
 
                     setLoading(true);
 
-                    await ExerciseRepository().add(Exercise(name: _selectedExerciseName, category: widget.category));
+                    // await ExerciseRepository().add(Exercise(name: _selectedExerciseName, category: widget.category));
+                    await ExerciseRepositoryX().add(Exercise(name: _selectedExerciseName, category: widget.category));
                     Navigator.pop(context, true);
 
                     setLoading(false);

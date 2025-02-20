@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gym_log/entities/category.dart';
 import 'package:gym_log/widgets/empty_message.dart';
 
 import '../entities/exercise.dart';
@@ -76,8 +77,9 @@ class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingMan
               return const SizedBox.shrink();
             }
 
-            List<String> categories = snapshot.data!;
-            categories.removeWhere((category) => category == widget.category);
+            List<Category> categories = snapshot.data!;
+            // TODO(testar)
+            categories.removeWhere((category) => category.name == widget.category);
 
             if (categories.isEmpty) {
               return const EmptyMessage(
@@ -119,7 +121,7 @@ class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingMan
                           children: List.generate(
                             categories.length,
                             (index) {
-                              String category = categories[index];
+                              String category = categories[index].name;
 
                               return Column(
                                 children: [
