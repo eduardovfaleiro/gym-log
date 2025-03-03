@@ -2,38 +2,98 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gym_log/main.dart';
+import 'package:gym_log/utils/current_user_doc_mixin.dart';
 import 'package:gym_log/utils/generate_id.dart';
 import 'package:gym_log/utils/get_new_order.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
 import '../entities/exercise.dart';
 
-class ExerciseRepositoryX {
-  CollectionReference<Map<String, dynamic>> getExercisesCollection() {
-    return fs.collection('users').doc(fa.currentUser!.uid).collection('exercises');
-  }
+class ExerciseRepositoryX with CurrentUserDoc {
 
   // TODO(continuar, tava avaliando se vale a pena botar todos os exercicios num unico documento e se isso reduz o num de leituras, em comparação com deixar tudo no doc user)
-  Future<void> add(Exercise exercise) async {
-    final collection = getExercisesCollection();
-
-    collection.
-  }
   // Future<void> add(Exercise exercise) async {
-  //   final userDoc = getUserDoc();
-  //   var exercises = await userDoc.get('exercises');
-  //   int newOrder = getNewOrder(exercises);
+  //   final collection = getExercisesCollection();
 
-  //   await runFs(
-  //     () => userDoc.reference.update(
-  //       {
-  //         'exercises': FieldValue.arrayUnion([
-  //           {...exercise.toMap(), 'id': generateId(), 'order': newOrder}
-  //         ])
-  //       },
-  //     ),
-  //   );
+  //   collection.
   // }
+  Future<void> add(Exercise exercise) async {
+    final userDoc = await getUserDoc();
+    var exercises = await userDoc.get('exercises');
+    int newOrder = getNewOrder(exercises);
+
+    await runFs(
+      () => userDoc.reference.update(
+        {
+          'exercises': FieldValue.arrayUnion([
+            {...exercise.toMap(), 'id': generateId(), 'order': newOrder}
+          ])
+        },
+      ),
+    );
+  }
+
+    Future<void> delete(Exercise exercise) async {
+      final userDoc = await getUserDoc();
+
+      List<Map<String, dynamic>> logs = await userDoc.get('logs');
+      logs.removeWhere((log) => log['exerciseId'] == exercise.id);
+
+      await runFs(
+      () => userDoc.reference.update(
+        {
+          'exercises': FieldValue.arrayRemove([exercise.toMap()]),
+          'logs': logs,
+        },
+      ),
+    );
+  }
+
+  // TODO(certeza que vai dar errado)
+    Future<List<String>> getAllFromCategory(String categoryId) async {
+      final userDoc = await getUserDoc();
+    final exercises = await      userDoc.get('exercises');
+    
+    return exercises.where((exercise) => exercise['categoryId']);
+
+
+    // var exercises = await _exercisesCollection.where('category', isEqualTo: category).orderBy('order').get();
+    // log('ExerciseRepository.getAllFromCategory($category)');
+
+    // return exercises.docs.map((exercise) => exercise.data()['name'] as String).toList();
+  }
+
+   Future<void> updateOrder({required String category, required List<OrderedExercise> orderedExercises}) async {
+    if (orderedExercises.length > 500) throw Exception();
+
+    List<List<String>> batches = [];
+    int endIndex;
+
+    Map<String, int> orderedExercisesMap = {for (var exercise in orderedExercises) exercise.name: exercise.order};
+
+    for (int i = 0; i < orderedExercisesMap.length; i += 10) {
+      endIndex = i + 10 > orderedExercisesMap.length ? orderedExercisesMap.length : i + 10;
+
+      batches.add(orderedExercisesMap.keys.toList().sublist(i, endIndex));
+    }
+
+    List<QuerySnapshot> exercisesSnapshot = await Future.wait(
+      batches.map((exercisesNames) {
+        return _exercisesCollection.where('category', isEqualTo: category).where('name', whereIn: exercisesNames).get();
+      }),
+    );
+
+    WriteBatch writeBatch = fs.batch();
+
+    for (var exerciseSnapshot in exercisesSnapshot) {
+      for (var exerciseDoc in exerciseSnapshot.docs) {
+        String exerciseName = (exerciseDoc.data() as Map<String, dynamic>)['name'];
+        writeBatch.update(exerciseDoc.reference, {'order': orderedExercisesMap[exerciseName]});
+      }
+    }
+
+    await runFs(() => writeBatch.commit());
+  }
 }
 
 class ExerciseRepository {
