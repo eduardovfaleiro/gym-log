@@ -19,9 +19,10 @@ class Exercise {
   String toString() => 'Exercise(name: $name, category: $category)';
 }
 
-class OrderedExercise {
-  final String name;
-  final int order;
+// class OrderedExercise {
+//   final String id;
+//   final String name;
+//   final int order;
 
-  OrderedExercise({required this.name, required this.order});
-}
+//   OrderedExercise({required this.id, required this.name, required this.order});
+// }

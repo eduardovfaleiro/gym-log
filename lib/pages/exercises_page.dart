@@ -13,7 +13,8 @@ import '../repositories/exercise_repository.dart';
 import '../widgets/empty_message.dart';
 
 class ExercisesPage extends StatefulWidget {
-  final String category;
+  // final String category;
+  final Category category;
 
   const ExercisesPage({super.key, required this.category});
 
@@ -22,8 +23,9 @@ class ExercisesPage extends StatefulWidget {
 }
 
 class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
-  List<String>? _exercises;
-  final _exerciseRepository = ExerciseRepository();
+  // List<String>? _exercises;
+  List<Exercise>? _exercises;
+  final _exerciseRepository = ExerciseRepositoryX();
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +61,7 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                   replacement: const EmptyMessage('Você ainda não selecionou nenhum exercício. Selecione em ( + )'),
                   child: ReorderableListView(
                     children: List.generate(_exercises?.length ?? 0, (index) {
-                      var exercise = Exercise(name: _exercises![index], category: widget.category);
+                      var exercise = _exercises![index];
                       return Column(
                         key: UniqueKey(),
                         children: [
@@ -94,23 +96,45 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                       if (oldIndex < newIndex) {
                         newIndex -= 1;
                       }
-                      final String exercise = _exercises!.removeAt(oldIndex);
+                      final Exercise exercise = _exercises!.removeAt(oldIndex);
                       _exercises!.insert(newIndex, exercise);
 
-                      List<OrderedExercise> orderedExercises = [];
+Map<String, int> orderedExercises = {};
 
                       for (int i = 0; i < _exercises!.length; i++) {
-                        orderedExercises.add(OrderedExercise(name: _exercises![i], order: i));
+                        orderedExercises[_exercises![i].id] = i;
                       }
 
                       setStateList(() {});
 
                       setLoading(true);
                       await _exerciseRepository.updateOrder(
-                        category: widget.category,
+                        categoryId: widget.category,
                         orderedExercises: orderedExercises,
                       );
                       setLoading(false);
+
+
+                      // if (oldIndex < newIndex) {
+                      //   newIndex -= 1;
+                      // }
+                      // final String exercise = _exercises!.removeAt(oldIndex);
+                      // _exercises!.insert(newIndex, exercise);
+
+                      // List<OrderedExercise> orderedExercises = [];
+
+                      // for (int i = 0; i < _exercises!.length; i++) {
+                      //   orderedExercises.add(OrderedExercise(name: _exercises![i], order: i));
+                      // }
+
+                      // setStateList(() {});
+
+                      // setLoading(true);
+                      // await _exerciseRepository.updateOrder(
+                      //   category: widget.category,
+                      //   orderedExercises: orderedExercises,
+                      // );
+                      // setLoading(false);
                     },
                   ),
                 );

@@ -50,11 +50,13 @@ class ExerciseRepositoryX with CurrentUserDoc {
   }
 
   // TODO(certeza que vai dar errado)
-    Future<List<String>> getAllFromCategory(String categoryId) async {
+    Future<List<Exercise>> getAllFromCategory(String categoryId) async {
       final userDoc = await getUserDoc();
-    final exercises = await      userDoc.get('exercises');
+      final exercises = await userDoc.get('exercises');
     
-    return exercises.where((exercise) => exercise['categoryId']);
+      return exercises.where((exercise) => exercise['categoryId'] == categoryId).map((exercise) {
+        return Exercise.fromFireStoreMap(exercise);
+      });
 
 
     // var exercises = await _exercisesCollection.where('category', isEqualTo: category).orderBy('order').get();
@@ -63,36 +65,24 @@ class ExerciseRepositoryX with CurrentUserDoc {
     // return exercises.docs.map((exercise) => exercise.data()['name'] as String).toList();
   }
 
-   Future<void> updateOrder({required String category, required List<OrderedExercise> orderedExercises}) async {
+  /// {'exerciseId', order}
+   Future<void> updateOrder({required String categoryId, required Map<String, int> orderedExercises,}) async {
     if (orderedExercises.length > 500) throw Exception();
 
-    List<List<String>> batches = [];
-    int endIndex;
+    final userDoc = await getUserDoc();
+     List<Map<String, dynamic>> exercises = await userDoc.get('exercises');
+    List<Map<String, dynamic>> updatedExercises = [];
 
-    Map<String, int> orderedExercisesMap = {for (var exercise in orderedExercises) exercise.name: exercise.order};
-
-    for (int i = 0; i < orderedExercisesMap.length; i += 10) {
-      endIndex = i + 10 > orderedExercisesMap.length ? orderedExercisesMap.length : i + 10;
-
-      batches.add(orderedExercisesMap.keys.toList().sublist(i, endIndex));
-    }
-
-    List<QuerySnapshot> exercisesSnapshot = await Future.wait(
-      batches.map((exercisesNames) {
-        return _exercisesCollection.where('category', isEqualTo: category).where('name', whereIn: exercisesNames).get();
-      }),
-    );
-
-    WriteBatch writeBatch = fs.batch();
-
-    for (var exerciseSnapshot in exercisesSnapshot) {
-      for (var exerciseDoc in exerciseSnapshot.docs) {
-        String exerciseName = (exerciseDoc.data() as Map<String, dynamic>)['name'];
-        writeBatch.update(exerciseDoc.reference, {'order': orderedExercisesMap[exerciseName]});
+    for (var exercise in exercises) {
+      if (exercise['categoryId'] != categoryId) {
+        updatedExercises.add(exercise);
+      } else {
+        exercise['order'] = orderedExercises[exercise['id']];
+        updatedExercises.add(exercise);
       }
     }
 
-    await runFs(() => writeBatch.commit());
+    await runFs(() => userDoc.reference.update({'exercises': updatedExercises}));
   }
 }
 
