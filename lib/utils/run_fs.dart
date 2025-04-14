@@ -1,9 +1,10 @@
-import 'package:gym_log/main.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:gym_log/widgets/brightness_manager.dart';
 
 Future<void> runFs(Function func) async {
-  if (networkDisabled) {
-    func();
-  } else {
+  if (await CheckConnectionController.checkConnection()) {
     await func();
+  } else {
+    func();
   }
 }

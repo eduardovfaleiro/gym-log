@@ -137,10 +137,12 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                               child: ElevatedButton(
                                   onPressed: () async {
                                     setLoading(true);
-                                    // runLoading(() async {
                                     _weakPassword = false;
                                     _emailInUse = false;
-                                    if (!_formKey.currentState!.validate()) return;
+                                    if (!_formKey.currentState!.validate()) {
+                                      setLoading(false);
+                                      return;
+                                    }
 
                                     try {
                                       final credential = await fa.createUserWithEmailAndPassword(
@@ -170,7 +172,6 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                                     }
 
                                     _formKey.currentState!.validate();
-                                    // });
                                     setLoading(false);
                                   },
                                   child: const Text('Cadastrar')),

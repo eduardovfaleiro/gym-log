@@ -78,7 +78,6 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                           TextLink(
                             'Cadastrar',
                             onTap: () {
-                              // AuthPageManager.of(context).updatePage(AuthPage.register);
                               Navigator.push(
                                 context,
                                 NoAnimationRouter(child: const RegisterPage()),
@@ -158,9 +157,11 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                             child: ElevatedButton(
                                 onPressed: () async {
                                   setLoading(true);
-                                  // runLoading(() async {
                                   _invalidCredential = false;
-                                  if (!_formKey.currentState!.validate()) return;
+                                  if (!_formKey.currentState!.validate()) {
+                                    setLoading(false);
+                                    return;
+                                  }
 
                                   try {
                                     final credential = await fa.signInWithEmailAndPassword(
@@ -190,7 +191,6 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                                   }
 
                                   _formKey.currentState!.validate();
-                                  // });
                                   setLoading(false);
                                 },
                                 child: const Text('Entrar')),
@@ -214,19 +214,11 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                   OutlinedButton(
                     onPressed: () async {
                       setLoading(true);
-                      // runLoading(() async {
                       var signIn = await GoogleSignInService().signIn(context);
 
                       if (!signIn.result && signIn.message.isNotEmpty) {
                         showError(context, content: signIn.message);
                       }
-
-                      // if (signIn.result) {
-                      //   Navigator.pop(context);
-                      // } else if (signIn.message.isNotEmpty) {
-                      //   showError(context, content: signIn.message);
-                      // }
-                      // });
                       setLoading(false);
                     },
                     style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),

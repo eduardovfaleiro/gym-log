@@ -28,7 +28,7 @@ const kMaxLengthNotes = 120;
 
 late FirebaseFirestore fs;
 late FirebaseAuth fa;
-bool networkDisabled = false;
+// bool networkDisabled = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -82,7 +82,8 @@ void main() async {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             initialRoute: '/',
-            theme: brightness == Brightness.light ? theme.light() : theme.dark(),
+            theme:
+                brightness == Brightness.light ? theme.light() : theme.dark(),
             routes: {
               '/': (context) {
                 return const MainApp();
@@ -124,7 +125,11 @@ class _MainAppState extends State<MainApp> {
               );
             }
 
-            return const HomePage();
+            return CheckConnectionController(
+              child: HomePage(
+                key: UniqueKey(),
+              ),
+            );
           },
         );
       },

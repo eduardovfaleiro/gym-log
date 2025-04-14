@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-Future<void> showInfo(BuildContext context, {required String title, required String content}) async {
+Future<void> showInfo(BuildContext context,
+    {required String title, required String content}) async {
   await showDialog(
     context: context,
     builder: (context) {
@@ -8,7 +9,7 @@ Future<void> showInfo(BuildContext context, {required String title, required Str
         title: Text(title),
         content: Text(content),
         actions: [
-          ElevatedButton(
+          TextButton(
             onPressed: () {
               Navigator.pop(context, true);
             },

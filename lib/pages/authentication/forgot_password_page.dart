@@ -1,7 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_log/main.dart';
+import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/utils/show_info_dialog.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 
@@ -54,12 +56,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> with LoadingMan
                   Expanded(
                     child: ElevatedButton(
                         onPressed: () async {
-                          // runLoading(() async {
                           if (!_formKey.currentState!.validate()) return;
 
                           setLoading(true);
 
+      try {
+        
+      
                           await fa.sendPasswordResetEmail(email: _emailController.text);
+      
                           await showInfo(
                             context,
                             title: 'Recuperar senha',
@@ -67,8 +72,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> with LoadingMan
                                 'um e-mail para alterar senha foi enviado a ${_emailController.text}.',
                           );
                           Navigator.pop(context);
-                          // });
-
+      } on FirebaseAuthException catch (e) {
+                                    if (e.code == 'network-request-failed') {
+                                      showError(
+                                        context,
+                                        content: 'Não foi possível estabelecer conexão com o servidor. '
+                                            'Por favor, cheque sua conexão e tente novamente.',
+                                      );
+                                    }
+                                  }
                           setLoading(false);
                         },
                         child: const Text('Enviar')),

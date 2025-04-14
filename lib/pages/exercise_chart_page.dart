@@ -34,7 +34,8 @@ class ExerciseChartPage extends StatefulWidget {
   State<ExerciseChartPage> createState() => _ExerciseChartPageState();
 }
 
-class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManager {
+class _ExerciseChartPageState extends State<ExerciseChartPage>
+    with LoadingManager {
   late final ExerciseChartController _controller;
 
   @override
@@ -114,23 +115,30 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                       builder: (context) {
                         return PopupContainer(
                           child: Container(
-                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12)),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 PopupContainer(
                                   child: Container(
-                                    padding: const EdgeInsets.only(left: 12, top: 12, bottom: 4),
+                                    padding: const EdgeInsets.only(
+                                        left: 12, top: 12, bottom: 4),
                                     width: 200,
-                                    child: Text('Exportar para', style: Theme.of(context).textTheme.titleMedium!),
+                                    child: Text('Exportar para',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium!),
                                   ),
                                 ),
                                 PopupIconButton(
                                   onTap: () async {
-                                    bool isSure = await _showConfirmExport(context);
+                                    bool isSure =
+                                        await _showConfirmExport(context);
                                     if (!isSure) return;
 
-                                    var result = await _controller.exportAndOpenAsCsv();
+                                    var result =
+                                        await _controller.exportAndOpenAsCsv();
                                     if (result.resultType != ResultType.done) {
                                       showSnackBar(
                                         'Arquivo "${result.fileName}" criado em Downloads',
@@ -143,10 +151,12 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                 ),
                                 PopupIconButton(
                                   onTap: () async {
-                                    bool isSure = await _showConfirmExport(context);
+                                    bool isSure =
+                                        await _showConfirmExport(context);
                                     if (!isSure) return;
 
-                                    var result = await _controller.exportAndOpenAsExcel();
+                                    var result = await _controller
+                                        .exportAndOpenAsExcel();
                                     if (result.resultType != ResultType.done) {
                                       showSnackBar(
                                         'Arquivo "${result.fileName}" criado em Downloads',
@@ -159,17 +169,21 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                 ),
                                 PopupContainer(
                                   child: Container(
-                                    padding: const EdgeInsets.only(left: 12, top: 12, bottom: 4),
+                                    padding: const EdgeInsets.only(
+                                        left: 12, top: 12, bottom: 4),
                                     width: 200,
                                     child: Text(
                                       'Importar de',
-                                      style: Theme.of(context).textTheme.titleMedium!,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!,
                                     ),
                                   ),
                                 ),
                                 PopupIconButton(
                                   onTap: () async {
-                                    FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                    FilePickerResult? result =
+                                        await FilePicker.platform.pickFiles(
                                       allowedExtensions: ['csv'],
                                       type: FileType.custom,
                                     );
@@ -181,11 +195,13 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
 
                                     try {
                                       setLoading(true);
-                                      logs = CsvService().convertCsvToLogs(csvPath);
+                                      logs = CsvService()
+                                          .convertCsvToLogs(csvPath);
                                     } on SheetValueException catch (error) {
                                       showError(
                                         context,
-                                        title: 'Ocorreu um erro na célula ${error.column}${error.row}',
+                                        title:
+                                            'Ocorreu um erro na célula ${error.column}${error.row}',
                                         content:
                                             '${error.message}\n\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
                                       );
@@ -210,22 +226,26 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                 ),
                                 PopupIconButton(
                                   onTap: () async {
-                                    FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                    FilePickerResult? result =
+                                        await FilePicker.platform.pickFiles(
                                       allowedExtensions: ['xlsx'],
                                       type: FileType.custom,
                                     );
                                     if (result == null) return;
 
                                     setLoading(true);
-                                    String excelPath = result.files.single.path!;
+                                    String excelPath =
+                                        result.files.single.path!;
                                     List<Log> logs = [];
 
                                     try {
-                                      logs = ExcelService().convertExcelToLogs(excelPath);
+                                      logs = ExcelService()
+                                          .convertExcelToLogs(excelPath);
                                     } on SheetValueException catch (error) {
                                       showError(
                                         context,
-                                        title: 'Ocorreu um erro na célula ${error.column}${error.row}',
+                                        title:
+                                            'Ocorreu um erro na célula ${error.column}${error.row}',
                                         content:
                                             '${error.message}\n\nPor favor, exclua ou altere o valor para que seja possível importar o arquivo.',
                                       );
@@ -291,7 +311,8 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                 LineSeries<Log, String>(
                   dataSource: _controller.getChartLogs(),
                   xValueMapper: (Log log, _) => log.date.formatReadableShort(),
-                  yValueMapper: (Log log, _) => double.parse(log.weight.toStringAsFixed(1)),
+                  yValueMapper: (Log log, _) =>
+                      double.parse(log.weight.toStringAsFixed(1)),
                   dataLabelSettings: const DataLabelSettings(isVisible: true),
                 )
               ],
@@ -331,7 +352,8 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                                   ),
                                 );
                               },
-                              icon: const Icon(CommunityMaterialIcons.arrow_expand)),
+                              icon: const Icon(
+                                  CommunityMaterialIcons.arrow_expand)),
                         )
                       ],
                     ),
@@ -349,7 +371,8 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
                         onDelete: (Log log) async {
                           setLoading(true);
                           await _controller.logRepository.delete(log);
-                          showSnackBar('Log excluído com sucesso!', scaffoldContext);
+                          showSnackBar(
+                              'Log excluído com sucesso!', scaffoldContext);
                           setState(() {});
                           setLoading(false);
                         },
@@ -369,7 +392,8 @@ class _ExerciseChartPageState extends State<ExerciseChartPage> with LoadingManag
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            showAddLog(context, exercise: widget.exercise, onConfirm: (logToAdd) async {
+            showAddLog(context, exercise: widget.exercise,
+                onConfirm: (logToAdd) async {
               setLoading(true);
               await _controller.logRepository.add(logToAdd);
               await _controller.loadLogs();

@@ -8,7 +8,7 @@ Future<void> showError(BuildContext context, {String title = 'Ocorreu um erro', 
         title: Text(title),
         content: Text(content),
         actions: [
-          ElevatedButton(
+          TextButton(
             onPressed: () {
               Navigator.pop(context);
             },

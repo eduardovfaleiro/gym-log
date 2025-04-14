@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gym_log/main.dart';
+import 'package:gym_log/utils/extensions.dart';
+import 'package:gym_log/widgets/brightness_manager.dart';
 
 const _categoryAndExercises = [
   {
@@ -129,13 +131,15 @@ Future<void> initFireStore() async {
   //   exerciseDoc.reference.collection('logs').get();
   // }
 
-  var exercisesSelectionCollection = userCollection.collection('exercisesSelection');
+  var exercisesSelectionCollection =
+      userCollection.collection('exercisesSelection');
   var categoriesCollection = userCollection.collection('categories');
 
-  var exerciseSelectionSnapshot = await exercisesSelectionCollection.get();
-  var categoriesSnapshot = await categoriesCollection.get();
+  var exerciseSelectionSnapshot = await exercisesSelectionCollection.getX();
+  var categoriesSnapshot = await categoriesCollection.getX();
 
-  if (exerciseSelectionSnapshot.docs.isNotEmpty || categoriesSnapshot.docs.isNotEmpty) {
+  if (exerciseSelectionSnapshot.docs.isNotEmpty ||
+      categoriesSnapshot.docs.isNotEmpty) {
     // await fs.disableNetwork();
     // networkDisabled = true;
     return;
@@ -153,9 +157,14 @@ Future<void> initFireStore() async {
     batch.set(categoryRef, {'name': category, 'order': order});
 
     for (String exercise in exercises) {
-      var exerciseDoc = fs.collection('users').doc(fa.currentUser!.uid).collection('exercisesSelection').doc();
+      var exerciseDoc = fs
+          .collection('users')
+          .doc(fa.currentUser!.uid)
+          .collection('exercisesSelection')
+          .doc();
 
-      batch.set(exerciseDoc, {'name': exercise, 'category': category, 'dateTime': DateTime.now()});
+      batch.set(exerciseDoc,
+          {'name': exercise, 'category': category, 'dateTime': DateTime.now()});
     }
   }
 

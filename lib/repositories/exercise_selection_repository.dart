@@ -2,22 +2,28 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gym_log/main.dart';
+import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
 import '../entities/exercise.dart';
 
 class ExerciseSelectionRepository {
-  final _collection = fs.collection('users').doc(fa.currentUser!.uid).collection('exercisesSelection');
+  final _collection = fs
+      .collection('users')
+      .doc(fa.currentUser!.uid)
+      .collection('exercisesSelection');
 
   Future<void> add(Exercise exercise) async {
-    await runFs(() => _collection.add({...exercise.toMap(), 'dateTime': DateTime.now()}));
+    await runFs(() =>
+        _collection.add({...exercise.toMap(), 'dateTime': DateTime.now()}));
   }
 
   Future<void> addAll(List<Exercise> exercises) async {
     WriteBatch batch = fs.batch();
 
     for (var exercise in exercises) {
-      batch.set(_collection.doc(), {...exercise.toMap(), 'dateTime': DateTime.now()});
+      batch.set(
+          _collection.doc(), {...exercise.toMap(), 'dateTime': DateTime.now()});
     }
 
     await runFs(() => batch.commit());
@@ -28,7 +34,7 @@ class ExerciseSelectionRepository {
         .where('category', isEqualTo: exercise.category)
         .where('name', isEqualTo: exercise.name)
         .limit(1)
-        .get();
+        .getX();
 
     if (exercises.docs.isEmpty) return null;
 
@@ -40,7 +46,10 @@ class ExerciseSelectionRepository {
   }
 
   Future<List<String>> getAllFromCategory(String category) async {
-    var snapshot = await _collection.where('category', isEqualTo: category).orderBy('dateTime').get();
+    var snapshot = await _collection
+        .where('category', isEqualTo: category)
+        .orderBy('dateTime')
+        .getX();
     var docs = snapshot.docs;
 
     log('ExerciseSelectionRepository.getAllFromCategory($category)');
@@ -53,7 +62,7 @@ class ExerciseSelectionRepository {
         .where('category', isEqualTo: exercise.category)
         .where('name', isEqualTo: exercise.name)
         .limit(1)
-        .get();
+        .getX();
 
     var exerciseRef = exercises.docs.first.reference;
     await runFs(() => exerciseRef.delete());

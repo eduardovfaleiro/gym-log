@@ -16,33 +16,27 @@ class LogRepository {
 
   LogRepository(this.exercise);
 
-  CollectionReference<Map<String, dynamic>>? _logsCollectionObj;
+  // CollectionReference<Map<String, dynamic>>? _logsCollectionObj;
 
-  Future<CollectionReference<Map<String, dynamic>>> _logsCollection() async {
-    if (_logsCollectionObj != null) return _logsCollectionObj!;
+  // Future<CollectionReference<Map<String, dynamic>>> _logsCollection() async {
+  //   var exerciseQuery = await fs
+  //       .collection('users')
+  //       .doc(fa.currentUser!.uid)
+  //       .collection('exercises')
+  //       .where('category', isEqualTo: exercise.category)
+  //       .where('name', isEqualTo: exercise.name)
+  //       .limit(1)
+  //       .get();
 
-    var exerciseQuery = await fs
-        .collection('users')
-        .doc(fa.currentUser!.uid)
-        .collection('exercises')
-        .where('category', isEqualTo: exercise.category)
-        .where('name', isEqualTo: exercise.name)
-        .limit(1)
-        .get();
+  //   var exerciseDoc = exerciseQuery.docs.first;
 
-    var exerciseDoc = exerciseQuery.docs.first;
+  //   _logsCollectionObj =
+  //       fs.collection('users').doc(fa.currentUser!.uid).collection('exercises').doc(exerciseDoc.id).collection('logs');
 
-    _logsCollectionObj =
-        fs.collection('users').doc(fa.currentUser!.uid).collection('exercises').doc(exerciseDoc.id).collection('logs');
-
-    return _logsCollectionObj!;
-  }
-
-  QueryDocumentSnapshot<Map<String, dynamic>>? _exerciseDocObj;
+  //   return _logsCollectionObj!;
+  // }
 
   Future<QueryDocumentSnapshot<Map<String, dynamic>>> _exerciseDoc() async {
-    if (_exerciseDocObj != null) return _exerciseDocObj!;
-
     var exerciseQuery = await fs
         .collection('users')
         .doc(fa.currentUser!.uid)
@@ -50,11 +44,12 @@ class LogRepository {
         .where('category', isEqualTo: exercise.category)
         .where('name', isEqualTo: exercise.name)
         .limit(1)
-        .get();
+        .getX();
 
     return exerciseQuery.docs.first;
   }
 
+  // todo(continuar daqui )
   // Future<List<Log>> getAll() async {
   //   var logsCollection = await _logsCollection();
   //   var logs = await logsCollection.get();
@@ -91,64 +86,75 @@ class LogRepository {
     var logsRepMax = LogService().convertLogsToRepMax(logs);
 
     String today = DateTime.now().formatReadableShort();
-    Log? logRepMax = logsRepMax.firstWhereOrNull((log) => log.date.formatReadableShort() == today);
+    Log? logRepMax = logsRepMax
+        .firstWhereOrNull((log) => log.date.formatReadableShort() == today);
 
-    if (logRepMax == null) return true;
-    if (logRepMax == log) return true;
+    if (logRepMax == null || logRepMax == log) return true;
     return false;
   }
 
   Future<void> replaceAll(List<Log> logs) async {
-    var logsCollection = await _logsCollection();
+    // var logsCollection = await _logsCollection();
 
-    bool collectionEmpty = false;
-    int batchSize = 500;
+    // bool collectionEmpty = false;
+    // int batchSize = 500;
 
-    WriteBatch batch;
-    QuerySnapshot querySnapshot;
-    int deletedCount;
+    // WriteBatch batch;
+    // QuerySnapshot querySnapshot;
+    // int deletedCount;
 
-    while (!collectionEmpty) {
-      querySnapshot = await logsCollection.limit(batchSize).get();
-      deletedCount = querySnapshot.docs.length;
+    // while (!collectionEmpty) {
+    //   querySnapshot = await logsCollection.limit(batchSize).get();
+    //   deletedCount = querySnapshot.docs.length;
 
-      if (deletedCount > 0) {
-        batch = fs.batch();
+    //   if (deletedCount > 0) {
+    //     batch = fs.batch();
 
-        for (var doc in querySnapshot.docs) {
-          batch.delete(doc.reference);
-        }
+    //     for (var doc in querySnapshot.docs) {
+    //       batch.delete(doc.reference);
+    //     }
 
-        await runFs(() => batch.commit());
-      }
+    //     await runFs(() => batch.commit());
+    //   }
 
-      if (deletedCount < batchSize) {
-        collectionEmpty = true;
-      }
-    }
+    //   if (deletedCount < batchSize) {
+    //     collectionEmpty = true;
+    //   }
+    // }
 
-    batch = fs.batch();
-    for (var log in logs) {
-      batch.set(logsCollection.doc(), log.toMap());
-    }
-    await runFs(() => batch.commit());
+    // batch = fs.batch();
+    // for (var log in logs) {
+    //   batch.set(logsCollection.doc(), log.toMap());
+    // }
+    // await runFs(() => batch.commit());
   }
 
   Future<Log?> getLast() async {
-    try {
-      var logsCollection = await _logsCollection();
-      var logs = await logsCollection.orderBy('dateTime', descending: true).limit(1).get();
+    log('LogRepository.getLast()');
 
-      if (logs.docs.isEmpty) return null;
+    var exercises = await getAll();
+    if (exercises.isEmpty) return null;
 
-      var logData = logs.docs.first;
-      Log logObj = Log.fromFireStoreMap(logData.data());
-
-      return logObj;
-    } finally {
-      log('LogRepository.getLast()');
-    }
+    return exercises.reduce((log1, log2) {
+      return log1.date.isAfter(log2.date) ? log1 : log2;
+    });
   }
+
+  // Future<Log?> getLast() async {
+  //   try {
+  //     var logsCollection = await _logsCollection();
+  //     var logs = await logsCollection.orderBy('dateTime', descending: true).limit(1).get();
+
+  //     if (logs.docs.isEmpty) return null;
+
+  //     var logData = logs.docs.first;
+  //     Log logObj = Log.fromFireStoreMap(logData.data());
+
+  //     return logObj;
+  //   } finally {
+  //     log('LogRepository.getLast()');
+  //   }
+  // }
 
   Future<void> delete(Log log) async {
     var exerciseDoc = await _exerciseDoc();
@@ -159,13 +165,15 @@ class LogRepository {
     );
   }
 
-  Future<void> update({required Log newLog, required List<Log> currentLogList}) async {
+  Future<void> update(
+      {required Log newLog, required List<Log> currentLogList}) async {
     int index = currentLogList.indexWhere((log) => log.id == newLog.id);
     currentLogList[index] = newLog;
 
     var exerciseDoc = await _exerciseDoc();
 
-    await runFs(() => exerciseDoc.reference.update({'logs': currentLogList.map((log) => log.toMap())}));
+    await runFs(() => exerciseDoc.reference
+        .update({'logs': currentLogList.map((log) => log.toMap())}));
   }
 
   // Future<void> update({required Log oldLog, required Log newLog}) async {

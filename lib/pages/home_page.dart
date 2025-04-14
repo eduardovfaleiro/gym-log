@@ -45,32 +45,46 @@ class _HomePageState extends State<HomePage> with LoadingManager {
   Future<void> _addCategory(BuildContext context) async {
     var categoryController = TextEditingController();
 
+    final formKey = GlobalKey<FormState>();
+
     await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Adicionar categoria'),
-          content: TextField(
-            controller: categoryController,
-            decoration: const InputDecoration(labelText: 'Nome'),
-            maxLength: 50,
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              validator: (nome) {
+                if (nome == null || nome.trim().isEmpty) {
+                  return 'O nome deve estar preenchido.';
+                }
+              },
+              controller: categoryController,
+              decoration: const InputDecoration(labelText: 'Nome'),
+              maxLength: 50,
+            ),
           ),
           actions: [
-            ElevatedButton(
+            TextButton(
               onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                Navigator.pop(context);
+
                 setLoading(true);
                 String category = categoryController.text;
 
                 if (await _categoryRepository.exists(category)) {
-                  showError(context, content: 'Já existe uma categoria com este nome.');
+                  showError(
+                    context,
+                    content: 'Já existe uma categoria com este nome.',
+                  );
                   setLoading(false);
                   return;
                 } else {
                   await _categoryRepository.add(category);
                   await _updateCategories();
                   setState(() {});
-
-                  Navigator.pop(context);
                 }
                 setLoading(false);
               },
@@ -118,7 +132,8 @@ class _HomePageState extends State<HomePage> with LoadingManager {
   }
 
   Future<void> _updateSearchedExercises() async {
-    _exercisesSearched = await _exerciseRepository.getAllWithArgs(name: _searchController.text.trim());
+    _exercisesSearched = await _exerciseRepository.getAllWithArgs(
+        name: _searchController.text.trim());
   }
 
   @override
@@ -138,12 +153,14 @@ class _HomePageState extends State<HomePage> with LoadingManager {
       isLoadingNotifier: isLoadingNotifier,
       showLoadingAnimation: false,
       child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            _addCategory(context);
-          },
-          child: const Icon(Icons.add),
-        ),
+        floatingActionButton: Builder(builder: (context) {
+          return FloatingActionButton(
+            onPressed: () {
+              _addCategory(context);
+            },
+            child: const Icon(Icons.add),
+          );
+        }),
         appBar: AppBar(
           title: SvgPicture.asset(
             'assets/gym_log_horizontal_logo.svg',
@@ -156,7 +173,8 @@ class _HomePageState extends State<HomePage> with LoadingManager {
           ),
           actions: [
             Container(
-              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * .4),
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * .4),
               child: Builder(
                 builder: (context) {
                   return TextButton.icon(
@@ -167,23 +185,27 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                           builder: (context) {
                             return AlertDialog(
                               title: const Text('Conta'),
-                              content: Text('Você está logado como ${fa.currentUser?.email.toString()}.'),
+                              content: Text(
+                                  'Você está logado como ${fa.currentUser?.email.toString()}.'),
                               actions: [
                                 Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     TextButton(
                                       onPressed: () {
                                         Navigator.pop(context);
                                       },
-                                      child: const Text('Permanecer nesta conta'),
+                                      child:
+                                          const Text('Permanecer nesta conta'),
                                     ),
                                     TextButton(
                                       onPressed: () async {
                                         bool isSure = await showConfirmDialog(
                                           context,
                                           'Tem certeza que deseja desconectar desta conta?',
-                                          content: 'As alterações que você realizou não serão perdidas.',
+                                          content:
+                                              'As alterações que você realizou não serão perdidas.',
                                           confirm: 'Sim, desconectar',
                                         );
                                         if (!isSure) return;
@@ -229,6 +251,27 @@ class _HomePageState extends State<HomePage> with LoadingManager {
         ),
         body: Column(
           children: [
+            ValueListenableBuilder(
+              valueListenable:
+                  CheckConnectionController.hasInternetConnectionNotifier,
+              builder: (context, hasInternetConnection, _) {
+                return Visibility(
+                  visible: !hasInternetConnection,
+                  child: Container(
+                    color: Colors.amber[100],
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Modo offline',
+                      style: TextStyle(
+                        color: brightnessManager.brightness == Brightness.dark
+                            ? Theme.of(context).colorScheme.onInverseSurface
+                            : Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
               child: TextField(
@@ -287,8 +330,10 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                   children: [
                     Container(
                       alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(left: 12, right: 12, top: 16, bottom: 8),
-                      child: Text('Categorias', style: Theme.of(context).textTheme.titleLarge),
+                      padding: const EdgeInsets.only(
+                          left: 12, right: 12, top: 16, bottom: 8),
+                      child: Text('Categorias',
+                          style: Theme.of(context).textTheme.titleLarge),
                     ),
                     Expanded(
                       child: StatefulBuilder(
@@ -300,16 +345,19 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                           List<String> categories = _categories!;
 
                           if (categories.isEmpty) {
-                            return const EmptyMessage('Você não possui categorias para selecionar.\nCrie uma em ( + )');
+                            return const EmptyMessage(
+                                'Você não possui categorias para selecionar.\nCrie uma em ( + )');
                           }
 
                           return ReorderableListView(
+                            padding: const EdgeInsets.only(bottom: 80),
                             physics: const ClampingScrollPhysics(),
                             onReorder: (oldIndex, newIndex) async {
                               if (oldIndex < newIndex) {
                                 newIndex -= 1;
                               }
-                              final String category = categories.removeAt(oldIndex);
+                              final String category =
+                                  categories.removeAt(oldIndex);
                               categories.insert(newIndex, category);
 
                               Map<String, int> orderedCategories = {};
@@ -320,7 +368,8 @@ class _HomePageState extends State<HomePage> with LoadingManager {
 
                               setStateListView(() {});
                               setLoading(true);
-                              await _categoryRepository.updateOrder(orderedCategories: orderedCategories);
+                              await _categoryRepository.updateOrder(
+                                  orderedCategories: orderedCategories);
                               setLoading(false);
                             },
                             children: List.generate(categories.length, (index) {
@@ -334,11 +383,14 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                       _focusNode = FocusNode();
                                       await Navigator.push(
                                         context,
-                                        HorizontalRouter(child: ExercisesPage(category: categories[index])),
+                                        HorizontalRouter(
+                                            child: ExercisesPage(
+                                                category: categories[index])),
                                       );
                                     },
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(categories[index]),
                                         Builder(
@@ -352,18 +404,22 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                                       label: 'Excluir',
                                                       onTap: () async {
                                                         Navigator.pop(context);
-                                                        bool isSure = await showConfirmDialog(
+                                                        bool isSure =
+                                                            await showConfirmDialog(
                                                           context,
                                                           'Tem certeza que deseja excluir a categoria "$category"?',
                                                           content:
                                                               'Os logs dos exercícios desta categoria NÃO poderão ser recuperados.',
-                                                          confirm: 'Sim, excluir',
+                                                          confirm:
+                                                              'Sim, excluir',
                                                         );
                                                         if (isSure) {
                                                           setLoading(true);
-                                                          await _categoryRepository.delete(category);
+                                                          await _categoryRepository
+                                                              .delete(category);
                                                           await _updateCategories();
-                                                          setStateListView(() {});
+                                                          setStateListView(
+                                                              () {});
                                                           setLoading(false);
                                                         }
                                                       },
@@ -371,7 +427,8 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                                   },
                                                 );
                                               },
-                                              icon: const Icon(Icons.more_vert, size: 24),
+                                              icon: const Icon(Icons.more_vert,
+                                                  size: 24),
                                             );
                                           },
                                         ),
