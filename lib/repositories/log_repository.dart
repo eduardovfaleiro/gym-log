@@ -59,7 +59,6 @@ class LogRepository {
   //   return logs.docs.map((log) => Log.fromFireStoreMap(log.data())).toList();
   // }
 
-  // TODO(estava reformulando a estrutura do firestore)
   Future<List<Log>> getAll() async {
     log('LogRepository.getAll()');
     var exerciseDoc = await _exerciseDoc();
@@ -76,9 +75,11 @@ class LogRepository {
   Future<void> add(Log log) async {
     var exerciseDoc = await _exerciseDoc();
 
-    await exerciseDoc.reference.update({
-      'logs': FieldValue.arrayUnion([log.toMap()])
-    });
+    await runFs(
+      () => exerciseDoc.reference.update({
+        'logs': FieldValue.arrayUnion([log.toMap()])
+      }),
+    );
   }
 
   Future<bool> isPR(Log log) async {
@@ -165,8 +166,10 @@ class LogRepository {
     );
   }
 
-  Future<void> update(
-      {required Log newLog, required List<Log> currentLogList}) async {
+  Future<void> update({
+    required Log newLog,
+    required List<Log> currentLogList,
+  }) async {
     int index = currentLogList.indexWhere((log) => log.id == newLog.id);
     currentLogList[index] = newLog;
 

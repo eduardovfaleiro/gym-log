@@ -87,13 +87,8 @@ class ExerciseRepository {
     if (exerciseQuery.docs.length > 1) throw Exception();
 
     var docRef = exerciseQuery.docs.first.reference;
-    // var logs = await docRef.collection('logs').get();
 
     WriteBatch batch = fs.batch();
-
-    // for (var log in logs.docs) {
-    //   batch.delete(log.reference);
-    // }
 
     batch.delete(docRef);
     await runFs(() => batch.commit());

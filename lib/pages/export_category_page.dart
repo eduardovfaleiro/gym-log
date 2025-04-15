@@ -10,13 +10,15 @@ class ExportCategoryPage extends StatefulWidget {
   final String category;
   final List<String> exercises;
 
-  const ExportCategoryPage({super.key, required this.category, required this.exercises});
+  const ExportCategoryPage(
+      {super.key, required this.category, required this.exercises});
 
   @override
   State<ExportCategoryPage> createState() => _ExportCategoryPageState();
 }
 
-class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingManager {
+class _ExportCategoryPageState extends State<ExportCategoryPage>
+    with LoadingManager {
   String? _selectedCategory;
 
   @override
@@ -45,21 +47,27 @@ class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingMan
                       return;
                     }
 
-                    // runLoading(() async {
                     setLoading(true);
                     String selectedCategory = _selectedCategory!;
-                    List<String> exercises = await ExerciseSelectionRepository().getAllFromCategory(widget.category);
+                    List<String> exercises = await ExerciseSelectionRepository()
+                        .getAllFromCategory(widget.category);
+
+                    List<String> selectedCategoryExercises =
+                        await ExerciseSelectionRepository()
+                            .getAllFromCategory(selectedCategory);
 
                     exercises.removeWhere((exercise) {
-                      return widget.exercises.contains(exercise);
+                      return selectedCategoryExercises.contains(exercise);
                     });
 
                     await ExerciseSelectionRepository().addAll(
-                      exercises.map((exercise) => Exercise(name: exercise, category: selectedCategory)).toList(),
+                      exercises
+                          .map((exercise) => Exercise(
+                              name: exercise, category: selectedCategory))
+                          .toList(),
                     );
                     // ignore: use_build_context_synchronously
                     Navigator.pop(context);
-                    // });
                     setLoading(false);
                   },
                   child: const Text('Exportar'),
@@ -72,7 +80,8 @@ class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingMan
         body: FutureBuilder(
           future: CategoryRepository().getAll(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
+            if (snapshot.connectionState == ConnectionState.waiting ||
+                !snapshot.hasData) {
               return const SizedBox.shrink();
             }
 
@@ -90,14 +99,15 @@ class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingMan
               children: [
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
-                  child:
-                      Text('Obs: A lista de exercícios da categoria para a qual será exportada não será substituída, '
-                          'será apenas concatenada com a lista sendo exportada.'),
+                  child: Text(
+                      'Obs: A lista de exercícios da categoria para a qual será exportada não será substituída, '
+                      'será apenas concatenada com a lista sendo exportada.'),
                 ),
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('Exportar lista de exercícios de', style: Theme.of(context).textTheme.titleLarge),
+                  child: Text('Exportar lista de exercícios de',
+                      style: Theme.of(context).textTheme.titleLarge),
                 ),
                 RadioListTile(
                   title: Text(widget.category),
@@ -109,7 +119,8 @@ class _ExportCategoryPageState extends State<ExportCategoryPage> with LoadingMan
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('Para', style: Theme.of(context).textTheme.titleLarge),
+                  child: Text('Para',
+                      style: Theme.of(context).textTheme.titleLarge),
                 ),
                 Flexible(
                   child: StatefulBuilder(

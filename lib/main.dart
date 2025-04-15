@@ -125,11 +125,8 @@ class _MainAppState extends State<MainApp> {
               );
             }
 
-            return CheckConnectionController(
-              child: HomePage(
-                key: UniqueKey(),
-              ),
-            );
+            // return const HomePage();
+            return const CheckConnectionController(child: HomePage());
           },
         );
       },

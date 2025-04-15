@@ -170,6 +170,33 @@ class CheckConnectionManager extends InheritedWidget {
 //   }
 // }
 
+// class CheckConnectionController {
+//   static final hasInternetConnectionNotifier = ValueNotifier(true);
+//   // static final isTakingTooLong = ValueNotifier(false);
+
+//   static void _setConnection(bool hasConnection) {
+//     hasInternetConnectionNotifier.value = hasConnection;
+//   }
+
+//   static Future<bool> checkConnection() async {
+//     if (!hasInternetConnectionNotifier.value) return false;
+
+//     // Attempt an HTTP request to verify internet reachability
+//     try {
+//       // You can use any endpoint known to be up. Google's homepage is a common choice.
+//       final response = await http
+//           .get(Uri.parse('https://www.google.com'))
+//           .timeout(const Duration(seconds: 4));
+//       bool isConnected = response.statusCode == 200;
+//       _setConnection(isConnected);
+//       return isConnected;
+//     } catch (e) {
+//       _setConnection(false);
+//       return false;
+//     }
+//   }
+// }
+
 class CheckConnectionController extends StatefulWidget {
   final Widget child;
 
@@ -189,7 +216,7 @@ class CheckConnectionController extends StatefulWidget {
     try {
       final connectivityResult = await Connectivity()
           .checkConnectivity()
-          .timeout(const Duration(seconds: 3));
+          .timeout(const Duration(milliseconds: 1500));
 
       if (connectivityResult.contains(ConnectivityResult.none)) {
         _setConnection(false);
@@ -204,7 +231,7 @@ class CheckConnectionController extends StatefulWidget {
       // You can use any endpoint known to be up. Google's homepage is a common choice.
       final response = await http
           .get(Uri.parse('https://www.google.com'))
-          .timeout(const Duration(seconds: 3));
+          .timeout(const Duration(seconds: 4));
       bool isConnected = response.statusCode == 200;
       _setConnection(isConnected);
       return isConnected;
