@@ -28,7 +28,7 @@ const kMaxLengthNotes = 120;
 
 late FirebaseFirestore fs;
 late FirebaseAuth fa;
-// bool networkDisabled = false;
+final hasInternetConnectionNotifier = ValueNotifier(true);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,15 +36,6 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   fs = FirebaseFirestore.instance;
   fs.settings = const Settings(persistenceEnabled: true);
-
-  // bool hasConnection = await hasInternetConnection();
-  // if (hasConnection) {
-  //   await fs.waitForPendingWrites();
-  //   await fs.terminate();
-  //   await fs.clearPersistence();
-
-  //   fs.settings = const Settings(persistenceEnabled: true);
-  // }
 
   fa = FirebaseAuth.instance;
 
@@ -125,8 +116,8 @@ class _MainAppState extends State<MainApp> {
               );
             }
 
-            // return const HomePage();
-            return const CheckConnectionController(child: HomePage());
+            return const HomePage();
+            // return const CheckConnectionController(child: HomePage());
           },
         );
       },

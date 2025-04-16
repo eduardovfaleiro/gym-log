@@ -1,10 +1,22 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:gym_log/widgets/brightness_manager.dart';
+import 'dart:async';
 
-Future<void> runFs(Function func) async {
-  if (await CheckConnectionController.checkConnection()) {
-    await func();
-  } else {
+import 'package:gym_log/main.dart';
+
+Future<void> runFs(func) async {
+  if (!hasInternetConnectionNotifier.value) {
     func();
+  } else {
+    try {
+      await func().timeout(const Duration(seconds: 4));
+    } on TimeoutException {
+      hasInternetConnectionNotifier.value = false;
+      runFs(func);
+    }
   }
+
+  // if (await CheckConnectionController.checkConnection()) {
+  //   await func();
+  // } else {
+  //   func();
+  // }
 }

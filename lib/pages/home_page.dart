@@ -252,8 +252,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
         body: Column(
           children: [
             ValueListenableBuilder(
-              valueListenable:
-                  CheckConnectionController.hasInternetConnectionNotifier,
+              valueListenable: hasInternetConnectionNotifier,
               builder: (context, hasInternetConnection, _) {
                 return Visibility(
                   visible: !hasInternetConnection,

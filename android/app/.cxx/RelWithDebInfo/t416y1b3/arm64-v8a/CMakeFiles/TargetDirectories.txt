@@ -1,0 +1,2 @@
+C:/Users/Eduardo/Documents/Projects/gym-log/android/app/.cxx/RelWithDebInfo/t416y1b3/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/Eduardo/Documents/Projects/gym-log/android/app/.cxx/RelWithDebInfo/t416y1b3/arm64-v8a/CMakeFiles/rebuild_cache.dir

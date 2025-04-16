@@ -7,6 +7,7 @@ import 'package:gym_log/entities/exercise.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/services/log_service.dart';
 import 'package:gym_log/utils/extensions.dart';
+import 'package:gym_log/utils/generate_id.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
 import '../main.dart';
@@ -95,39 +96,15 @@ class LogRepository {
   }
 
   Future<void> replaceAll(List<Log> logs) async {
-    // var logsCollection = await _logsCollection();
+    var exerciseDoc = await _exerciseDoc();
 
-    // bool collectionEmpty = false;
-    // int batchSize = 500;
-
-    // WriteBatch batch;
-    // QuerySnapshot querySnapshot;
-    // int deletedCount;
-
-    // while (!collectionEmpty) {
-    //   querySnapshot = await logsCollection.limit(batchSize).get();
-    //   deletedCount = querySnapshot.docs.length;
-
-    //   if (deletedCount > 0) {
-    //     batch = fs.batch();
-
-    //     for (var doc in querySnapshot.docs) {
-    //       batch.delete(doc.reference);
-    //     }
-
-    //     await runFs(() => batch.commit());
-    //   }
-
-    //   if (deletedCount < batchSize) {
-    //     collectionEmpty = true;
-    //   }
-    // }
-
-    // batch = fs.batch();
-    // for (var log in logs) {
-    //   batch.set(logsCollection.doc(), log.toMap());
-    // }
-    // await runFs(() => batch.commit());
+    await runFs(
+      () => exerciseDoc.reference.update({
+        'logs': logs.map((log) {
+          return log.copyWithNewId().toMap();
+        })
+      }),
+    );
   }
 
   Future<Log?> getLast() async {
@@ -175,8 +152,10 @@ class LogRepository {
 
     var exerciseDoc = await _exerciseDoc();
 
-    await runFs(() => exerciseDoc.reference
-        .update({'logs': currentLogList.map((log) => log.toMap())}));
+    await runFs(
+      () => exerciseDoc.reference
+          .update({'logs': currentLogList.map((log) => log.toMap())}),
+    );
   }
 
   // Future<void> update({required Log oldLog, required Log newLog}) async {

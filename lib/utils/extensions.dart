@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gym_log/main.dart';
 import 'package:gym_log/widgets/brightness_manager.dart';
 import 'package:intl/intl.dart';
 
@@ -13,10 +14,7 @@ extension IsBlank on String {
 
 extension GetX<T> on Query<T> {
   Future<QuerySnapshot<T>> getX() async {
-    bool hasInternetConnection =
-        await CheckConnectionController.checkConnection();
-
-    if (hasInternetConnection) {
+    if (hasInternetConnectionNotifier.value) {
       return get();
     } else {
       return get(const GetOptions(source: Source.cache));

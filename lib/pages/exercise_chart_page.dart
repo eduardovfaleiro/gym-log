@@ -303,10 +303,9 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
               ),
             ),
             SfCartesianChart(
+              key: UniqueKey(),
               zoomPanBehavior: ZoomPanBehavior(enablePanning: true),
-              primaryXAxis: CategoryAxis(
-                autoScrollingDelta: 4,
-              ),
+              primaryXAxis: const CategoryAxis(autoScrollingDelta: 4),
               series: <CartesianSeries<Log, String>>[
                 LineSeries<Log, String>(
                   dataSource: _controller.getChartLogs(),

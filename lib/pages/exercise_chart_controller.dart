@@ -16,7 +16,8 @@ class ExerciseChartController {
 
   List<Log> logs = [];
 
-  ExerciseChartController(this.exercise) : logRepository = LogRepository(exercise);
+  ExerciseChartController(this.exercise)
+      : logRepository = LogRepository(exercise);
 
   Future<void> loadLogs() async {
     logs = await logRepository.getAll();
@@ -35,7 +36,8 @@ class ExerciseChartController {
     await logRepository.update(newLog: log, currentLogList: logs);
   }
 
-  Future<({ResultType resultType, String fileName})> exportAndOpenAsCsv() async {
+  Future<({ResultType resultType, String fileName})>
+      exportAndOpenAsCsv() async {
     String csvData = await CsvService().convertLogsToCsv(
       exercise.name,
       await logRepository.getAll(),
@@ -56,8 +58,10 @@ class ExerciseChartController {
     return (resultType: openResult.type, fileName: fileName);
   }
 
-  Future<({ResultType resultType, String fileName})> exportAndOpenAsExcel() async {
-    List<int> excelFile = (await ExcelService().convertLogsToExcel(exercise, logs))!;
+  Future<({ResultType resultType, String fileName})>
+      exportAndOpenAsExcel() async {
+    List<int> excelFile =
+        (await ExcelService().convertLogsToExcel(exercise, logs))!;
 
     String outputPath = await getUniqueFilePath(
       directory: '/storage/emulated/0/Download/',

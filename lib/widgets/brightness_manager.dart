@@ -197,90 +197,90 @@ class CheckConnectionManager extends InheritedWidget {
 //   }
 // }
 
-class CheckConnectionController extends StatefulWidget {
-  final Widget child;
+// class CheckConnectionController extends StatefulWidget {
+//   final Widget child;
 
-  const CheckConnectionController({super.key, required this.child});
+//   const CheckConnectionController({super.key, required this.child});
 
-  static final hasInternetConnectionNotifier = ValueNotifier(true);
-  static final isTakingTooLong = ValueNotifier(false);
+//   static final hasInternetConnectionNotifier = ValueNotifier(true);
+//   static final isTakingTooLong = ValueNotifier(false);
 
-  static void _setConnection(bool hasConnection) {
-    hasInternetConnectionNotifier.value = hasConnection;
-  }
+//   static void _setConnection(bool hasConnection) {
+//     hasInternetConnectionNotifier.value = hasConnection;
+//   }
 
-  static Future<bool> checkConnection() async {
-    if (!hasInternetConnectionNotifier.value) return false;
+//   // static Future<bool> checkConnection() async {
+//   //   if (!hasInternetConnectionNotifier.value) return false;
 
-    // Check network connection first
-    try {
-      final connectivityResult = await Connectivity()
-          .checkConnectivity()
-          .timeout(const Duration(milliseconds: 1500));
+//   //   // Check network connection first
+//   //   try {
+//   //     final connectivityResult = await Connectivity()
+//   //         .checkConnectivity()
+//   //         .timeout(const Duration(milliseconds: 1500));
 
-      if (connectivityResult.contains(ConnectivityResult.none)) {
-        _setConnection(false);
-        return false;
-      }
-    } on TimeoutException {
-      isTakingTooLong.value = true;
-    }
+//   //     if (connectivityResult.contains(ConnectivityResult.none)) {
+//   //       _setConnection(false);
+//   //       return false;
+//   //     }
+//   //   } on TimeoutException {
+//   //     isTakingTooLong.value = true;
+//   //   }
 
-    // Attempt an HTTP request to verify internet reachability
-    try {
-      // You can use any endpoint known to be up. Google's homepage is a common choice.
-      final response = await http
-          .get(Uri.parse('https://www.google.com'))
-          .timeout(const Duration(seconds: 4));
-      bool isConnected = response.statusCode == 200;
-      _setConnection(isConnected);
-      return isConnected;
-    } catch (e) {
-      _setConnection(false);
-      isTakingTooLong.value = false;
-      return false;
-    } finally {
-      isTakingTooLong.value = false;
-    }
-  }
+//   //   // Attempt an HTTP request to verify internet reachability
+//   //   try {
+//   //     // You can use any endpoint known to be up. Google's homepage is a common choice.
+//   //     final response = await http
+//   //         .get(Uri.parse('https://www.google.com'))
+//   //         .timeout(const Duration(seconds: 4));
+//   //     bool isConnected = response.statusCode == 200;
+//   //     _setConnection(isConnected);
+//   //     return isConnected;
+//   //   } catch (e) {
+//   //     _setConnection(false);
+//   //     isTakingTooLong.value = false;
+//   //     return false;
+//   //   } finally {
+//   //     isTakingTooLong.value = false;
+//   //   }
+//   // }
 
-  @override
-  State<CheckConnectionController> createState() =>
-      _CheckConnectionControllerState();
-}
+//   @override
+//   State<CheckConnectionController> createState() =>
+//       _CheckConnectionControllerState();
+// }
 
-class _CheckConnectionControllerState extends State<CheckConnectionController> {
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      child: ValueListenableBuilder(
-        valueListenable: CheckConnectionController.isTakingTooLong,
-        builder: (context, isTakingTooLong, _) {
-          return PopScope(
-            canPop: !isTakingTooLong,
-            child: Stack(
-              children: [
-                widget.child,
-                if (isTakingTooLong)
-                  Container(
-                    color: const Color.fromARGB(118, 0, 0, 0),
-                    height: double.infinity,
-                    width: double.infinity,
-                    alignment: Alignment.center,
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Checando conexão à internet...'),
-                        SizedBox(height: 12),
-                        CircularProgressIndicator(),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
+// class _CheckConnectionControllerState extends State<CheckConnectionController> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Material(
+//       child: ValueListenableBuilder(
+//         valueListenable: CheckConnectionController.isTakingTooLong,
+//         builder: (context, isTakingTooLong, _) {
+//           return PopScope(
+//             canPop: !isTakingTooLong,
+//             child: Stack(
+//               children: [
+//                 widget.child,
+//                 if (isTakingTooLong)
+//                   Container(
+//                     color: const Color.fromARGB(118, 0, 0, 0),
+//                     height: double.infinity,
+//                     width: double.infinity,
+//                     alignment: Alignment.center,
+//                     child: const Column(
+//                       mainAxisAlignment: MainAxisAlignment.center,
+//                       children: [
+//                         Text('Checando conexão à internet...'),
+//                         SizedBox(height: 12),
+//                         CircularProgressIndicator(),
+//                       ],
+//                     ),
+//                   ),
+//               ],
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }

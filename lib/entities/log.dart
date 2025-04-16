@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gym_log/utils/generate_id.dart';
 import 'package:uuid/uuid.dart';
 
 class Log {
@@ -16,7 +17,7 @@ class Log {
     required this.weight,
     required this.reps,
     required this.notes,
-  }) : id = id ?? const Uuid().v4();
+  }) : id = id ?? generateId();
 
   factory Log.fromFireStoreMap(Map<String, dynamic> map) {
     return Log(
@@ -36,6 +37,21 @@ class Log {
       'reps': reps,
       'notes': notes,
     };
+  }
+
+  Log copyWithNewId({
+    DateTime? date,
+    double? weight,
+    int? reps,
+    String? notes,
+  }) {
+    return copyWith(
+      id: generateId(),
+      date: date,
+      weight: weight,
+      reps: reps,
+      notes: notes,
+    );
   }
 
   Log copyWith({
