@@ -87,6 +87,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
 
                 setLoading(true);
                 await _controller.logRepository.replaceAll(logs);
+                await _controller.loadLogs();
                 setState(() {});
                 Navigator.pop(context);
                 setLoading(false);
@@ -372,6 +373,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
                           await _controller.logRepository.delete(log);
                           showSnackBar(
                               'Log excluído com sucesso!', scaffoldContext);
+                          await _controller.loadLogs();
                           setState(() {});
                           setLoading(false);
                         },
@@ -397,6 +399,13 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
               await _controller.logRepository.add(logToAdd);
               await _controller.loadLogs();
               setState(() {});
+
+              bool isPR = await _controller.logRepository.isPR(logToAdd);
+
+              if (isPR) {
+                showSnackBar('Novo PR alcançado!', context);
+              }
+
               setLoading(false);
             });
           },

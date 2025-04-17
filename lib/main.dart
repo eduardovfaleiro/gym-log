@@ -25,6 +25,7 @@ const kMaxLengthReps = 4;
 const kMaxReps = 9999;
 
 const kMaxLengthNotes = 120;
+const kTimeoutDuration = Duration(seconds: 4);
 
 late FirebaseFirestore fs;
 late FirebaseAuth fa;

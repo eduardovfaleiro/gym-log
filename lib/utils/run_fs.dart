@@ -7,16 +7,9 @@ Future<void> runFs(func) async {
     func();
   } else {
     try {
-      await func().timeout(const Duration(seconds: 4));
+      await func()?.timeout(kTimeoutDuration);
     } on TimeoutException {
       hasInternetConnectionNotifier.value = false;
-      runFs(func);
     }
   }
-
-  // if (await CheckConnectionController.checkConnection()) {
-  //   await func();
-  // } else {
-  //   func();
-  // }
 }

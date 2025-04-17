@@ -54,7 +54,10 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             'Cadastrar uma conta',
-                            style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge!
+                                .copyWith(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -93,7 +96,8 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                                   return null;
                                 },
                                 controller: _emailController,
-                                decoration: const InputDecoration(labelText: 'E-mail'),
+                                decoration:
+                                    const InputDecoration(labelText: 'E-mail'),
                               ),
                               const SizedBox(height: 8),
                               TextFormField(
@@ -118,7 +122,8 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                                       });
                                     },
                                     isSelected: _obscureText,
-                                    selectedIcon: const Icon(Icons.visibility_off),
+                                    selectedIcon:
+                                        const Icon(Icons.visibility_off),
                                     icon: const Icon(Icons.visibility),
                                   ),
                                 ),
@@ -145,27 +150,35 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                                     }
 
                                     try {
-                                      final credential = await fa.createUserWithEmailAndPassword(
+                                      final credential = await fa
+                                          .createUserWithEmailAndPassword(
                                         email: _emailController.text,
                                         password: _passwordController.text,
                                       );
-                                      await credential.user!.sendEmailVerification();
+                                      await credential.user!
+                                          .sendEmailVerification();
+                                      await fa.signOut();
+
                                       Navigator.pop(context);
                                       showInfo(
                                         context,
-                                        title: 'Enviamos uma verificação de e-mail',
+                                        title:
+                                            'Enviamos uma verificação de e-mail',
                                         content:
                                             'Para continuar, acesse o link no e-mail que enviamos a ${credential.user!.email}.',
                                       );
                                     } on FirebaseAuthException catch (e) {
                                       if (e.code == 'weak-password') {
                                         _weakPassword = true;
-                                      } else if (e.code == 'email-already-in-use') {
+                                      } else if (e.code ==
+                                          'email-already-in-use') {
                                         _emailInUse = true;
-                                      } else if (e.code == 'network-request-failed') {
+                                      } else if (e.code ==
+                                          'network-request-failed') {
                                         showError(
                                           context,
-                                          content: 'Não foi possível estabelecer conexão com o servidor. '
+                                          content:
+                                              'Não foi possível estabelecer conexão com o servidor. '
                                               'Por favor, cheque sua conexão e tente novamente.',
                                         );
                                       }
@@ -195,7 +208,8 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                     OutlinedButton(
                       onPressed: () async {
                         setLoading(true);
-                        var signIn = await GoogleSignInService().signIn(context);
+                        var signIn =
+                            await GoogleSignInService().signIn(context);
 
                         if (signIn.result) {
                           Navigator.pop(context);
@@ -204,7 +218,8 @@ class _RegisterPageState extends State<RegisterPage> with LoadingManager {
                         }
                         setLoading(false);
                       },
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),
+                      style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 6)),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

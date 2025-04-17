@@ -57,7 +57,8 @@ class _LogsListViewState extends State<LogsListView> {
                     children: [
                       Expanded(flex: 3, child: Text('${log.weight} kg')),
                       Expanded(flex: 3, child: Text(log.reps.toString())),
-                      Expanded(flex: 3, child: Text(log.date.formatReadableShort())),
+                      Expanded(
+                          flex: 3, child: Text(log.date.formatReadableShort())),
                       const SizedBox(width: 12),
                       Expanded(flex: 6, child: Text(log.notes, maxLines: 3)),
                       if (widget.onDelete != null || widget.onEdit != null)
@@ -67,13 +68,16 @@ class _LogsListViewState extends State<LogsListView> {
                             builder: (context) {
                               return IconButton(
                                 onPressed: () {
-                                  showPopup(context, width: 200, height: 145, builder: (context) {
+                                  showPopup(context, width: 200, height: 145,
+                                      builder: (context) {
                                     return PopupContainer(
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           PopupIconButton(
-                                            icon: const Icon(CommunityMaterialIcons.arrow_expand),
+                                            icon: const Icon(
+                                                CommunityMaterialIcons
+                                                    .arrow_expand),
                                             onTap: () {
                                               Navigator.pop(context);
                                               showDialog(
@@ -81,21 +85,35 @@ class _LogsListViewState extends State<LogsListView> {
                                                 builder: (context) {
                                                   return AlertDialog(
                                                     insetPadding:
-                                                        const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                                    title: const Text('Visualização completa'),
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 16,
+                                                            vertical: 16),
+                                                    title: const Text(
+                                                        'Visualização completa'),
                                                     content: Column(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
                                                       children: [
-                                                        Text('Peso: ${log.weight}'),
-                                                        Text('Repetições: ${log.reps}'),
-                                                        Text('Data: ${log.date.formatReadable()}'),
-                                                        const SizedBox(height: 12),
+                                                        Text(
+                                                            'Peso: ${log.weight}'),
+                                                        Text(
+                                                            'Repetições: ${log.reps}'),
+                                                        Text(
+                                                            'Data: ${log.date.formatReadable()}'),
+                                                        const SizedBox(
+                                                            height: 12),
                                                         const Text('Notas:'),
                                                         Flexible(
-                                                          child: SingleChildScrollView(
+                                                          child:
+                                                              SingleChildScrollView(
                                                             child: Text(
-                                                              log.notes.isEmpty ? '[Vazio]' : log.notes,
+                                                              log.notes.isEmpty
+                                                                  ? '[Vazio]'
+                                                                  : log.notes,
                                                               maxLines: null,
                                                             ),
                                                           ),
@@ -103,9 +121,10 @@ class _LogsListViewState extends State<LogsListView> {
                                                       ],
                                                     ),
                                                     actions: [
-                                                      ElevatedButton(
+                                                      TextButton(
                                                         onPressed: () {
-                                                          Navigator.pop(context);
+                                                          Navigator.pop(
+                                                              context);
                                                         },
                                                         child: const Text('Ok'),
                                                       ),
@@ -114,7 +133,8 @@ class _LogsListViewState extends State<LogsListView> {
                                                 },
                                               );
                                             },
-                                            child: const Text('Visualizar completo'),
+                                            child: const Text(
+                                                'Visualizar completo'),
                                           ),
                                           PopupIconButton(
                                             icon: const Icon(Icons.edit),
@@ -125,7 +145,8 @@ class _LogsListViewState extends State<LogsListView> {
                                                 title: 'Editar log',
                                                 log: log,
                                                 onConfirm: (editedLog) {
-                                                  widget.onEdit!(log, editedLog);
+                                                  widget.onEdit!(
+                                                      log, editedLog);
                                                 },
                                               );
                                             },
@@ -135,10 +156,12 @@ class _LogsListViewState extends State<LogsListView> {
                                             icon: const Icon(Icons.delete),
                                             onTap: () async {
                                               Navigator.pop(context);
-                                              bool isSure = await showConfirmDialog(
+                                              bool isSure =
+                                                  await showConfirmDialog(
                                                 context,
                                                 'Tem certeza que deseja excluir log?',
-                                                content: 'O seguinte log será excluído e NÃO poderá ser recuperado:'
+                                                content:
+                                                    'O seguinte log será excluído e NÃO poderá ser recuperado:'
                                                     '\n- Peso: ${log.weight} kg'
                                                     '\n- Repetições: ${log.reps}'
                                                     '\n- Data: ${log.date.formatReadable()}',

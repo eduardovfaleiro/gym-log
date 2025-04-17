@@ -9,6 +9,7 @@ import 'package:gym_log/pages/authentication/forgot_password_page.dart';
 import 'package:gym_log/pages/authentication/register_page.dart';
 import 'package:gym_log/services/google_sign_in_service.dart';
 import 'package:gym_log/utils/routers.dart';
+import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/utils/show_info_dialog.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
@@ -63,7 +64,10 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'Entrar na conta',
-                          style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge!
+                              .copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -92,8 +96,10 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                         child: Column(
                           children: [
                             TextFormField(
+                              maxLength: 128,
                               validator: (email) {
-                                String? invalidCredentialError = _invalidCredentialError();
+                                String? invalidCredentialError =
+                                    _invalidCredentialError();
 
                                 if (invalidCredentialError != null) {
                                   return invalidCredentialError;
@@ -105,13 +111,16 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                                 return null;
                               },
                               controller: _emailController,
-                              decoration: const InputDecoration(labelText: 'E-mail'),
+                              decoration: const InputDecoration(
+                                  labelText: 'E-mail', counterText: ''),
                             ),
                             const SizedBox(height: 8),
                             TextFormField(
+                              maxLength: 64,
                               controller: _passwordController,
                               validator: (password) {
-                                String? invalidCredentialError = _invalidCredentialError();
+                                String? invalidCredentialError =
+                                    _invalidCredentialError();
 
                                 if (invalidCredentialError != null) {
                                   return invalidCredentialError;
@@ -124,6 +133,7 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                                 return null;
                               },
                               decoration: InputDecoration(
+                                counterText: '',
                                 labelText: 'Senha',
                                 suffixIcon: IconButton(
                                   onPressed: () {
@@ -132,7 +142,8 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                                     });
                                   },
                                   isSelected: _obscureText,
-                                  selectedIcon: const Icon(Icons.visibility_off),
+                                  selectedIcon:
+                                      const Icon(Icons.visibility_off),
                                   icon: const Icon(Icons.visibility),
                                 ),
                               ),
@@ -147,7 +158,10 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                         child: TextLink(
                           'Esqueceu sua senha?',
                           onTap: () {
-                            Navigator.push(context, NoAnimationRouter(child: const ForgotPasswordPage()));
+                            Navigator.push(
+                                context,
+                                NoAnimationRouter(
+                                    child: const ForgotPasswordPage()));
                           },
                         ),
                       ),
@@ -164,27 +178,72 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                                   }
 
                                   try {
-                                    final credential = await fa.signInWithEmailAndPassword(
+                                    final credential =
+                                        await fa.signInWithEmailAndPassword(
                                       email: _emailController.text,
                                       password: _passwordController.text,
                                     );
 
-                                    if (credential.user != null && !credential.user!.emailVerified) {
+                                    if (credential.user != null &&
+                                        !credential.user!.emailVerified) {
+                                      bool shouldNotResendEmail =
+                                          await showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return AlertDialog(
+                                                    title: const Text(
+                                                        'E-mail não verificado'),
+                                                    content: Text(
+                                                      'Para continuar, acesse o link no e-mail enviado a ${credential.user!.email}.',
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context, false);
+                                                        },
+                                                        child: const Text(
+                                                            'Reenviar e-mail'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context, true);
+                                                        },
+                                                        child: const Text('Ok'),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              ) ??
+                                              true;
+
+                                      if (!shouldNotResendEmail) {
+                                        await credential.user!
+                                            .sendEmailVerification();
+
+                                        showInfo(
+                                          context,
+                                          title:
+                                              'Enviamos uma verificação de e-mail',
+                                          content:
+                                              'Para continuar, acesse o link no e-mail que enviamos a ${credential.user!.email}.',
+                                        );
+                                      }
                                       await fa.signOut();
-                                      showInfo(
-                                        context,
-                                        title: 'E-mail não verificado',
-                                        content:
-                                            'Para continuar, acesse o link no e-mail enviado a ${credential.user!.email}.',
-                                      );
+                                    } else {
+                                      setLoading(false);
+                                      return;
                                     }
                                   } on FirebaseAuthException catch (e) {
                                     if (e.code == 'invalid-credential') {
                                       _invalidCredential = true;
-                                    } else if (e.code == 'network-request-failed') {
+                                    } else if (e.code ==
+                                        'network-request-failed') {
                                       showError(
                                         context,
-                                        content: 'Não foi possível estabelecer conexão com o servidor. '
+                                        content:
+                                            'Não foi possível estabelecer conexão com o servidor. '
                                             'Por favor, cheque sua conexão e tente novamente.',
                                       );
                                     }
@@ -221,7 +280,8 @@ class _LoginPageState extends State<LoginPage> with LoadingManager {
                       }
                       setLoading(false);
                     },
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 6)),
+                    style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 6)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

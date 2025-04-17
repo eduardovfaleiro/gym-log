@@ -39,25 +39,29 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
             maxLength: 50,
           ),
           actions: [
-            ElevatedButton(
+            TextButton(
               onPressed: () async {
                 if (exerciseController.text.isEmpty) {
                   Navigator.pop(context);
                   return;
                 }
 
-                final exerciseSelectionRepository = ExerciseSelectionRepository();
+                final exerciseSelectionRepository =
+                    ExerciseSelectionRepository();
 
-                Exercise? exercise = await exerciseSelectionRepository
-                    .get(Exercise(name: exerciseController.text, category: widget.category));
+                Exercise? exercise = await exerciseSelectionRepository.get(
+                    Exercise(
+                        name: exerciseController.text,
+                        category: widget.category));
 
                 if (exercise != null) {
-                  showError(context, content: 'Já existe um exercício com este nome.');
+                  showError(context,
+                      content: 'Já existe um exercício com este nome.');
                   return;
                 }
 
-                await exerciseSelectionRepository
-                    .add(Exercise(name: exerciseController.text, category: widget.category));
+                await exerciseSelectionRepository.add(Exercise(
+                    name: exerciseController.text, category: widget.category));
 
                 setState(() {});
 
@@ -113,7 +117,9 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                               Navigator.push(
                                 context,
                                 HorizontalRouter(
-                                  child: ExportCategoryPage(category: widget.category, exercises: _exercises),
+                                  child: ExportCategoryPage(
+                                      category: widget.category,
+                                      exercises: _exercises),
                                 ),
                               );
                             },
@@ -126,7 +132,9 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                               Navigator.push(
                                 context,
                                 HorizontalRouter(
-                                    child: ImportCategoryPage(category: widget.category, exercises: _exercises)),
+                                    child: ImportCategoryPage(
+                                        category: widget.category,
+                                        exercises: _exercises)),
                               ).then((_) {
                                 setState(() {});
                               });
@@ -152,12 +160,14 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
         body: FutureBuilder(
           future: _controller.getAllNotSelected(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
+            if (snapshot.connectionState == ConnectionState.waiting ||
+                !snapshot.hasData) {
               return const SizedBox.shrink();
             }
 
             if (snapshot.data!.isEmpty) {
-              return const EmptyMessage('Não existem exercícios para serem selecionados.\nCrie um em ( + )');
+              return const EmptyMessage(
+                  'Não existem exercícios para serem selecionados.\nCrie um em ( + )');
             }
 
             _exercises = snapshot.data!;
@@ -169,7 +179,8 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                     padding: const EdgeInsets.only(bottom: 70),
                     physics: const ClampingScrollPhysics(),
                     itemCount: _exercises.length,
-                    separatorBuilder: (context, index) => const Divider(height: 0),
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 0),
                     itemBuilder: (context, index) {
                       String exercise = _exercises[index];
 
@@ -197,8 +208,11 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                                         onTap: () async {
                                           setLoading(true);
                                           Navigator.pop(context);
-                                          await ExerciseSelectionRepository().delete(
-                                            Exercise(name: exercise, category: widget.category),
+                                          await ExerciseSelectionRepository()
+                                              .delete(
+                                            Exercise(
+                                                name: exercise,
+                                                category: widget.category),
                                           );
                                           setState(() {});
                                           setLoading(false);
@@ -238,7 +252,9 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
 
                     setLoading(true);
 
-                    await ExerciseRepository().add(Exercise(name: _selectedExerciseName, category: widget.category));
+                    await ExerciseRepository().add(Exercise(
+                        name: _selectedExerciseName,
+                        category: widget.category));
                     Navigator.pop(context, true);
 
                     setLoading(false);

@@ -18,7 +18,8 @@ class IntInputFormatter extends TextInputFormatter {
   }
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     if (newValue.text.isEmpty) {
       return newValue;
     }
@@ -40,7 +41,8 @@ class DoubleInputFormatter extends TextInputFormatter {
   late final double _maxValue;
 
   DoubleInputFormatter({required this.maxLength}) {
-    _regex = RegExp(r'^(?:[0-9]{1,' + maxLength.toString() + r'}|0)(?:\.[0-9]{0,2})?$');
+    _regex = RegExp(
+        r'^(?:[0-9]{1,' + maxLength.toString() + r'}|0)(?:\.[0-9]{0,2})?$');
     _maxValue = int.parse('9' * maxLength) + .99;
   }
 
@@ -89,7 +91,8 @@ Future<void> showLogDialog(
   var notesController = TextEditingController(text: log?.notes);
 
   var dateNow = DateTime.now();
-  var dateController = TextEditingController(text: log?.date.formatReadable() ?? dateNow.formatReadable());
+  var dateController = TextEditingController(
+      text: log?.date.formatReadable() ?? dateNow.formatReadable());
   DateTime selectedDate = log?.date ?? dateNow;
 
   var weightController = TextEditingController(text: log?.weight.toString());
@@ -132,13 +135,17 @@ Future<void> showLogDialog(
                 TextFormField(
                   validator: (weight) {
                     if (weight!.isEmpty) return 'O peso deve ser preenchido.';
-                    if (double.parse(weight) <= 0) return 'O peso deve ser maior que 0.';
+                    if (double.parse(weight) <= 0)
+                      return 'O peso deve ser maior que 0.';
 
                     return null;
                   },
                   controller: weightController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
-                  inputFormatters: [DoubleInputFormatter(maxLength: kMaxLengthWeight)],
+                  keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true, signed: false),
+                  inputFormatters: [
+                    DoubleInputFormatter(maxLength: kMaxLengthWeight)
+                  ],
                   decoration: InputDecoration(
                     labelText: 'Peso (kg)',
                     suffix: Row(
@@ -146,7 +153,8 @@ Future<void> showLogDialog(
                       children: [
                         IconButton(
                           onPressed: () {
-                            double weight = double.tryParse(weightController.text) ?? 0;
+                            double weight =
+                                double.tryParse(weightController.text) ?? 0;
                             if (weight >= kMaxWeight - 1) return;
 
                             weight++;
@@ -157,7 +165,8 @@ Future<void> showLogDialog(
                         ),
                         IconButton(
                           onPressed: () {
-                            double weight = double.tryParse(weightController.text) ?? 0;
+                            double weight =
+                                double.tryParse(weightController.text) ?? 0;
                             if (weight < 1) return;
 
                             weight--;
@@ -173,8 +182,10 @@ Future<void> showLogDialog(
                 const SizedBox(height: 8),
                 TextFormField(
                   validator: (reps) {
-                    if (reps!.isEmpty) return 'As repetições devem ser preenchidas.';
-                    if (int.parse(reps) <= 0) return 'As repetições devem ser maiores que 0.';
+                    if (reps!.isEmpty)
+                      return 'As repetições devem ser preenchidas.';
+                    if (int.parse(reps) <= 0)
+                      return 'As repetições devem ser maiores que 0.';
 
                     return null;
                   },
@@ -210,7 +221,9 @@ Future<void> showLogDialog(
                     ),
                   ),
                   keyboardType: const TextInputType.numberWithOptions(),
-                  inputFormatters: [IntInputFormatter(maxLength: kMaxLengthReps)],
+                  inputFormatters: [
+                    IntInputFormatter(maxLength: kMaxLengthReps)
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Flexible(
@@ -227,7 +240,7 @@ Future<void> showLogDialog(
           ),
         ),
         actions: [
-          ElevatedButton(
+          TextButton(
             onPressed: () async {
               bool isValid = formKey.currentState!.validate();
               if (!isValid) return;
@@ -236,7 +249,12 @@ Future<void> showLogDialog(
               int reps = int.parse(repsController.text);
 
               // TODO(adicionei o id aqui, talvez dê problema)
-              onConfirm(Log(id: log?.id, weight: weight, reps: reps, date: selectedDate, notes: notesController.text));
+              onConfirm(Log(
+                  id: log?.id,
+                  weight: weight,
+                  reps: reps,
+                  date: selectedDate,
+                  notes: notesController.text));
 
               Navigator.pop(context);
             },

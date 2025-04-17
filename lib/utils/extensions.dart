@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gym_log/main.dart';
 import 'package:gym_log/widgets/brightness_manager.dart';
@@ -14,10 +16,20 @@ extension IsBlank on String {
 
 extension GetX<T> on Query<T> {
   Future<QuerySnapshot<T>> getX() async {
-    if (hasInternetConnectionNotifier.value) {
-      return get();
-    } else {
+    if (!hasInternetConnectionNotifier.value) {
       return get(const GetOptions(source: Source.cache));
+    }
+    try {
+      // return await get(const GetOptions(source: Source.server))
+      //     .timeout(kTimeoutDuration);
+      return await get(const GetOptions(source: Source.server));
+    } on FirebaseException catch (e) {
+      if (e.code == 'unavailable') {
+        hasInternetConnectionNotifier.value = false;
+        return getX();
+      }
+
+      rethrow;
     }
   }
 }
