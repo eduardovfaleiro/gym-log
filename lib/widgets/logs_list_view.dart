@@ -52,13 +52,13 @@ class _LogsListViewState extends State<LogsListView> {
                 padding: const EdgeInsets.all(4),
                 alignment: Alignment.center,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 8),
+                  padding: const EdgeInsets.only(left: 4),
                   child: Row(
                     children: [
                       Expanded(flex: 3, child: Text('${log.weight} kg')),
                       Expanded(flex: 3, child: Text(log.reps.toString())),
                       Expanded(
-                          flex: 3, child: Text(log.date.formatReadableShort())),
+                          flex: 4, child: Text(log.date.formatReadableShort())),
                       const SizedBox(width: 12),
                       Expanded(flex: 6, child: Text(log.notes, maxLines: 3)),
                       if (widget.onDelete != null || widget.onEdit != null)

@@ -67,7 +67,7 @@ class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
                   children: [
                     Expanded(flex: 3, child: Text('Peso')),
                     Expanded(flex: 3, child: Text('Reps')),
-                    Expanded(flex: 3, child: Text('Data')),
+                    Expanded(flex: 4, child: Text('Data')),
                     SizedBox(width: 12),
                     Expanded(flex: 6, child: Text('Notas')),
                     Expanded(flex: 2, child: SizedBox.shrink()),
@@ -98,7 +98,8 @@ class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
                     },
                     onEdit: (Log oldLog, Log newLog) async {
                       setLoading(true);
-                      await _logRepository.update(newLog: newLog, currentLogList: widget.logs);
+                      await _logRepository.update(
+                          newLog: newLog, currentLogList: widget.logs);
                       await _updateLogs();
                       setLoading(false);
                     },
