@@ -3,7 +3,8 @@ import 'package:gym_log/repositories/config.dart';
 import 'package:gym_log/utils/extensions.dart';
 
 class LogService {
-  double getRepMax(double weight, {required int currentReps, required int targetReps}) {
+  double getRepMax(double weight,
+      {required int currentReps, required int targetReps}) {
     double oneRepMax;
 
     if (currentReps < 11) {
@@ -28,7 +29,6 @@ class LogService {
     throw UnimplementedError();
   }
 
-  // TODO(talvez gerar um rep max logo ao adicionar o log ao FireStore)
   List<Log> convertLogsToRepMax(List<Log> logs) {
     int reps = Config.getInt('repMax', defaultValue: 1);
     Map<String, Log> uniqueDateLogs = {};

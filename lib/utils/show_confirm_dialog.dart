@@ -12,7 +12,7 @@ Future<bool> showConfirmDialog(
           builder: (context) {
             return AlertDialog(
               title: Text(title),
-              content: Text(content),
+              content: content.isEmpty ? null : Text(content),
               actions: [
                 TextButton(
                   onPressed: () {

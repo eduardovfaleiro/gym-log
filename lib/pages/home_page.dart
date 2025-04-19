@@ -204,8 +204,6 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                         bool isSure = await showConfirmDialog(
                                           context,
                                           'Tem certeza que deseja desconectar desta conta?',
-                                          content:
-                                              'As alterações que você realizou não serão perdidas.',
                                           confirm: 'Sim, desconectar',
                                         );
                                         if (!isSure) return;

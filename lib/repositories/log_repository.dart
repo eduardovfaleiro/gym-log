@@ -84,12 +84,16 @@ class LogRepository {
 
   Future<void> delete(Log log) async {
     var exerciseDoc = await _exerciseDoc();
+    // var logs1 = await exerciseDoc.get('logs');
 
     await runFs(
       () => exerciseDoc.reference.update({
         'logs': FieldValue.arrayRemove([log.toMap()])
       }),
     );
+
+    // var exerciseDoc2 = await _exerciseDoc();
+    // var logs2 = await exerciseDoc.get('logs');
   }
 
   Future<void> update({

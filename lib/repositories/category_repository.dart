@@ -27,7 +27,6 @@ class CategoryRepository {
     int currentMaxOrder = countQuery.docs.firstOrNull?.data()['order'] ?? 0;
     await runFs(() =>
         _categoryCollection.add({'name': name, 'order': currentMaxOrder + 1}));
-    print('');
   }
 
   Future<void> delete(String name) async {
@@ -53,7 +52,6 @@ class CategoryRepository {
     batch.delete(categoryRef);
 
     await runFs(() => batch.commit());
-    print('');
   }
 
   Future<List<String>> getAll() async {

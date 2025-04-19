@@ -27,7 +27,7 @@ class SheetService {
         column: 'B',
         row: row,
         message: 'As repetições com valor "${log.reps}" são inválidas: '
-            'repetições não exceder $kMaxLengthReps dígitos.',
+            'repetições não podem exceder $kMaxLengthReps dígitos.',
       );
     } else if (log.reps < 1) {
       throw SheetValueException(
@@ -49,7 +49,8 @@ class SheetService {
       throw SheetValueException(
         column: 'D',
         row: row,
-        message: 'As notas com valor "${log.notes.substring(0, 25)}" são inválidas: '
+        message:
+            'As notas com valor "${log.notes.substring(0, 25)}" são inválidas: '
             'as notas não podem exceder $kMaxLengthNotes caracteres.',
       );
     }

@@ -240,7 +240,7 @@ Future<void> showLogDialog(
           ),
         ),
         actions: [
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               bool isValid = formKey.currentState!.validate();
               if (!isValid) return;
