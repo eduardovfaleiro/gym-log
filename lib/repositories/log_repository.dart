@@ -7,7 +7,6 @@ import 'package:gym_log/entities/exercise.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/services/log_service.dart';
 import 'package:gym_log/utils/extensions.dart';
-import 'package:gym_log/utils/generate_id.dart';
 import 'package:gym_log/utils/run_fs.dart';
 
 import '../main.dart';
@@ -16,26 +15,6 @@ class LogRepository {
   final Exercise exercise;
 
   LogRepository(this.exercise);
-
-  // CollectionReference<Map<String, dynamic>>? _logsCollectionObj;
-
-  // Future<CollectionReference<Map<String, dynamic>>> _logsCollection() async {
-  //   var exerciseQuery = await fs
-  //       .collection('users')
-  //       .doc(fa.currentUser!.uid)
-  //       .collection('exercises')
-  //       .where('category', isEqualTo: exercise.category)
-  //       .where('name', isEqualTo: exercise.name)
-  //       .limit(1)
-  //       .get();
-
-  //   var exerciseDoc = exerciseQuery.docs.first;
-
-  //   _logsCollectionObj =
-  //       fs.collection('users').doc(fa.currentUser!.uid).collection('exercises').doc(exerciseDoc.id).collection('logs');
-
-  //   return _logsCollectionObj!;
-  // }
 
   Future<QueryDocumentSnapshot<Map<String, dynamic>>> _exerciseDoc() async {
     var exerciseQuery = await fs
@@ -50,16 +29,6 @@ class LogRepository {
     return exerciseQuery.docs.first;
   }
 
-  // todo(continuar daqui )
-  // Future<List<Log>> getAll() async {
-  //   var logsCollection = await _logsCollection();
-  //   var logs = await logsCollection.get();
-
-  //   log('LogRepository.getAll()');
-
-  //   return logs.docs.map((log) => Log.fromFireStoreMap(log.data())).toList();
-  // }
-
   Future<List<Log>> getAll() async {
     log('LogRepository.getAll()');
     var exerciseDoc = await _exerciseDoc();
@@ -67,11 +36,6 @@ class LogRepository {
     var logs = await exerciseDoc.get('logs');
     return List.from(logs.map((log) => Log.fromFireStoreMap(log)));
   }
-
-  // Future<void> add(Log log) async {
-  //   var logsCollection = await _logsCollection();
-  //   await runFs(() => logsCollection.add(log.toMap()));
-  // }
 
   Future<void> add(Log log) async {
     var exerciseDoc = await _exerciseDoc();
@@ -118,24 +82,9 @@ class LogRepository {
     });
   }
 
-  // Future<Log?> getLast() async {
-  //   try {
-  //     var logsCollection = await _logsCollection();
-  //     var logs = await logsCollection.orderBy('dateTime', descending: true).limit(1).get();
-
-  //     if (logs.docs.isEmpty) return null;
-
-  //     var logData = logs.docs.first;
-  //     Log logObj = Log.fromFireStoreMap(logData.data());
-
-  //     return logObj;
-  //   } finally {
-  //     log('LogRepository.getLast()');
-  //   }
-  // }
-
   Future<void> delete(Log log) async {
     var exerciseDoc = await _exerciseDoc();
+
     await runFs(
       () => exerciseDoc.reference.update({
         'logs': FieldValue.arrayRemove([log.toMap()])
@@ -157,12 +106,4 @@ class LogRepository {
           .update({'logs': currentLogList.map((log) => log.toMap())}),
     );
   }
-
-  // Future<void> update({required Log oldLog, required Log newLog}) async {
-  //   var logsCollection = await _logsCollection();
-
-  //   var logsQuery = await logsCollection.where('id', isEqualTo: oldLog.id).limit(1).get();
-
-  //   await runFs(() => logsQuery.docs.first.reference.update(newLog.copyWith(id: oldLog.id).toMap()));
-  // }
 }

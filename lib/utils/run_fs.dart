@@ -9,6 +9,7 @@ Future<void> runFs(func) async {
     try {
       await func()?.timeout(kTimeoutDuration);
     } on TimeoutException {
+      await fs.disableNetwork();
       hasInternetConnectionNotifier.value = false;
     }
   }

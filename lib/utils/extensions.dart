@@ -20,11 +20,10 @@ extension GetX<T> on Query<T> {
       return get(const GetOptions(source: Source.cache));
     }
     try {
-      // return await get(const GetOptions(source: Source.server))
-      //     .timeout(kTimeoutDuration);
       return await get(const GetOptions(source: Source.server));
     } on FirebaseException catch (e) {
       if (e.code == 'unavailable') {
+        await fs.disableNetwork();
         hasInternetConnectionNotifier.value = false;
         return getX();
       }
