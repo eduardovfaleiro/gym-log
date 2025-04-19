@@ -99,7 +99,7 @@ class _LogsListViewState extends State<LogsListView> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                            'Peso: ${log.weight}'),
+                                                            'Peso: ${log.weight} kg'),
                                                         Text(
                                                             'Repetições: ${log.reps}'),
                                                         Text(
