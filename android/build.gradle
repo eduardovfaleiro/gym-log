@@ -1,9 +1,3 @@
-def keystoreProperties = new Properties()
-def keystoreFile = rootProject.file("key.properties")
-if (keystoreFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystoreFile))
-}
-
 allprojects {
     repositories {
         google()
