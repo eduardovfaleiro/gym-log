@@ -10,7 +10,8 @@ class GoogleSignInService {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth?.accessToken,
@@ -27,7 +28,8 @@ class GoogleSignInService {
         );
       }
     } on AssertionError catch (e) {
-      if ((e).message == 'At least one of ID token and access token is required') {
+      if ((e).message ==
+          'At least one of ID token and access token is required') {
         return const Result(false);
       }
 

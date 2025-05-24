@@ -2,14 +2,19 @@
 
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gym_log/main.dart';
 import 'package:gym_log/repositories/log_repository.dart';
+import 'package:gym_log/services/google_sign_in_service.dart';
+import 'package:gym_log/utils/delete_user.dart';
 import 'package:gym_log/utils/extensions.dart';
 import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/utils/show_error.dart';
+import 'package:gym_log/utils/show_snackbar.dart';
 import 'package:gym_log/widgets/empty_message.dart';
 import 'package:gym_log/widgets/loading_manager.dart';
 import 'package:gym_log/widgets/popup_buton.dart';
@@ -136,6 +141,25 @@ class _HomePageState extends State<HomePage> with LoadingManager {
         name: _searchController.text.trim());
   }
 
+  Future<void> _showConfirmDeletion(BuildContext context) async {
+    bool isSure = await showConfirmDialog(
+      context,
+      'Excluir conta',
+      content:
+          'Tem certeza que deseja excluir a conta ${fa.currentUser!.email}?',
+      confirm: 'Sim, excluir',
+      cancel: 'Não',
+    );
+
+    if (isSure) {
+      bool deleted = await deleteUser();
+
+      if (deleted) {
+        showSnackBar('Usuário excluído com sucesso', context);
+      }
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -217,6 +241,201 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                         setLoading(false);
                                       },
                                       child: const Text('Desconectar'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        bool isPasswordWrong = false;
+
+                                        final passwordController =
+                                            TextEditingController();
+                                        User currentUser = fa.currentUser!;
+
+                                        bool usesEmailAndPassword = currentUser
+                                            .providerData
+                                            .any((provider) =>
+                                                provider.providerId ==
+                                                'password');
+
+                                        final formKey = GlobalKey<FormState>();
+
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: const Text(
+                                                  'Exclusão desta conta'),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Text(
+                                                      'Para excluir esta conta, você será desconectado e precisa verificar que é você'),
+                                                  if (usesEmailAndPassword)
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 8),
+                                                      child: Form(
+                                                        key: formKey,
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .stretch,
+                                                          children: [
+                                                            TextFormField(
+                                                              validator:
+                                                                  (password) {
+                                                                if (password ==
+                                                                        null ||
+                                                                    password
+                                                                        .isEmpty) {
+                                                                  return 'A senha deve ser preenchida.';
+                                                                }
+
+                                                                return null;
+                                                              },
+                                                              controller:
+                                                                  passwordController,
+                                                              obscureText: true,
+                                                              decoration:
+                                                                  const InputDecoration(
+                                                                labelText:
+                                                                    'Senha desta conta',
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 12),
+                                                            ElevatedButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                if (!formKey
+                                                                    .currentState!
+                                                                    .validate()) {
+                                                                  return;
+                                                                }
+
+                                                                setLoading(
+                                                                    true);
+
+                                                                final credential =
+                                                                    await fa
+                                                                        .signInWithEmailAndPassword(
+                                                                  email:
+                                                                      currentUser
+                                                                          .email!,
+                                                                  password:
+                                                                      passwordController
+                                                                          .text,
+                                                                );
+
+                                                                if (credential
+                                                                        .user !=
+                                                                    null) {
+                                                                  await _showConfirmDeletion(
+                                                                      context);
+                                                                } else {
+                                                                  // TODO(é pra funcionar no validator)
+                                                                  isPasswordWrong =
+                                                                      true;
+                                                                }
+
+                                                                setLoading(
+                                                                    false);
+                                                              },
+                                                              child: const Text(
+                                                                  'Confirmar'),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  Visibility(
+                                                    visible:
+                                                        usesEmailAndPassword,
+                                                    replacement: const SizedBox(
+                                                        height: 16),
+                                                    child: const Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 16),
+                                                      child: Row(
+                                                        children: [
+                                                          Expanded(
+                                                              child: Divider(
+                                                                  height: 0)),
+                                                          SizedBox(width: 12),
+                                                          Text('ou'),
+                                                          SizedBox(width: 12),
+                                                          Expanded(
+                                                              child: Divider(
+                                                                  height: 0)),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  OutlinedButton(
+                                                    onPressed: () async {
+                                                      setLoading(true);
+                                                      await FirebaseUIAuth
+                                                          .signOut(
+                                                        context: context,
+                                                        auth: fa,
+                                                      );
+
+                                                      var signIn =
+                                                          await GoogleSignInService()
+                                                              .signIn(context);
+
+                                                      Navigator.pop(context);
+                                                      Navigator.pop(context);
+
+                                                      if (!signIn.result &&
+                                                          signIn.message
+                                                              .isNotEmpty) {
+                                                        showError(context,
+                                                            content:
+                                                                signIn.message);
+                                                      } else if (fa
+                                                              .currentUser !=
+                                                          null) {
+                                                        await _showConfirmDeletion(
+                                                            context);
+                                                      }
+                                                      setLoading(false);
+                                                    },
+                                                    style: OutlinedButton
+                                                        .styleFrom(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        6)),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        SizedBox(
+                                                          height: 36,
+                                                          child:
+                                                              SvgPicture.asset(
+                                                            'assets/google_logo.svg',
+                                                            height: 36,
+                                                            fit: BoxFit
+                                                                .fitHeight,
+                                                          ),
+                                                        ),
+                                                        const Text(
+                                                            'Entrar com Google'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                      child: const Text('Excluir esta conta'),
                                     ),
                                   ],
                                 ),
