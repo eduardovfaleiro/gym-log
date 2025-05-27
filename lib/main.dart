@@ -30,6 +30,7 @@ const kTimeoutDuration = Duration(seconds: 4);
 late FirebaseFirestore fs;
 late FirebaseAuth fa;
 final hasInternetConnectionNotifier = ValueNotifier(true);
+bool get hasInternetConnection => hasInternetConnectionNotifier.value;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

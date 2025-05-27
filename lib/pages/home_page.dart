@@ -141,23 +141,35 @@ class _HomePageState extends State<HomePage> with LoadingManager {
         name: _searchController.text.trim());
   }
 
-  Future<void> _showConfirmDeletion(BuildContext context) async {
-    bool isSure = await showConfirmDialog(
+  Future<bool> _showConfirmDeletion(
+    BuildContext context, {
+    bool isDismissible = false,
+  }) async {
+    bool userDeleted = false;
+    bool hasAlreadyPressed = false;
+    await showConfirmDialog(
       context,
       'Excluir conta',
+      isDismissible: isDismissible,
+      useRootNavigator: true,
       content:
           'Tem certeza que deseja excluir a conta ${fa.currentUser!.email}?',
       confirm: 'Sim, excluir',
       cancel: 'Não',
+      onConfirm: (context) async {
+        if (hasAlreadyPressed) return;
+        hasAlreadyPressed = true;
+
+        try {
+          userDeleted = await deleteUser(context);
+          Navigator.pop(context);
+        } finally {
+          hasAlreadyPressed = false;
+        }
+      },
     );
 
-    if (isSure) {
-      bool deleted = await deleteUser();
-
-      if (deleted) {
-        showSnackBar('Usuário excluído com sucesso', context);
-      }
-    }
+    return userDeleted;
   }
 
   @override
@@ -199,124 +211,160 @@ class _HomePageState extends State<HomePage> with LoadingManager {
             Container(
               constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width * .4),
-              child: Builder(
-                builder: (context) {
-                  return TextButton.icon(
-                    icon: const Icon(Icons.account_circle_outlined),
-                    onPressed: () async {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text('Conta'),
-                              content: Text(
-                                  'Você está logado como ${fa.currentUser?.email.toString()}.'),
-                              actions: [
-                                Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child:
-                                          const Text('Permanecer nesta conta'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        bool isSure = await showConfirmDialog(
-                                          context,
-                                          'Tem certeza que deseja desconectar desta conta?',
-                                          confirm: 'Sim, desconectar',
-                                        );
-                                        if (!isSure) return;
+              child: TextButton.icon(
+                icon: const Icon(Icons.account_circle_outlined),
+                onPressed: () async {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Conta'),
+                          content: Text(
+                              'Você está logado como ${fa.currentUser?.email.toString()}.'),
+                          actions: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('Permanecer nesta conta'),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    bool isSure = await showConfirmDialog(
+                                      context,
+                                      'Tem certeza que deseja desconectar desta conta?',
+                                      confirm: 'Sim, desconectar',
+                                    );
+                                    if (!isSure) return;
 
-                                        setLoading(true);
-                                        await FirebaseUIAuth.signOut(
-                                          context: context,
-                                          auth: fa,
-                                        );
-                                        Navigator.pop(context);
-                                        setLoading(false);
-                                      },
-                                      child: const Text('Desconectar'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        bool isPasswordWrong = false;
+                                    setLoading(true);
+                                    await FirebaseUIAuth.signOut(
+                                      context: context,
+                                      auth: fa,
+                                    );
+                                    Navigator.pop(context);
+                                    setLoading(false);
+                                  },
+                                  child: const Text('Desconectar'),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    if (!hasInternetConnection) {
+                                      showError(context,
+                                          title: 'Não é possível fazer isso',
+                                          content:
+                                              'Aplicativo está em modo offline. '
+                                              'Por favor, reconecte-se à internet, reinicie o aplicativo e tente novamente.');
+                                      return;
+                                    }
 
-                                        final passwordController =
-                                            TextEditingController();
-                                        User currentUser = fa.currentUser!;
+                                    bool isCheckingPassword = false;
+                                    bool isPasswordWrong = false;
 
-                                        bool usesEmailAndPassword = currentUser
-                                            .providerData
-                                            .any((provider) =>
-                                                provider.providerId ==
-                                                'password');
+                                    final passwordController =
+                                        TextEditingController();
+                                    User currentUser = fa.currentUser!;
 
-                                        final formKey = GlobalKey<FormState>();
+                                    bool usesEmailAndPassword = currentUser
+                                        .providerData
+                                        .any((provider) =>
+                                            provider.providerId == 'password');
 
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return AlertDialog(
-                                              title: const Text(
-                                                  'Exclusão desta conta'),
-                                              content: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  const Text(
-                                                      'Para excluir esta conta, você será desconectado e precisa verificar que é você'),
-                                                  if (usesEmailAndPassword)
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              top: 8),
-                                                      child: Form(
-                                                        key: formKey,
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .stretch,
-                                                          children: [
-                                                            TextFormField(
-                                                              validator:
-                                                                  (password) {
-                                                                if (password ==
-                                                                        null ||
-                                                                    password
-                                                                        .isEmpty) {
-                                                                  return 'A senha deve ser preenchida.';
-                                                                }
+                                    bool usesGoogleSignIn = currentUser
+                                        .providerData
+                                        .any((provider) =>
+                                            provider.providerId ==
+                                            'google.com');
 
-                                                                return null;
-                                                              },
-                                                              controller:
-                                                                  passwordController,
-                                                              obscureText: true,
-                                                              decoration:
-                                                                  const InputDecoration(
-                                                                labelText:
-                                                                    'Senha desta conta',
-                                                              ),
+                                    final formKey = GlobalKey<FormState>();
+
+                                    // TODO(ia testar se um popscope já tornava o dialog undismissible. seria útil pra questão do loading e impedir o usuário de fazer merda)
+                                    showDialog(
+                                      context: context,
+                                      barrierDismissible: true,
+                                      builder: (context) {
+                                        return PopScope(
+                                          canPop: false,
+                                          child: AlertDialog(
+                                            title: const Text(
+                                                'Exclusão desta conta'),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Text(
+                                                    'Para excluir esta conta, você precisa verificar que é o dono dela.'),
+                                                if (usesEmailAndPassword)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 8),
+                                                    child: Form(
+                                                      key: formKey,
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .stretch,
+                                                        children: [
+                                                          TextFormField(
+                                                            validator:
+                                                                (password) {
+                                                              if (password ==
+                                                                      null ||
+                                                                  password
+                                                                      .isEmpty) {
+                                                                return 'A senha deve ser preenchida.';
+                                                              }
+
+                                                              if (isPasswordWrong) {
+                                                                return 'A senha está incorreta.';
+                                                              }
+
+                                                              return null;
+                                                            },
+                                                            controller:
+                                                                passwordController,
+                                                            obscureText: true,
+                                                            maxLength: 64,
+                                                            decoration:
+                                                                const InputDecoration(
+                                                              counterText: '',
+                                                              labelText:
+                                                                  'Senha desta conta',
                                                             ),
-                                                            const SizedBox(
-                                                                height: 12),
-                                                            ElevatedButton(
-                                                              onPressed:
-                                                                  () async {
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 12),
+                                                          ElevatedButton(
+                                                            onPressed:
+                                                                () async {
+                                                              if (isCheckingPassword) {
+                                                                return;
+                                                              }
+
+                                                              UserCredential?
+                                                                  credential;
+                                                              try {
+                                                                isCheckingPassword =
+                                                                    true;
+
+                                                                isPasswordWrong =
+                                                                    false;
                                                                 if (!formKey
                                                                     .currentState!
                                                                     .validate()) {
+                                                                  isCheckingPassword =
+                                                                      false;
                                                                   return;
                                                                 }
 
-                                                                setLoading(
-                                                                    true);
+                                                                // setLoading(true);
+                                                                _showLoadingDialog(
+                                                                    context);
 
-                                                                final credential =
+                                                                credential =
                                                                     await fa
                                                                         .signInWithEmailAndPassword(
                                                                   email:
@@ -326,53 +374,103 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                                                       passwordController
                                                                           .text,
                                                                 );
-
-                                                                if (credential
-                                                                        .user !=
-                                                                    null) {
-                                                                  await _showConfirmDeletion(
-                                                                      context);
-                                                                } else {
-                                                                  // TODO(é pra funcionar no validator)
+                                                              } on FirebaseAuthException catch (e) {
+                                                                if (e.code ==
+                                                                    'invalid-credential') {
                                                                   isPasswordWrong =
                                                                       true;
+
+                                                                  formKey
+                                                                      .currentState!
+                                                                      .validate();
+                                                                } else if (e
+                                                                        .code ==
+                                                                    'network-request-failed') {
+                                                                  showError(
+                                                                    context,
+                                                                    content:
+                                                                        'Não foi possível estabelecer conexão com o servidor. '
+                                                                        'Por favor, cheque sua conexão e tente novamente.',
+                                                                  );
+                                                                }
+                                                              } finally {
+                                                                _hideLoadingDialog(
+                                                                    context);
+
+                                                                if (credential
+                                                                        ?.user !=
+                                                                    null) {
+                                                                  // TODO(testar se está funcionando)
+
+                                                                  bool
+                                                                      userDeleted =
+                                                                      await _showConfirmDeletion(
+                                                                          context,
+                                                                          isDismissible:
+                                                                              true);
+
+                                                                  if (userDeleted) {
+                                                                    // TODO(testar com e sem. Testar entrar com Google e excluir pela senha.)
+                                                                    // await GoogleSignIn()
+                                                                    //     .signOut();
+                                                                    // Navigator.pop(
+                                                                    //     context);
+                                                                    // Navigator.pop(
+                                                                    //     context);
+                                                                    Navigator.of(
+                                                                            context,
+                                                                            rootNavigator:
+                                                                                true)
+                                                                        .popUntil((route) =>
+                                                                            route
+                                                                                is PageRoute);
+                                                                  }
                                                                 }
 
-                                                                setLoading(
-                                                                    false);
-                                                              },
-                                                              child: const Text(
-                                                                  'Confirmar'),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  Visibility(
-                                                    visible:
-                                                        usesEmailAndPassword,
-                                                    replacement: const SizedBox(
-                                                        height: 16),
-                                                    child: const Padding(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              vertical: 16),
-                                                      child: Row(
-                                                        children: [
-                                                          Expanded(
-                                                              child: Divider(
-                                                                  height: 0)),
-                                                          SizedBox(width: 12),
-                                                          Text('ou'),
-                                                          SizedBox(width: 12),
-                                                          Expanded(
-                                                              child: Divider(
-                                                                  height: 0)),
+                                                                isCheckingPassword =
+                                                                    false;
+                                                                if (context
+                                                                    .mounted) {
+                                                                  setLoading(
+                                                                      false);
+                                                                }
+                                                              }
+                                                            },
+                                                            child: const Text(
+                                                                'Confirmar'),
+                                                          ),
                                                         ],
                                                       ),
                                                     ),
                                                   ),
-                                                  OutlinedButton(
+                                                Visibility(
+                                                  visible:
+                                                      usesEmailAndPassword &&
+                                                          usesGoogleSignIn,
+                                                  replacement: const SizedBox(
+                                                      height: 16),
+                                                  child: const Padding(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            vertical: 16),
+                                                    child: Row(
+                                                      children: [
+                                                        Expanded(
+                                                            child: Divider(
+                                                                height: 0)),
+                                                        SizedBox(width: 12),
+                                                        Text('ou'),
+                                                        SizedBox(width: 12),
+                                                        Expanded(
+                                                            child: Divider(
+                                                                height: 0)),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                Visibility(
+                                                  visible: usesGoogleSignIn,
+                                                  child: OutlinedButton(
                                                     onPressed: () async {
                                                       setLoading(true);
                                                       await FirebaseUIAuth
@@ -394,13 +492,17 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                                         showError(context,
                                                             content:
                                                                 signIn.message);
-                                                      } else if (fa
-                                                              .currentUser !=
-                                                          null) {
+                                                      } else if (fa.currentUser
+                                                              ?.uid ==
+                                                          currentUser.uid) {
+                                                        // TODO(pelo jeito parou de funcionar)
                                                         await _showConfirmDeletion(
                                                             context);
                                                       }
-                                                      setLoading(false);
+
+                                                      if (context.mounted) {
+                                                        setLoading(false);
+                                                      }
                                                     },
                                                     style: OutlinedButton
                                                         .styleFrom(
@@ -429,27 +531,27 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                                                       ],
                                                     ),
                                                   ),
-                                                ],
-                                              ),
-                                            );
-                                          },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         );
                                       },
-                                      child: const Text('Excluir esta conta'),
-                                    ),
-                                  ],
+                                    );
+                                  },
+                                  child: const Text('Excluir esta conta'),
                                 ),
                               ],
-                            );
-                          });
-                    },
-                    label: Text(
-                      fa.currentUser?.email.toString() ?? '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
+                            ),
+                          ],
+                        );
+                      });
                 },
+                label: Text(
+                  fa.currentUser?.email.toString() ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
             Container(
@@ -668,4 +770,21 @@ class _HomePageState extends State<HomePage> with LoadingManager {
       ),
     );
   }
+}
+
+void _showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return const PopScope(
+        canPop: false,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    },
+  );
+}
+
+void _hideLoadingDialog(BuildContext context) {
+  Navigator.of(context, rootNavigator: true).pop();
 }
