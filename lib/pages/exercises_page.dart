@@ -56,10 +56,13 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
               builder: (context, setStateList) {
                 return Visibility(
                   visible: _exercises?.isNotEmpty ?? true,
-                  replacement: const EmptyMessage('Você ainda não selecionou nenhum exercício. Selecione em ( + )'),
+                  replacement: const EmptyMessage(
+                      'Você ainda não selecionou nenhum exercício. Selecione em ( + )'),
                   child: ReorderableListView(
+                    padding: const EdgeInsets.only(bottom: 96),
                     children: List.generate(_exercises?.length ?? 0, (index) {
-                      var exercise = Exercise(name: _exercises![index], category: widget.category);
+                      var exercise = Exercise(
+                          name: _exercises![index], category: widget.category);
                       return Column(
                         key: UniqueKey(),
                         children: [
@@ -75,7 +78,8 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                               if (isPR) {
                                 showSnackBar('Novo PR alcançado!', context);
                               } else {
-                                showSnackBar('Log adicionado com sucesso!', context);
+                                showSnackBar(
+                                    'Log adicionado com sucesso!', context);
                               }
                               setLoading(false);
                             },
@@ -100,7 +104,8 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                       List<OrderedExercise> orderedExercises = [];
 
                       for (int i = 0; i < _exercises!.length; i++) {
-                        orderedExercises.add(OrderedExercise(name: _exercises![i], order: i));
+                        orderedExercises.add(
+                            OrderedExercise(name: _exercises![i], order: i));
                       }
 
                       setStateList(() {});

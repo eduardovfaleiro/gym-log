@@ -109,6 +109,8 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
               builder: (context) {
                 return IconButton(
                   onPressed: () {
+                    bool isPickingFile = false;
+
                     showPopup(
                       context,
                       height: 260,
@@ -183,19 +185,29 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
                                 ),
                                 PopupIconButton(
                                   onTap: () async {
-                                    FilePickerResult? result =
-                                        await FilePicker.platform.pickFiles(
-                                      allowedExtensions: ['csv'],
-                                      type: FileType.custom,
-                                    );
-                                    if (result == null) return;
+                                    if (isPickingFile) return;
+                                    isPickingFile = true;
 
                                     setLoading(true);
+                                    FilePickerResult? result;
+                                    try {
+                                      result =
+                                          await FilePicker.platform.pickFiles(
+                                        allowedExtensions: ['csv'],
+                                        type: FileType.custom,
+                                      );
+                                      if (result == null) {
+                                        setLoading(false);
+                                        return;
+                                      }
+                                    } finally {
+                                      isPickingFile = false;
+                                    }
+
                                     String csvPath = result.files.single.path!;
                                     List<Log> logs = [];
 
                                     try {
-                                      setLoading(true);
                                       logs = CsvService()
                                           .convertCsvToLogs(csvPath);
                                     } on SheetValueException catch (error) {
@@ -227,14 +239,26 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
                                 ),
                                 PopupIconButton(
                                   onTap: () async {
-                                    FilePickerResult? result =
-                                        await FilePicker.platform.pickFiles(
-                                      allowedExtensions: ['xlsx'],
-                                      type: FileType.custom,
-                                    );
-                                    if (result == null) return;
+                                    if (isPickingFile) return;
+                                    isPickingFile = true;
 
                                     setLoading(true);
+                                    FilePickerResult? result;
+
+                                    try {
+                                      result =
+                                          await FilePicker.platform.pickFiles(
+                                        allowedExtensions: ['xlsx'],
+                                        type: FileType.custom,
+                                      );
+                                      if (result == null) {
+                                        setLoading(false);
+                                        return;
+                                      }
+                                    } finally {
+                                      isPickingFile = false;
+                                    }
+
                                     String excelPath =
                                         result.files.single.path!;
                                     List<Log> logs = [];
