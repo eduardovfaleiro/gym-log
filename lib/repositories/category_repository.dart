@@ -6,6 +6,31 @@ import 'package:gym_log/utils/extensions.dart';
 import '../main.dart';
 import '../utils/run_fs.dart';
 
+class CategoryRepositoryX {
+  final _categoryCollection =
+      fs.collection('users').doc(fa.currentUser!.uid).collection('categories');
+
+  Future<bool> exists(String name) async {
+    var categoriesQuery = await _categoryCollection
+        .where('name', isEqualTo: name)
+        .limit(1)
+        .getX();
+
+    return categoriesQuery.docs.isNotEmpty;
+  }
+
+  Future<void> add(String name) async {
+    var countQuery = await _categoryCollection
+        .orderBy('order', descending: true)
+        .limit(1)
+        .getX();
+
+    int currentMaxOrder = countQuery.docs.firstOrNull?.data()['order'] ?? 0;
+    await runFs(() =>
+        _categoryCollection.add({'name': name, 'order': currentMaxOrder + 1}));
+  }
+}
+
 class CategoryRepository {
   final _categoryCollection =
       fs.collection('users').doc(fa.currentUser!.uid).collection('categories');

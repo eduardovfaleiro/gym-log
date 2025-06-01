@@ -190,7 +190,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
 
     return LoadingPresenter(
       isLoadingNotifier: isLoadingNotifier,
-      showLoadingAnimation: false,
+      // showLoadingAnimation: false,
       child: Scaffold(
         floatingActionButton: Builder(builder: (context) {
           return FloatingActionButton(
@@ -622,6 +622,7 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                   itemBuilder: (context, index) {
                     Exercise exercise = _exercisesSearched[index];
 
+                    // TODO(testar o onDelete)
                     return ExerciseCard(
                       exercise: exercise,
                       onAddLog: (log) async {
@@ -636,11 +637,18 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                         setLoading(false);
                       },
                       onDelete: () async {
+                        // setLoading(true);
+                        // await _exerciseRepository.delete(exercise);
+                        // await _updateSearchedExercises();
+                        // await Future.delayed(Duration(seconds: 5));
+                        // setState(() {});
+                        // setLoading(false);
                         setLoading(true);
                         await _exerciseRepository.delete(exercise);
                         await _updateSearchedExercises();
-                        setState(() {});
                         setLoading(false);
+                        await Future.delayed(Duration(seconds: 5));
+                        setState(() {});
                       },
                       showCategory: true,
                     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gym_log/entities/exercise.dart';
 import 'package:gym_log/entities/log.dart';
 import 'package:gym_log/utils/routers.dart';
+import 'package:gym_log/utils/show_async_confirm_dialog.dart';
 import 'package:gym_log/utils/show_popup.dart';
 import 'package:gym_log/widgets/popup_buton.dart';
 
@@ -18,7 +19,8 @@ class ActionCard extends StatelessWidget {
     super.key,
     required this.onTap,
     required this.child,
-    this.contentPadding = const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+    this.contentPadding =
+        const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
   });
 
   @override
@@ -71,8 +73,10 @@ class ExerciseCard extends StatelessWidget {
                   visible: showCategory,
                   child: Text(
                     exercise.category,
-                    style:
-                        Theme.of(context).textTheme.bodySmall!.copyWith(color: Theme.of(context).colorScheme.primary),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall!
+                        .copyWith(color: Theme.of(context).colorScheme.primary),
                   ),
                 ),
               ],
@@ -82,23 +86,9 @@ class ExerciseCard extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () {
-                  showAddLog(context, exercise: exercise, onConfirm: (log) async {
+                  showAddLog(context, exercise: exercise,
+                      onConfirm: (log) async {
                     await onAddLog(log);
-                    //                     await LogRepository(exercise).add(
-                    //   Log(
-                    //     date: date,
-                    //     reps: reps,
-                    //     weight: weight,
-                    //     notes: notes,
-                    //   ),
-                    // );
-                    // // ignore: use_build_context_synchronously
-                    // ScaffoldMessenger.of(context).showSnackBar(
-                    //   const SnackBar(
-                    //     content: Text('Log adicionado com sucesso!'),
-                    //     duration: Duration(milliseconds: 2000),
-                    //   ),
-                    // );
                   });
                 },
                 icon: const Icon(Icons.note_add_outlined),
@@ -115,10 +105,19 @@ class ExerciseCard extends StatelessWidget {
                             onTap: () async {
                               Navigator.pop(context);
                               bool isSure = await showConfirmDialog(
+                                // await showConfirmDialog(
                                 context,
                                 'Tem certeza que deseja excluir o exercício "${exercise.name}"?',
-                                content: 'Os logs deste exercício NÃO poderão ser recuperados.',
+                                content:
+                                    'Os logs deste exercício NÃO poderão ser recuperados.',
                                 confirm: 'Sim, excluir',
+                                // onConfirm: (context) async {
+                                //   Navigator.pop(context);
+                                //   onDelete();
+                                //   // await onDelete();
+                                //   // // ignore: use_build_context_synchronously
+                                //   // Navigator.pop(context);
+                                // },
                               );
 
                               if (isSure) {

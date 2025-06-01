@@ -7,6 +7,8 @@ import 'package:gym_log/utils/run_fs.dart';
 
 import '../entities/exercise.dart';
 
+class ExerciseNotFound implements Exception {}
+
 class ExerciseRepository {
   static CollectionReference<Map<String, dynamic>> get _exercisesCollection {
     return fs
@@ -84,7 +86,9 @@ class ExerciseRepository {
         .where('category', isEqualTo: exercise.category)
         .getX();
 
+    // TODO(e se bugarem o firebase? como vão deletar?)
     if (exerciseQuery.docs.length > 1) throw Exception();
+    if (exerciseQuery.docs.isEmpty) throw ExerciseNotFound();
 
     var docRef = exerciseQuery.docs.first.reference;
 

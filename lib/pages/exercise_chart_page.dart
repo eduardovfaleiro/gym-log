@@ -47,6 +47,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
     setLoading(true);
 
     _controller.loadLogs().whenComplete(() {
+      // TODO(testar)
       setState(() {});
       setLoading(false);
     });
@@ -88,6 +89,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
                 setLoading(true);
                 await _controller.logRepository.replaceAll(logs);
                 await _controller.loadLogs();
+                // TODO(testar)
                 setState(() {});
                 Navigator.pop(context);
                 setLoading(false);
@@ -322,6 +324,7 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
                 onSelected: (selectedRpm) async {
                   setLoading(true);
                   Config.setInt('repMax', selectedRpm!);
+                  // TODO(testar)
                   setState(() {});
                   setLoading(false);
                 },
@@ -398,12 +401,14 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
                           showSnackBar(
                               'Log excluído com sucesso!', scaffoldContext);
                           await _controller.loadLogs();
+                          // TODO(testar)
                           setState(() {});
                           setLoading(false);
                         },
                         onEdit: (Log oldLog, Log newLog) async {
                           setLoading(true);
                           await _controller.updateLog(newLog);
+                          // TODO(testar)
                           setState(() {});
                           setLoading(false);
                         },

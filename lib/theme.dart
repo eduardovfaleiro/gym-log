@@ -359,7 +359,8 @@ class MaterialTheme {
         ),
         dropdownMenuTheme: DropdownMenuThemeData(
           menuStyle: MenuStyle(
-            shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12))),
             elevation: const WidgetStatePropertyAll(0),
           ),
           inputDecorationTheme: InputDecorationTheme(
@@ -367,7 +368,8 @@ class MaterialTheme {
           ),
         ),
         snackBarTheme: SnackBarThemeData(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           behavior: SnackBarBehavior.floating,
           showCloseIcon: true,
           insetPadding: const EdgeInsets.all(16),
@@ -377,12 +379,14 @@ class MaterialTheme {
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             side: const BorderSide(color: Colors.grey),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
-          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
           ),

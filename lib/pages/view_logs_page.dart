@@ -47,7 +47,7 @@ class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
   Widget build(BuildContext context) {
     return LoadingPresenter(
       isLoadingNotifier: isLoadingNotifier,
-      showLoadingAnimation: false,
+      // showLoadingAnimation: false,
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {
           if (didPop && _updated) {
