@@ -25,12 +25,12 @@ class ExercisesPage extends StatefulWidget {
 }
 
 class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
-  List<String> _exercises = [];
+  List<ExerciseX> _exercises = [];
   final _exerciseRepository = ExerciseRepository();
   late final Future<void> _exercisesLoader;
 
   Future<void> _updateExercises() async {
-    _exercises = await _exerciseRepository.getAllFromCategory(widget.category);
+    _exercises = await ExerciseRepositoryX(widget.category).getAll();
   }
 
   @override
@@ -53,7 +53,8 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
               HorizontalRouter(
                 child: AddExercisePage(
                   category: widget.category,
-                  exercisesInUse: _exercises.toSet(),
+                  exercisesInUse:
+                      _exercises.map((exercise) => exercise.name).toSet(),
                 ),
               ),
             ).then((added) async {
@@ -82,43 +83,44 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
               child: ReorderableListView(
                 padding: const EdgeInsets.only(bottom: 96),
                 children: List.generate(_exercises.length, (index) {
-                  var exercise = Exercise(
-                      name: _exercises[index], category: widget.category);
+                  // var exercise = Exercise(
+                  //     name: _exercises[index], category: widget.category);
+                  final exercise = _exercises[index];
                   return Column(
                     key: UniqueKey(),
                     children: [
-                      ExerciseCard(
+                      ExerciseCardX(
                         exercise: exercise,
                         onAddLog: (log) async {
-                          // TODO(ver melhor)
-                          setLoading(true);
-                          final logRepository = LogRepository(exercise);
+                          // // TODO(ver melhor)
+                          // setLoading(true);
+                          // final logRepository = LogRepository(exercise);
 
-                          await logRepository.add(log);
-                          bool isPR = await logRepository.isPR(log);
+                          // await logRepository.add(log);
+                          // bool isPR = await logRepository.isPR(log);
 
-                          if (isPR) {
-                            showSnackBar('Novo PR alcançado!', context);
-                          } else {
-                            showSnackBar(
-                                'Log adicionado com sucesso!', context);
-                          }
-                          setLoading(false);
+                          // if (isPR) {
+                          //   showSnackBar('Novo PR alcançado!', context);
+                          // } else {
+                          //   showSnackBar(
+                          //       'Log adicionado com sucesso!', context);
+                          // }
+                          // setLoading(false);
                         },
                         onDelete: () async {
-                          setLoading(true);
-                          try {
-                            await _exerciseRepository.delete(exercise);
-                          } on ExerciseNotFound {
-                            showError(context,
-                                content: 'Exercício não encontrado.');
-                            setLoading(false);
-                            return;
-                          }
-                          await _updateExercises();
-                          setState(() {});
+                          // setLoading(true);
+                          // try {
+                          //   await _exerciseRepository.delete(exercise);
+                          // } on ExerciseNotFound {
+                          //   showError(context,
+                          //       content: 'Exercício não encontrado.');
+                          //   setLoading(false);
+                          //   return;
+                          // }
+                          // await _updateExercises();
+                          // setState(() {});
 
-                          setLoading(false);
+                          // setLoading(false);
                         },
                       ),
                       const Divider(height: 0),
@@ -126,27 +128,27 @@ class _ExercisesPageState extends State<ExercisesPage> with LoadingManager {
                   );
                 }),
                 onReorder: (oldIndex, newIndex) async {
-                  if (oldIndex < newIndex) {
-                    newIndex -= 1;
-                  }
-                  final String exercise = _exercises!.removeAt(oldIndex);
-                  _exercises.insert(newIndex, exercise);
+                  // if (oldIndex < newIndex) {
+                  //   newIndex -= 1;
+                  // }
+                  // final String exercise = _exercises!.removeAt(oldIndex);
+                  // _exercises.insert(newIndex, exercise);
 
-                  List<OrderedExercise> orderedExercises = [];
+                  // List<OrderedExercise> orderedExercises = [];
 
-                  for (int i = 0; i < _exercises.length; i++) {
-                    orderedExercises
-                        .add(OrderedExercise(name: _exercises[i], order: i));
-                  }
+                  // for (int i = 0; i < _exercises.length; i++) {
+                  //   orderedExercises
+                  //       .add(OrderedExercise(name: _exercises[i], order: i));
+                  // }
 
-                  setState(() {});
+                  // setState(() {});
 
-                  setLoading(true);
-                  await _exerciseRepository.updateOrder(
-                    category: widget.category,
-                    orderedExercises: orderedExercises,
-                  );
-                  setLoading(false);
+                  // setLoading(true);
+                  // await _exerciseRepository.updateOrder(
+                  //   category: widget.category,
+                  //   orderedExercises: orderedExercises,
+                  // );
+                  // setLoading(false);
                 },
               ),
             );

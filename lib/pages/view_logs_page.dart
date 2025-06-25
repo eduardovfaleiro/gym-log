@@ -10,7 +10,7 @@ import '../widgets/logs_list_view.dart';
 
 class ViewLogsPage extends StatefulWidget {
   final List<Log> logs;
-  final Exercise exercise;
+  final ExerciseX exercise;
   final void Function() onUpdate;
 
   const ViewLogsPage({
@@ -27,13 +27,13 @@ class ViewLogsPage extends StatefulWidget {
 class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
   bool _updated = false;
   List<Log> _logs = [];
-  late final LogRepository _logRepository;
+  late final LogRepositoryX _logRepository;
 
   @override
   void initState() {
     super.initState();
     _logs = widget.logs;
-    _logRepository = LogRepository(widget.exercise);
+    _logRepository = LogRepositoryX(widget.exercise);
   }
 
   Future<void> _updateLogs() async {
@@ -47,7 +47,6 @@ class _ViewLogsPageState extends State<ViewLogsPage> with LoadingManager {
   Widget build(BuildContext context) {
     return LoadingPresenter(
       isLoadingNotifier: isLoadingNotifier,
-      // showLoadingAnimation: false,
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {
           if (didPop && _updated) {

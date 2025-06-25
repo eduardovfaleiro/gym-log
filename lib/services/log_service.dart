@@ -55,4 +55,26 @@ class LogService {
     var uniqueDateLogsList = uniqueDateLogs.values.toList();
     return uniqueDateLogsList;
   }
+
+  bool isPersonalRecord({required Log log, required List<Log> logs}) {
+    double repMaxLog = getRepMax(
+      log.weight,
+      currentReps: log.reps,
+      targetReps: 1,
+    );
+
+    for (final logFromList in logs) {
+      double repMaxLogFromList = getRepMax(
+        logFromList.weight,
+        currentReps: logFromList.reps,
+        targetReps: 1,
+      );
+
+      if (repMaxLogFromList >= repMaxLog) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 }

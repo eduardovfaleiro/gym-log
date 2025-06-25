@@ -622,36 +622,36 @@ class _HomePageState extends State<HomePage> with LoadingManager {
                   itemBuilder: (context, index) {
                     Exercise exercise = _exercisesSearched[index];
 
-                    // TODO(testar o onDelete)
-                    return ExerciseCard(
-                      exercise: exercise,
-                      onAddLog: (log) async {
-                        setLoading(true);
-                        await LogRepository(exercise).add(log);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Log adicionado com sucesso!'),
-                            duration: Duration(milliseconds: 2000),
-                          ),
-                        );
-                        setLoading(false);
-                      },
-                      onDelete: () async {
-                        // setLoading(true);
-                        // await _exerciseRepository.delete(exercise);
-                        // await _updateSearchedExercises();
-                        // await Future.delayed(Duration(seconds: 5));
-                        // setState(() {});
-                        // setLoading(false);
-                        setLoading(true);
-                        await _exerciseRepository.delete(exercise);
-                        await _updateSearchedExercises();
-                        setLoading(false);
-                        await Future.delayed(Duration(seconds: 5));
-                        setState(() {});
-                      },
-                      showCategory: true,
-                    );
+                    // TODO(desfazer)
+                    // return ExerciseCard(
+                    //   exercise: exercise,
+                    //   onAddLog: (log) async {
+                    //     setLoading(true);
+                    //     await LogRepository(exercise).add(log);
+                    //     ScaffoldMessenger.of(context).showSnackBar(
+                    //       const SnackBar(
+                    //         content: Text('Log adicionado com sucesso!'),
+                    //         duration: Duration(milliseconds: 2000),
+                    //       ),
+                    //     );
+                    //     setLoading(false);
+                    //   },
+                    //   onDelete: () async {
+                    //     // setLoading(true);
+                    //     // await _exerciseRepository.delete(exercise);
+                    //     // await _updateSearchedExercises();
+                    //     // await Future.delayed(Duration(seconds: 5));
+                    //     // setState(() {});
+                    //     // setLoading(false);
+                    //     setLoading(true);
+                    //     await _exerciseRepository.delete(exercise);
+                    //     await _updateSearchedExercises();
+                    //     setLoading(false);
+                    //     await Future.delayed(Duration(seconds: 5));
+                    //     setState(() {});
+                    //   },
+                    //   showCategory: true,
+                    // );
                   },
                   separatorBuilder: (context, index) {
                     return const Divider(height: 0);

@@ -11,6 +11,82 @@ import 'package:gym_log/utils/run_fs.dart';
 
 import '../main.dart';
 
+class LogRepositoryX {
+  final ExerciseX exercise;
+
+  LogRepositoryX(this.exercise);
+
+  DocumentReference<Map<String, dynamic>> get _exerciseDocRef {
+    return fs
+        .collection('users')
+        .doc(fa.currentUser!.uid)
+        .collection('exercises')
+        .doc(exercise.id);
+  }
+
+  Future<void> add(Log log) async {
+    await runFs(
+      () => _exerciseDocRef.update({
+        'logs': FieldValue.arrayUnion([log.toMap()])
+      }),
+    );
+  }
+
+  Future<List<Log>> getAll() async {
+    // Acho que não vai funcionar no modo offline.
+    final exerciseDoc = await _exerciseDocRef.get();
+
+    final logs = List<Map<String, dynamic>>.from(await exerciseDoc.get('logs'));
+
+    return logs.map((log) => Log.fromFireStoreMap(log)).toList();
+  }
+
+  Future<void> update({
+    required Log newLog,
+    required List<Log> currentLogList,
+  }) async {
+    int index = currentLogList.indexWhere((log) => log.id == newLog.id);
+    currentLogList[index] = newLog;
+
+    // Testar bem
+    await runFs(
+      () => _exerciseDocRef
+          .update({'logs': currentLogList.map((log) => log.toMap())}),
+    );
+  }
+
+  Future<void> delete(Log log) async {
+    await runFs(
+      () => _exerciseDocRef.update({
+        'logs': FieldValue.arrayRemove([log.toMap()])
+      }),
+    );
+  }
+
+  // TODO(talvez mover para um service.)
+  Future<Log?> getLast() async {
+    log('LogRepository.getLast()');
+
+    List<Log> logs = await getAll();
+    if (logs.isEmpty) return null;
+
+    return logs.reduce((log1, log2) {
+      return log1.date.isAfter(log2.date) ? log1 : log2;
+    });
+  }
+
+  Future<void> replaceAll(List<Log> logs) async {
+    await runFs(
+      () => _exerciseDocRef.update({
+        'logs': logs.map((log) {
+          // Não sei o porquê de copyWithNewId existir, mas tenho medo.
+          return log.copyWithNewId().toMap();
+        })
+      }),
+    );
+  }
+}
+
 class LogRepository {
   final Exercise exercise;
 

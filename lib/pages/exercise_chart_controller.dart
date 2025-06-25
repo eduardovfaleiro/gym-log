@@ -10,6 +10,82 @@ import 'package:open_file/open_file.dart';
 import '../entities/exercise.dart';
 import '../services/csv_service.dart';
 
+// TODO(talvez usar GetIt pra tipo de coisa como o uso do LogRepository aqui.)
+class ExerciseChartControllerX {
+  final ExerciseX exercise;
+  final LogRepositoryX logRepository;
+
+  ExerciseChartControllerX(this.exercise)
+      : logRepository = LogRepositoryX(exercise);
+
+  List<Log> logs = [];
+
+  Future<void> loadLogs() async {
+    logs = await logRepository.getAll();
+  }
+
+  bool isPersonalRecord(Log log) {
+    return LogService().isPersonalRecord(log: log, logs: logs);
+  }
+
+  List<Log> getChartLogs() {
+    if (logs.isEmpty) return [];
+
+    var logsRepMax = LogService().convertLogsToRepMax(logs);
+    logsRepMax.sort((a, b) => a.date.compareTo(b.date));
+
+    return logsRepMax;
+  }
+
+  Future<void> updateLog(Log log) async {
+    await logRepository.update(newLog: log, currentLogList: logs);
+  }
+
+  Future<({ResultType resultType, String fileName})>
+      exportAndOpenAsCsv() async {
+    String csvData = await CsvService().convertLogsToCsv(
+      exercise.name,
+      // await _logRepository.getAll(),
+      logs,
+    );
+
+    String outputPath = await getUniqueFilePath(
+      directory: '/storage/emulated/0/Download/',
+      baseName: exercise.name,
+      extension: 'csv',
+    );
+
+    String fileName = outputPath.split('/').last;
+
+    File file = File(outputPath);
+    await file.writeAsString(csvData);
+
+    var openResult = await OpenFile.open(outputPath);
+    return (resultType: openResult.type, fileName: fileName);
+  }
+
+  Future<({ResultType resultType, String fileName})>
+      exportAndOpenAsExcel() async {
+    List<int> excelFile =
+        (await ExcelService().convertLogsToExcel(exercise.name, logs))!;
+
+    String outputPath = await getUniqueFilePath(
+      directory: '/storage/emulated/0/Download/',
+      baseName: exercise.name,
+      extension: 'xlsx',
+    );
+
+    String fileName = outputPath.split('/').last;
+
+    File(outputPath)
+      ..createSync(recursive: true)
+      ..writeAsBytesSync(excelFile);
+
+    var openResult = await OpenFile.open(outputPath);
+    return (resultType: openResult.type, fileName: fileName);
+  }
+}
+
 class ExerciseChartController {
   final Exercise exercise;
   late final LogRepository logRepository;
@@ -61,7 +137,7 @@ class ExerciseChartController {
   Future<({ResultType resultType, String fileName})>
       exportAndOpenAsExcel() async {
     List<int> excelFile =
-        (await ExcelService().convertLogsToExcel(exercise, logs))!;
+        (await ExcelService().convertLogsToExcel(exercise.name, logs))!;
 
     String outputPath = await getUniqueFilePath(
       directory: '/storage/emulated/0/Download/',

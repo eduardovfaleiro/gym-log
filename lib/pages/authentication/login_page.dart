@@ -9,7 +9,6 @@ import 'package:gym_log/pages/authentication/forgot_password_page.dart';
 import 'package:gym_log/pages/authentication/register_page.dart';
 import 'package:gym_log/services/google_sign_in_service.dart';
 import 'package:gym_log/utils/routers.dart';
-import 'package:gym_log/utils/show_confirm_dialog.dart';
 import 'package:gym_log/utils/show_error.dart';
 import 'package:gym_log/utils/show_info_dialog.dart';
 import 'package:gym_log/widgets/loading_manager.dart';

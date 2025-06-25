@@ -69,9 +69,9 @@ class DoubleInputFormatter extends TextInputFormatter {
 Future<void> showAddLog(
   BuildContext context, {
   required void Function(Log log) onConfirm,
-  required Exercise exercise,
+  required ExerciseX exercise,
 }) async {
-  Log? lastLogFromExercise = await LogRepository(exercise).getLast();
+  Log? lastLogFromExercise = await LogRepositoryX(exercise).getLast();
 
   await showLogDialog(
     // ignore: use_build_context_synchronously

@@ -9,6 +9,55 @@ import '../entities/exercise.dart';
 
 class ExerciseNotFound implements Exception {}
 
+class ExerciseRepositoryX {
+  final String categoryId;
+
+  ExerciseRepositoryX(this.categoryId);
+
+  static CollectionReference<Map<String, dynamic>> get _collection {
+    return fs
+        .collection('users')
+        .doc(fa.currentUser!.uid)
+        .collection('exercises');
+  }
+
+  Future<void> addAll(List<String> exercises) async {
+    final batch = fs.batch();
+
+    var exercisesQuery = await _collection
+        .where('categoryId', isEqualTo: categoryId)
+        .orderBy('order', descending: true)
+        .limit(1)
+        .getX();
+
+    int currentMaxOrder = exercisesQuery.docs.firstOrNull?.data()['order'] ?? 0;
+
+    for (int i = 0; i < exercises.length; i++) {
+      batch.set(_collection.doc(), {
+        'name': exercises[i],
+        'categoryId': categoryId,
+        'createdAt': DateTime.now(),
+        'order': currentMaxOrder + i + 1,
+        'logs': [],
+      });
+    }
+
+    await runFs(() => batch.commit());
+  }
+
+  Future<List<ExerciseX>> getAll() async {
+    var exercises = await _collection
+        .where('categoryId', isEqualTo: categoryId)
+        .orderBy('createdAt')
+        .getX();
+    log('ExerciseRepositoryX.getAllFromCategory($categoryId)');
+
+    return exercises.docs
+        .map((exercise) => ExerciseX.fromFireStoreSnapshot(exercise))
+        .toList();
+  }
+}
+
 class ExerciseRepository {
   static CollectionReference<Map<String, dynamic>> get _exercisesCollection {
     return fs
@@ -26,8 +75,8 @@ class ExerciseRepository {
 
     int currentMaxOrder = exercisesQuery.docs.firstOrNull?.data()['order'] ?? 0;
 
-    await runFs(() {
-      _exercisesCollection.doc().set({
+    await runFs(() async {
+      await _exercisesCollection.doc().set({
         'name': exercise.name,
         'category': exercise.category,
         'dateTime': DateTime.now(),
@@ -98,17 +147,17 @@ class ExerciseRepository {
     await runFs(() => batch.commit());
   }
 
-  Future<List<String>> getAllFromCategory(String category) async {
-    var exercises = await _exercisesCollection
-        .where('category', isEqualTo: category)
-        .orderBy('order')
-        .getX();
-    log('ExerciseRepository.getAllFromCategory($category)');
+  // Future<List<String>> getAllFromCategory(String category) async {
+  //   var exercises = await _exercisesCollection
+  //       .where('category', isEqualTo: category)
+  //       .orderBy('order')
+  //       .getX();
+  //   log('ExerciseRepository.getAllFromCategory($category)');
 
-    return exercises.docs
-        .map((exercise) => exercise.data()['name'] as String)
-        .toList();
-  }
+  //   return exercises.docs
+  //       .map((exercise) => exercise.data()['name'] as String)
+  //       .toList();
+  // }
 
   Future<List<Exercise>> getAllWithArgs({required String name}) async {
     var exercisesSnapshot =

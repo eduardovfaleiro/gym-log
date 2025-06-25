@@ -35,6 +35,7 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
   Future<void> _addExercise() async {
     var exerciseController = TextEditingController();
 
+    // TODO(um form ficaria melhor)
     await showDialog(
       context: context,
       builder: (context) {
@@ -42,11 +43,12 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
           title: const Text('Adicionar exercício'),
           content: TextField(
             controller: exerciseController,
-            decoration: const InputDecoration(labelText: 'Nome'),
+            decoration:
+                const InputDecoration(labelText: 'Nome', counterText: ''),
             maxLength: 50,
           ),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
                 String exerciseName = exerciseController.text.trim();
 
@@ -55,7 +57,8 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                   return;
                 }
 
-                if (_exercises.contains(exerciseName)) {
+                if (_exercises
+                    .any((exercise) => exercise.name == exerciseName)) {
                   showError(context,
                       content: 'Já existe um exercício com este nome.');
                   return;
@@ -64,24 +67,8 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                 setLoading(true);
                 Navigator.pop(context);
 
-                // TODO(trocar por algo síncrono)
-                // final exerciseSelectionRepository =
-                //     ExerciseSelectionRepository();
-
-                // Exercise? exercise = await exerciseSelectionRepository.get(
-                //     Exercise(
-                //         name: exerciseController.text,
-                //         category: widget.category));
-
-                // if (exercise != null) {
-                //   showError(context,
-                //       content: 'Já existe um exercício com este nome.');
-                //   setLoading(false);
-                //   return;
-                // }
-
-                await ExerciseSelectionRepository().add(
-                    Exercise(name: exerciseName, category: widget.category));
+                await ExerciseSelectionRepositoryX(widget.category)
+                    .add(exerciseName);
                 await _updateExercises();
                 setState(() {});
                 setLoading(false);
@@ -96,11 +83,17 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
 
   // TODO(não vou alterar agora, mas curioso essas variáveis. por que existe o _selectedExerciseName?)
   // Nota: é mais fácil alterar a estrutura no FireStore por enquanto.
-  String _selectedExercise = '';
-  String _selectedExerciseName = '';
+  // String _selectedExercise = '';
+  // String _selectedExerciseName = '';
 
-  late AddExerciseController _controller;
-  List<String> _exercises = [];
+  final List<String> _selectedExerciseIds = [];
+  Set<String> _selectedExerciseIdsSet = {};
+  // final Set<String> _selectedExerciseIds = {};
+  // String _selectedExerciseId = '';
+
+  // late AddExerciseController _controller;
+  late AddExerciseControllerX _controller;
+  List<ExerciseX> _exercises = [];
   late final Future<void> _exercisesLoader;
 
   Future<void> _updateExercises() async {
@@ -111,8 +104,8 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
   void initState() {
     super.initState();
 
-    _controller = AddExerciseController(
-      category: widget.category,
+    _controller = AddExerciseControllerX(
+      categoryId: widget.category,
       exercisesInUse: widget.exercisesInUse,
     );
     _exercisesLoader = _updateExercises();
@@ -134,44 +127,47 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                     height: 200,
                     width: 200,
                     builder: (context) {
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          PopupIconButton(
-                            icon: const Icon(Icons.arrow_upward),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                HorizontalRouter(
-                                  child: ExportCategoryPage(
-                                    category: widget.category,
-                                    exercises: _exercises,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: const Text('Exportar lista para...'),
-                          ),
-                          PopupIconButton(
-                            icon: const Icon(Icons.arrow_downward),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                HorizontalRouter(
-                                    child: ImportCategoryPage(
-                                        category: widget.category,
-                                        exercises: _exercises)),
-                              ).then((_) async {
-                                await _updateExercises();
-                                setState(() {});
-                              });
-                            },
-                            child: const Text('Importar lista de...'),
-                          ),
-                        ],
-                      );
+                      return Container();
+
+                      // TODO(desfazer)
+                      // return Column(
+                      //   mainAxisSize: MainAxisSize.min,
+                      //   children: [
+                      //     PopupIconButton(
+                      //       icon: const Icon(Icons.arrow_upward),
+                      //       onTap: () {
+                      //         Navigator.pop(context);
+                      //         Navigator.push(
+                      //           context,
+                      //           HorizontalRouter(
+                      //             child: ExportCategoryPage(
+                      //               category: widget.category,
+                      //               exercises: _exercises,
+                      //             ),
+                      //           ),
+                      //         );
+                      //       },
+                      //       child: const Text('Exportar lista para...'),
+                      //     ),
+                      //     PopupIconButton(
+                      //       icon: const Icon(Icons.arrow_downward),
+                      //       onTap: () {
+                      //         Navigator.pop(context);
+                      //         Navigator.push(
+                      //           context,
+                      //           HorizontalRouter(
+                      //               child: ImportCategoryPage(
+                      //                   category: widget.category,
+                      //                   exercises: _exercises)),
+                      //         ).then((_) async {
+                      //           await _updateExercises();
+                      //           setState(() {});
+                      //         });
+                      //       },
+                      //       child: const Text('Importar lista de...'),
+                      //     ),
+                      //   ],
+                      // );
                     },
                   );
                 },
@@ -201,19 +197,25 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                   separatorBuilder: (context, index) =>
                       const Divider(height: 0),
                   itemBuilder: (context, index) {
-                    String exercise = _exercises[index];
+                    final exercise = _exercises[index];
 
                     return Stack(
                       children: [
-                        RadioListTile(
-                          title: Text(exercise),
-                          value: exercise,
-                          groupValue: _selectedExercise,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedExercise = value!;
-                              _selectedExerciseName = exercise;
-                            });
+                        CheckboxListTile(
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: Text(exercise.name),
+                          value: _selectedExerciseIdsSet.contains(exercise.id),
+                          onChanged: (isActive) {
+                            if (isActive!) {
+                              _selectedExerciseIds.add(exercise.id);
+                            } else {
+                              _selectedExerciseIds.remove(exercise.id);
+                            }
+
+                            _selectedExerciseIdsSet =
+                                _selectedExerciseIds.toSet();
+
+                            setState(() {});
                           },
                         ),
                         Align(
@@ -227,15 +229,15 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
                                       onTap: () async {
                                         setLoading(true);
                                         Navigator.pop(context);
-                                        await ExerciseSelectionRepository()
-                                            .delete(
-                                          Exercise(
-                                              name: exercise,
-                                              category: widget.category),
-                                        );
-                                        _selectedExercise = '';
-                                        _selectedExerciseName = '';
-                                        await _updateExercises();
+                                        await ExerciseSelectionRepositoryX(
+                                                widget.category)
+                                            .delete(exercise.id);
+
+                                        _selectedExerciseIds
+                                            .remove(exercise.id);
+
+                                        _exercises.remove(exercise);
+
                                         setState(() {});
                                         setLoading(false);
                                       });
@@ -269,15 +271,29 @@ class _AddExercisePageState extends State<AddExercisePage> with LoadingManager {
               Expanded(
                 child: LoadingElevatedButton(
                   onPressed: () async {
-                    if (_selectedExercise.isEmpty) return;
+                    if (_selectedExerciseIds.isEmpty) return;
 
                     setLoading(true);
 
-                    await ExerciseRepository().add(Exercise(
-                        name: _selectedExerciseName,
-                        category: widget.category));
-                    Navigator.pop(context, true);
+                    // Usa set para não adicionar nomes repetidos. Tudo bem ter isso
+                    // nesta página caso o usuário consiga essa façanha, mas é desnecessário
+                    // levar isso pros exercícios selecionados.
+                    // Set<String> selectedExercisesNames = _exercises
+                    //     .where((exercise) =>
+                    //         _selectedExerciseIdsSet.contains(exercise.id))
+                    //     .map((exercise) => exercise.name)
+                    //     .toSet();
 
+                    List<String> selectedExercisesNames = _exercises
+                        .where((exercise) =>
+                            _selectedExerciseIdsSet.contains(exercise.id))
+                        .map((exercise) => exercise.name)
+                        .toList();
+
+                    await ExerciseRepositoryX(widget.category)
+                        .addAll(selectedExercisesNames);
+
+                    Navigator.pop(context, true);
                     setLoading(false);
                   },
                   child: const Text('Adicionar'),

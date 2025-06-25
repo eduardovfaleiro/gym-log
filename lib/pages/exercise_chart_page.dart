@@ -26,7 +26,7 @@ import '../utils/log_dialogs.dart';
 import '../utils/show_popup.dart';
 
 class ExerciseChartPage extends StatefulWidget {
-  final Exercise exercise;
+  final ExerciseX exercise;
 
   const ExerciseChartPage({super.key, required this.exercise});
 
@@ -36,13 +36,13 @@ class ExerciseChartPage extends StatefulWidget {
 
 class _ExerciseChartPageState extends State<ExerciseChartPage>
     with LoadingManager {
-  late final ExerciseChartController _controller;
+  late final ExerciseChartControllerX _controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = ExerciseChartController(widget.exercise);
+    _controller = ExerciseChartControllerX(widget.exercise);
 
     setLoading(true);
 
@@ -369,13 +369,15 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ViewLogsPage(
-                                      exercise: widget.exercise,
-                                      logs: _controller.logs,
-                                      onUpdate: () {
-                                        setState(() {});
-                                      },
-                                    ),
+                                    builder: (context) {
+                                      return ViewLogsPage(
+                                        exercise: widget.exercise,
+                                        logs: _controller.logs,
+                                        onUpdate: () {
+                                          setState(() {});
+                                        },
+                                      );
+                                    },
                                   ),
                                 );
                               },
@@ -422,21 +424,25 @@ class _ExerciseChartPageState extends State<ExerciseChartPage>
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            showAddLog(context, exercise: widget.exercise,
-                onConfirm: (logToAdd) async {
-              setLoading(true);
-              await _controller.logRepository.add(logToAdd);
-              await _controller.loadLogs();
-              setState(() {});
+            showAddLog(
+              context,
+              exercise: widget.exercise,
+              onConfirm: (logToAdd) async {
+                setLoading(true);
+                await _controller.logRepository.add(logToAdd);
 
-              bool isPR = await _controller.logRepository.isPR(logToAdd);
+                bool isPR = _controller.isPersonalRecord(logToAdd);
 
-              if (isPR) {
-                showSnackBar('Novo PR alcançado!', context);
-              }
+                await _controller.loadLogs();
+                setState(() {});
 
-              setLoading(false);
-            });
+                if (isPR) {
+                  showSnackBar('Novo PR alcançado!', context);
+                }
+
+                setLoading(false);
+              },
+            );
           },
           child: const Icon(Icons.add),
         ),

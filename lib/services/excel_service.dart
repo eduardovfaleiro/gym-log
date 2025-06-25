@@ -7,11 +7,12 @@ import '../entities/exercise.dart';
 import '../entities/log.dart';
 
 class ExcelService {
-  Future<List<int>?> convertLogsToExcel(Exercise exercise, List<Log> logs) async {
+  Future<List<int>?> convertLogsToExcel(
+      String exerciseName, List<Log> logs) async {
     var excel = Excel.createExcel();
-    excel.rename(excel.getDefaultSheet()!, exercise.name);
+    excel.rename(excel.getDefaultSheet()!, exerciseName);
 
-    Sheet sheet = excel.sheets[exercise.name]!;
+    Sheet sheet = excel.sheets[exerciseName]!;
 
     sheet.appendRow([
       TextCellValue('Peso (kg)'),
@@ -56,7 +57,9 @@ class ExcelService {
       date = (row[2]!.value as DateCellValue).asDateTimeLocal();
       notes = (row[3]!.value as TextCellValue).value.text!;
 
-      SheetService().validateLogFromCell(log: Log(date: date, weight: weight, reps: reps, notes: notes), row: i);
+      SheetService().validateLogFromCell(
+          log: Log(date: date, weight: weight, reps: reps, notes: notes),
+          row: i);
 
       log = Log(date: date, weight: weight, reps: reps, notes: notes);
       logs.add(log);

@@ -10,8 +10,11 @@ class ExportCategoryPage extends StatefulWidget {
   final String category;
   final List<String> exercises;
 
-  const ExportCategoryPage(
-      {super.key, required this.category, required this.exercises});
+  const ExportCategoryPage({
+    super.key,
+    required this.category,
+    required this.exercises,
+  });
 
   @override
   State<ExportCategoryPage> createState() => _ExportCategoryPageState();
@@ -49,8 +52,9 @@ class _ExportCategoryPageState extends State<ExportCategoryPage>
 
                     setLoading(true);
                     String selectedCategory = _selectedCategory!;
-                    List<String> exercises = await ExerciseSelectionRepository()
-                        .getAllFromCategory(widget.category);
+                    List<String> exercises = widget.exercises.toList();
+                    // List<String> exercises = await ExerciseSelectionRepository()
+                    //     .getAllFromCategory(widget.category);
 
                     List<String> selectedCategoryExercises =
                         await ExerciseSelectionRepository()
